@@ -65,7 +65,7 @@ export class BoardView {
     // Centre title
     const cx = (this.left + this.right) / 2;
     const cy = (this.top + this.bottom) / 2;
-    this.scene.add.text(cx, cy - 16, 'REALM QUEST', {
+    this.scene.add.text(cx, cy - 16, 'BOARD RUSH', {
       fontFamily: 'Georgia, serif', fontSize: '34px', color: '#f2cc1a', fontStyle: 'bold',
     }).setOrigin(0.5);
     this.scene.add.text(cx, cy + 18, 'Board · Cards · Combat', {

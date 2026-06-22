@@ -1,4 +1,4 @@
-# Realm Quest — Phaser 3 + TypeScript
+# Board Rush — Phaser 3 + TypeScript
 
 > **Monopoly meets Yu-Gi-Oh.** A fantasy board game with 4 hero classes
 > (Warrior / Mage / Rogue / Cleric), card-based abilities, dice movement,
@@ -41,7 +41,7 @@ src/
 │   ├── ecs/World.ts           ← World + System base
 │   └── events/EventBus.ts     ← typed pub/sub bus
 │
-├── game/                      ← Realm Quest logic (no Phaser)
+├── game/                      ← Board Rush logic (no Phaser)
 │   ├── data/                  ← classes, cards, board definitions
 │   ├── components/            ← Health, Wallet, Stats, Hand, Position…
 │   ├── systems/               ← CombatSystem, DeckSystem, PlayerFactory
@@ -90,7 +90,7 @@ holds a hard reference to the other.
 ## Game design
 
 ### Board — 28-square ring
-Pass the **Realm Gate** for +20 gold. Square types: Draw Card, Combat,
+Pass the **Board Gate** for +20 gold. Square types: Draw Card, Combat,
 Shrine (heal), Market (upgrades), Curse, Treasure, Dungeon (skip turn),
 Teleport, and **Class Bonus** squares that only trigger for the matching
 class. **First to 300 gold, or last hero standing, wins.**

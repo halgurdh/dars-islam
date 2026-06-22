@@ -24,8 +24,8 @@ export interface BoardSquare {
 /** The 28-square ring (divisible by 4 so the renderer lays out 4 equal sides). */
 export function createBoard(): BoardSquare[] {
   return [
-    { type: SquareType.Start, label: 'REALM GATE', description: 'Collect 20 gold each time you pass!', value: 20 },
-    { type: SquareType.DrawCard, label: 'Arcane Archive', description: 'Draw a card from the realm deck.', value: 1 },
+    { type: SquareType.Start, label: 'BOARD GATE', description: 'Collect 20 gold each time you pass!', value: 20 },
+    { type: SquareType.DrawCard, label: 'Arcane Archive', description: 'Draw a card from the board deck.', value: 1 },
     { type: SquareType.Combat, label: 'Goblin Camp', description: 'A goblin attacks!', value: 4 },
     { type: SquareType.Shrine, label: 'Healing Shrine', description: 'Restore 5 HP.', value: 5 },
     { type: SquareType.Market, label: 'Bazaar', description: 'Spend gold on upgrades.', value: 0 },

@@ -11,7 +11,7 @@ export class BootScene extends Phaser.Scene {
     const { width, height } = this.scale;
     const barBg = this.add.rectangle(width / 2, height / 2, 400, 24, 0x222222);
     const bar = this.add.rectangle(width / 2 - 198, height / 2, 4, 18, 0xf2cc1a).setOrigin(0, 0.5);
-    const label = this.add.text(width / 2, height / 2 - 40, 'Loading Realm Quest…', {
+    const label = this.add.text(width / 2, height / 2 - 40, 'Loading Board Rush…', {
       fontFamily: 'sans-serif', fontSize: '20px', color: '#f2cc1a',
     }).setOrigin(0.5);
 

@@ -23,7 +23,7 @@ export const ClassSelectState: GS = {
     if (event === 'players:chosen') {
       const picks = payload as { name: string; cls: HeroClass }[];
       ctx.init(picks);
-      ctx.log('=== REALM QUEST BEGINS ===');
+      ctx.log('=== BOARD RUSH BEGINS ===');
       const id = Access.id(ctx.current);
       ctx.bus.emit('turn:started', { playerId: id.index, round: ctx.round });
       m.transition(S.Roll);
@@ -52,10 +52,10 @@ export const RollState: GS = {
     const from = pos.square;
     const to = (from + steps) % ctx.board.length;
 
-    // Passed Realm Gate?
+    // Passed Board Gate?
     if (to < from || steps >= ctx.board.length) {
       Access.wallet(player).gold += 20;
-      ctx.log(`${Access.id(player).name} passed the Realm Gate (+20 gold).`);
+      ctx.log(`${Access.id(player).name} passed the Board Gate (+20 gold).`);
     }
     pos.square = to;
 
@@ -82,7 +82,7 @@ export const SquareEffectState: GS = {
     switch (sq.type) {
       case SquareType.Start:
         Access.wallet(player).gold += sq.value;
-        ctx.log(`${name} rests at the Realm Gate (+${sq.value} gold).`);
+        ctx.log(`${name} rests at the Board Gate (+${sq.value} gold).`);
         break;
       case SquareType.DrawCard: {
         const n = Math.max(1, sq.value);

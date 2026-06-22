@@ -1,7 +1,7 @@
 {
-  "name": "realm-quest",
+  "name": "board-rush",
   "version": "1.0.0",
-  "description": "Realm Quest — a fantasy board game (Monopoly meets Yu-Gi-Oh) built with Phaser 3 + TypeScript",
+  "description": "Board Rush — a fantasy board game (Monopoly meets Yu-Gi-Oh) built with Phaser 3 + TypeScript",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -21,8 +21,8 @@
     "electron-builder": "^24.13.3"
   },
   "build": {
-    "appId": "com.realmquest.game",
-    "productName": "Realm Quest",
+    "appId": "com.boardrush.game",
+    "productName": "Board Rush",
     "directories": {
       "output": "release"
     },

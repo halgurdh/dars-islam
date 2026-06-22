@@ -62,7 +62,7 @@ export class HUD {
     this.root.innerHTML = `
       <div class="overlay">
         <div class="panel center">
-          <h1>⚔ REALM QUEST ⚔</h1>
+          <h1>⚔ BOARD RUSH ⚔</h1>
           <p class="sub">Choose classes for each player</p>
           <div class="row">
             <label>Players:

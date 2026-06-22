@@ -6,7 +6,7 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 1320,
     height: 860,
-    title: 'Realm Quest',
+    title: 'Board Rush',
     backgroundColor: '#0c0f0a',
     webPreferences: {
       contextIsolation: true,
