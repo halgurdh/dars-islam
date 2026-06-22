@@ -4,6 +4,7 @@ import { S } from '../game/states/stateNames';
 import { Access, isAlive, effectiveAttack } from '../game/systems/PlayerFactory';
 import { HeroClass, CLASS_DEFS } from '../game/data/classes';
 import { suitSymbol, rankLabel, effectSummary } from '../game/data/cards';
+import { playClick } from '../sfx';
 
 /**
  * HTML/CSS overlay HUD. Phaser renders the board; the DOM renders crisp
@@ -86,11 +87,12 @@ export class HUD {
 
     const numSel = this.root.querySelector('#numPlayers') as HTMLSelectElement;
     numSel.value = String(this.numPlayers);
-    numSel.onchange = () => { this.numPlayers = parseInt(numSel.value); this.updatePicksLabel(); };
+    numSel.onchange = () => { playClick(); this.numPlayers = parseInt(numSel.value); this.updatePicksLabel(); };
     this.updatePicksLabel();
 
     this.root.querySelectorAll('.classCard').forEach((btn) => {
       (btn as HTMLButtonElement).onclick = () => {
+        playClick();
         const cls = (btn as HTMLElement).dataset.cls as HeroClass;
         this.pending.push({ name: `Player ${this.pending.length + 1}`, cls });
         if (this.pending.length >= this.numPlayers) {
@@ -158,25 +160,26 @@ export class HUD {
     `;
 
     const roll = this.root.querySelector('#roll') as HTMLButtonElement | null;
-    if (roll) roll.onclick = () => this.machine.send('roll');
+    if (roll) roll.onclick = () => { playClick(); this.machine.send('roll'); };
     const end = this.root.querySelector('#end') as HTMLButtonElement | null;
-    if (end) end.onclick = () => this.machine.send('endTurn');
+    if (end) end.onclick = () => { playClick(); this.machine.send('endTurn'); };
 
     this.root.querySelectorAll('.card').forEach((b) => {
       (b as HTMLButtonElement).onclick = () => {
         if (phase !== S.CardPlay) return;
+        playClick();
         this.machine.send('playCard', parseInt((b as HTMLElement).dataset.i!));
       };
     });
 
     if (inCombat) {
-      (this.root.querySelector('#atk') as HTMLButtonElement).onclick = () => this.machine.send('attack');
-      (this.root.querySelector('#flee') as HTMLButtonElement).onclick = () => this.machine.send('flee');
+      (this.root.querySelector('#atk') as HTMLButtonElement).onclick = () => { playClick(); this.machine.send('attack'); };
+      (this.root.querySelector('#flee') as HTMLButtonElement).onclick = () => { playClick(); this.machine.send('flee'); };
     }
     if (inMarket) {
       this.root.querySelectorAll('[data-buy]').forEach((b) =>
-        ((b as HTMLButtonElement).onclick = () => this.machine.send('buy', (b as HTMLElement).dataset.buy)));
-      (this.root.querySelector('#leave') as HTMLButtonElement).onclick = () => this.machine.send('leave');
+        ((b as HTMLButtonElement).onclick = () => { playClick(); this.machine.send('buy', (b as HTMLElement).dataset.buy); }));
+      (this.root.querySelector('#leave') as HTMLButtonElement).onclick = () => { playClick(); this.machine.send('leave'); };
     }
   }
 
@@ -220,7 +223,7 @@ export class HUD {
         ${w ? `<p class="sub">${Access.id(w).cls} · ${Access.wallet(w).gold} gold · ${Access.hp(w).hp} HP</p>` : ''}
         <div class="actions"><button id="again">Play Again</button></div>
       </div></div>`;
-    (this.root.querySelector('#again') as HTMLButtonElement).onclick = () => this.machine.send('restart');
+    (this.root.querySelector('#again') as HTMLButtonElement).onclick = () => { playClick(); this.machine.send('restart'); };
   }
 
   private addLog(text: string): void {
