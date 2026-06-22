@@ -1,0 +1,140 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #0c0f0a;
+  color: #e8e8e8;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hub-header {
+  text-align: center;
+  padding: 3rem 1rem 2rem;
+  width: 100%;
+  max-width: 800px;
+}
+
+.hub-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #ff0055, #ff6b35);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+}
+
+.hub-subtitle {
+  font-size: 1.1rem;
+  color: #888;
+  font-weight: 400;
+}
+
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+  padding: 1rem;
+  width: 100%;
+  max-width: 1100px;
+}
+
+.game-card {
+  display: flex;
+  flex-direction: column;
+  background: #1a1a2e;
+  border-radius: 16px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.game-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 0, 85, 0.3);
+}
+
+.game-card__thumb {
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.game-card__emoji {
+  font-size: 4rem;
+}
+
+.game-card__body {
+  padding: 1.25rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.game-card__title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+
+.game-card__desc {
+  font-size: 0.9rem;
+  color: #999;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.game-card__install-badge {
+  display: inline-block;
+  margin-top: 0.75rem;
+  padding: 0.3rem 0.8rem;
+  background: rgba(255, 0, 85, 0.15);
+  border: 1px solid rgba(255, 0, 85, 0.3);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: #ff6b8a;
+  align-self: flex-start;
+}
+
+.game-card--coming-soon {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.game-card--coming-soon:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.hub-footer {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #555;
+  font-size: 0.85rem;
+  max-width: 600px;
+}
+
+.hub-footer p {
+  line-height: 1.6;
+}
+
+@media (max-width: 600px) {
+  .hub-title {
+    font-size: 1.8rem;
+  }
+  .game-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Minitoon.Games" />
+    <meta name="theme-color" content="#0c0f0a" />
+    <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
+    <title>Minitoon.Games</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="hub-header">
+      <h1 class="hub-title">🎲 Minitoon.Games</h1>
+      <p class="hub-subtitle">Choose a game to play — each can be installed as its own app!</p>
+    </header>
+
+    <main class="game-grid">
+      <a href="http://localhost:5174/games/board-rush/" class="game-card" data-game="board-rush">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #1a1a2e, #16213e);">
+          <span class="game-card__emoji">🎲</span>
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Board Rush</h2>
+          <p class="game-card__desc">A fantasy board game — Monopoly meets Yu-Gi-Oh</p>
+          <span class="game-card__install-badge">📲 Installable APP</span>
+        </div>
+      </a>
+
+      <!-- Placeholder for future games -->
+      <div class="game-card game-card--coming-soon">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #2d2d2d, #1a1a1a); opacity: 0.5;">
+          <span class="game-card__emoji">🔮</span>
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">More Games Coming Soon</h2>
+          <p class="game-card__desc">New titles will appear here as they're added</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="hub-footer">
+      <p>All games share the same domain for seamless progress & deep-linking between PWAs.</p>
+    </footer>
+  </body>
+</html>

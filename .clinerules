@@ -1,0 +1,33 @@
+# Claude Code Python & Optimization Rules
+
+## Operational Mandate (Credit & Token Efficiency)
+- **One-Shot Execution:** Minimize incremental edits. Formulate the entire code block changes internally before writing to disk.
+- **No Token-Wasting Questions:** Do not ask clarifying questions for standard implementation decisions. Take the most logical, standard Pythonic approach and execute.
+- **Documentation Limits:** Keep docstrings and comments strictly concise. Do not add conversational explanations or summaries in chat output or code files unless explicitly asked.
+- **Cache Awareness:** Do not read or view the same file multiple times in a single session. Rely on your internal memory of the file structure.
+
+## Python Performance Standards
+When writing, refactoring, or editing Python code, strictly enforce these architectures:
+
+### Memory Efficiency
+- **Slots Enforcement:** Enforce `__slots__` on data-heavy classes or instances generated inside loops/queues to eliminate `__dict__` overhead.
+- **Generators:** Prefer generators (`yield`) or generator expressions over full list comprehensions when processing streams, queues, or large datasets sequentially.
+
+### CPU & Execution Speed
+- **Fast Queues:** Enforce `collections.deque` instead of standard lists if elements are frequently prepended or popped from the front ($O(1)$ vs $O(n)$).
+- **Caching:** Enforce `functools.lru_cache` or `functools.cache` for pure, expensive, or repetitive functions.
+- **Namespace Optimization:** If a global method (e.g., `re.match`, `math.sqrt`) or an external module attribute is executed inside a tight loop, bind it to a local variable before the loop starts to bypass the global namespace lookup tax.
+- **String Building:** Use `"".join(list_buffer)` instead of iterative `+` string concatenation.
+
+## Verification Guardrails
+- **Zero Placeholders:** Never write placeholder code or `# TODO` comments. Write production-ready, functional logic on the first attempt.
+- **Empirical Testing:** A task is only complete when you have run the code via the terminal and verified it returns a `0` exit code with correct output data.
+- **Scope Creep & Partner Verification:** If a request introduces sweeping architectural changes, high-impact refactoring, or substantial scope expansion across the codebase, you must halt execution and prompt for verification.
+    - *Prompt Format:* `"SCOPE CREEP CHECK: This request significantly alters [Component A/Architecture]. DJ Shaggy, do you approve this direction, or should we isolate this within a tight, targeted scope?"`
+- **Regression Prevention (Pre-Flight Check):** Before implementing a new feature or modifying heavily changed core code, perform an internal structural analysis. If the prompt lacks explicit instructions on how the new feature should interact with existing critical pathways, or risks breaking them, you must pause and ask **exactly one** highly targeted structural question before writing to disk.
+    - *Prompt Format:* `"CRITICAL CHECK: Implementing [Feature X] risks breaking [Existing Component Y]. Should [Component Y] be refactored to support this, or should [Feature X] be isolated via [Design Pattern Z]?"`
+- **Idempotency & Diff Minimization:** Do not rewrite untouched functions. If a file has been frequently modified, only alter the specific Abstract Syntax Tree (AST) blocks required for the new feature. Never strip out existing logic, edge-case handlings, or error catches unless explicitly ordered to do so.
+
+## Fast Commands
+- **Build/Run:** `python run_pipeline.py`
+- **Test:** `python .\tests\test_pipeline.py && python .\tests\test_integration.py && python .\tests\test_pentest.py && python .\tests\test_stripe.py && python .\tests\test_api_extended.py`

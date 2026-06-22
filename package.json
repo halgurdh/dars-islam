@@ -1,41 +1,24 @@
 {
-  "name": "board-rush",
+  "name": "board-rush-arcade",
   "version": "1.0.0",
-  "description": "Board Rush — a fantasy board game (Monopoly meets Yu-Gi-Oh) built with Phaser 3 + TypeScript",
+  "private": true,
+  "description": "Board Rush Arcade — Main hub with installable PWA games",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "build:pwa": "tsc --noEmit && vite build --mode pwa",
-    "preview:pwa": "vite preview --outDir dist-pwa --base /board-rush/",
-    "preview": "vite preview",
-    "electron:dev": "vite build && electron .",
-    "electron:build": "vite build && electron-builder"
+    "dev": "node scripts/dev.mjs",
+    "build": "node scripts/build.mjs",
+    "preview": "vite preview --outDir dist",
+    "clean": "node -e \"const fs=require('fs');['dist','dist-pwa','games/*/dist'].forEach(d=>fs.rmSync(d,{recursive:true,force:true}))\""
   },
-  "main": "electron/main.cjs",
+  "workspaces": [
+    "games/*"
+  ],
   "dependencies": {
-    "peerjs": "^1.5.5",
     "phaser": "^3.80.1"
   },
   "devDependencies": {
-    "electron": "^30.0.0",
-    "electron-builder": "^24.13.3",
     "typescript": "^5.4.5",
     "vite": "^5.2.11",
     "vite-plugin-pwa": "^1.3.0"
-  },
-  "build": {
-    "appId": "com.boardrush.game",
-    "productName": "Board Rush",
-    "directories": {
-      "output": "release"
-    },
-    "files": [
-      "dist/**/*",
-      "electron/**/*"
-    ],
-    "win": {
-      "target": "portable"
-    }
   }
 }

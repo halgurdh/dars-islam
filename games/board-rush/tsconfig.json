@@ -13,5 +13,5 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "types": []
   },
-  "include": ["shared/**/*.ts"]
+  "include": ["src"]
 }
