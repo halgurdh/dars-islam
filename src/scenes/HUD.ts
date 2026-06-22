@@ -252,8 +252,10 @@ export class HUD {
       .square { background:rgba(255,255,255,0.05); border-radius:4px; padding:6px 9px; font-size:13px; }
       .actions { display:flex; gap:8px; } .actions.col { flex-direction:column; }
       .hud-root button { background:#2a3a24; color:#eee; border:1px solid #4d6640; border-radius:5px;
-        padding:8px 12px; font-size:14px; cursor:pointer; }
-      .hud-root button:hover:not(:disabled) { background:#3a5030; }
+        padding:8px 12px; font-size:14px; cursor:pointer;
+        transition:transform 0.1s ease, background 0.1s ease, box-shadow 0.1s ease; }
+      .hud-root button:hover:not(:disabled) { background:#3a5030; transform:scale(1.06); box-shadow:0 2px 10px rgba(0,0,0,0.5); }
+      .hud-root button:active:not(:disabled) { transform:scale(0.94); box-shadow:none; }
       .hud-root button:disabled { opacity:0.4; cursor:default; }
       .log { flex:1; overflow-y:auto; font-size:11.5px; line-height:1.5; background:rgba(0,0,0,0.3);
         border-radius:4px; padding:6px 8px; } .log div { border-bottom:1px solid rgba(255,255,255,0.05); padding:1px 0; }
@@ -261,9 +263,11 @@ export class HUD {
         background:rgba(8,12,8,0.82); display:flex; align-items:center; gap:6px; flex-wrap:wrap; min-height:64px; }
       .handlabel { color:#d9c060; font-size:13px; }
       .card { width:46px; height:58px; border-radius:6px; background:#fff; border:2px solid #ccc;
-        display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; }
+        display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer;
+        transition:transform 0.1s ease, box-shadow 0.1s ease; }
       .card.red { color:#c0392b; } .card.black { color:#222; }
-      .card:hover { transform:translateY(-6px); transition:transform .1s; }
+      .card:hover { transform:translateY(-8px) scale(1.08); box-shadow:0 6px 14px rgba(0,0,0,0.4); }
+      .card:active { transform:translateY(-2px) scale(0.96); box-shadow:0 2px 4px rgba(0,0,0,0.3); }
       .crank { font-size:16px; font-weight:bold; } .csuit { font-size:18px; }
       .overlay { position:absolute; inset:0; background:rgba(0,0,0,0.6); display:flex; align-items:center;
         justify-content:center; pointer-events:auto; }
@@ -275,7 +279,10 @@ export class HUD {
       .row { margin:10px 0; } .row label { font-size:14px; }
       .classGrid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px; }
       .classCard { display:flex; flex-direction:column; gap:4px; text-align:left; border:2px solid #555 !important;
-        background:#1c241a !important; padding:12px !important; }
+        background:#1c241a !important; padding:12px !important;
+        transition:transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease !important; }
+      .classCard:hover { transform:scale(1.04) !important; box-shadow:0 4px 14px rgba(0,0,0,0.55) !important; }
+      .classCard:active { transform:scale(0.96) !important; box-shadow:none !important; }
       .cname { font-size:18px; font-weight:bold; } .cstat { font-size:12px; opacity:0.85; }
       .cdesc { font-size:11.5px; opacity:0.7; }
       select { background:#2a3a24; color:#eee; border:1px solid #4d6640; border-radius:4px; padding:3px 6px; }

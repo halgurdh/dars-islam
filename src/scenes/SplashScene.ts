@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { playClick, playSplash } from '../sfx';
+import { musicManager } from '../music';
 
 export class SplashScene extends Phaser.Scene {
   private autoTimer!: Phaser.Time.TimerEvent;
@@ -114,7 +115,7 @@ export class SplashScene extends Phaser.Scene {
   }
 
   private enableInput(): void {
-    const advance = () => { playClick(); this.fadeToGame(); };
+    const advance = () => { playClick(); musicManager.init(); this.fadeToGame(); };
     this.input.keyboard?.once('keydown', advance);
     this.input.once('pointerdown', advance);
   }

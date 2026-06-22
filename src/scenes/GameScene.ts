@@ -7,6 +7,7 @@ import { BoardView } from './BoardView';
 import { TokenView } from './TokenView';
 import { DiceView } from './DiceView';
 import { HUD } from './HUD';
+import { musicManager } from '../music';
 
 /**
  * The Phaser scene. Owns the GameContext + StateMachine (logic) and the
@@ -47,6 +48,8 @@ export class GameScene extends Phaser.Scene {
 
     const parent = document.getElementById('game') ?? document.body;
     this.hud = new HUD(parent as HTMLElement, this.ctx, this.machine);
+
+    musicManager.bindBus(this.ctx.bus, () => this.ctx);
 
     this.wireEvents();
 
