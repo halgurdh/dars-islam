@@ -24,18 +24,19 @@ const GAINS: Record<MusicState, [number, number, number]> = {
   GameOver:       [0.00, 0.00, 0.00],
 };
 
-const LAYER_FILES = ['assets/bg1.mp3', 'assets/bg2.mp3', 'assets/bg3.mp3'];
+const LAYER_FILES = ['assets/music/bg1.mp3', 'assets/music/bg2.mp3', 'assets/music/bg3.mp3'];
 const FADE_S = 2.0; // crossfade duration in seconds
 
 // ── Manager ─────────────────────────────────────────────────────────────────
 
 class MusicManager {
-  private ac:      AudioContext | null          = null;
-  private sources: AudioBufferSourceNode[]      = [];
-  private gains:   GainNode[]                   = [];
+  private ac:              AudioContext | null          = null;
+  private sources:         AudioBufferSourceNode[]      = [];
+  private gains:           GainNode[]                   = [];
 
-  private state:   MusicState = 'Menu';
-  private unsubs:  (() => void)[]               = [];
+  private state:           MusicState = 'Menu';
+  private unsubs:          (() => void)[]               = [];
+  private _postInit:       (() => void) | null          = null;
 
   /**
    * Call once on the first user gesture (browser autoplay policy).
@@ -53,6 +54,8 @@ class MusicManager {
         }),
       );
       this._startGraph(buffers);
+      this._postInit?.();
+      this._postInit = null;
     } catch (err) {
       console.warn('[Music] Failed to load layers — music disabled.', err);
     }
@@ -101,7 +104,7 @@ class MusicManager {
     this.unsubs.forEach((u) => u());
     this.unsubs = [];
 
-    let phase = S.ClassSelect;
+    let phase: string = S.ClassSelect;
     const evaluate = () => this._evaluate(phase, getCtx());
 
     this.unsubs = [
@@ -110,6 +113,10 @@ class MusicManager {
       bus.on('player:healed',  ()       => evaluate()),
       bus.on('game:over',      ()       => this.transitionTo('GameOver')),
     ];
+
+    // If audio graph isn't built yet, run evaluate once it is
+    if (this.gains.length === 0) this._postInit = evaluate;
+    else evaluate();
   }
 
   // ── Evaluation ───────────────────────────────────────────────────────────

@@ -1,8 +1,11 @@
+import { musicManager } from './music';
+
 // Preload the click sound once; clone on each play so rapid presses overlap.
 const _click = new Audio('assets/soundfx/button04a.mp3');
 _click.preload = 'auto';
 
 export function playClick(): void {
+  musicManager.init(); // idempotent — starts music on first user gesture
   const clone = _click.cloneNode() as HTMLAudioElement;
   clone.volume = 0.5;
   clone.play().catch(() => { /* autoplay blocked — silently ignore */ });
