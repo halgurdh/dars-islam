@@ -25,6 +25,7 @@ export class BootScene extends Phaser.Scene {
     for (const { key, path } of assetManifest()) {
       this.load.image(key, path);
     }
+    this.load.image('splash-logo', 'assets/splash.png');
   }
 
   create(): void {

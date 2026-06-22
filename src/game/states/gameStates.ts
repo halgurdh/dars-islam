@@ -7,6 +7,7 @@ import { SquareType } from '../data/board';
 import {
   CardEffect, isBlackSuit, suitSymbol, rankLabel,
 } from '../data/cards';
+import { playDice } from '../../sfx';
 
 type GS = State<GameContext>;
 
@@ -44,6 +45,7 @@ export const RollState: GS = {
     const d2 = ctx.rng.d6();
     const steps = d1 + d2;
     ctx.bus.emit('dice:rolled', { d1, d2, total: steps });
+    playDice();
 
     const player = ctx.current;
     const pos = Access.pos(player);

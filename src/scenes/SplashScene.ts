@@ -1,7 +1,10 @@
 import Phaser from 'phaser';
-import { playClick } from '../sfx';
+import { playClick, playSplash } from '../sfx';
 
 export class SplashScene extends Phaser.Scene {
+  private autoTimer!: Phaser.Time.TimerEvent;
+  private done = false;
+
   constructor() {
     super('Splash');
   }
@@ -28,7 +31,6 @@ export class SplashScene extends Phaser.Scene {
       fontFamily: 'Georgia, serif',
       fontSize: '22px',
       color: '#a8c8a8',
-      alpha: 0,
     }).setOrigin(0.5).setAlpha(0);
 
     // Main title
@@ -39,7 +41,6 @@ export class SplashScene extends Phaser.Scene {
       stroke: '#7a5c00',
       strokeThickness: 6,
       shadow: { offsetX: 4, offsetY: 4, color: '#000000', blur: 12, fill: true },
-      alpha: 0,
     }).setOrigin(0.5).setAlpha(0).setScale(0.6);
 
     // Press any key hint
@@ -54,8 +55,19 @@ export class SplashScene extends Phaser.Scene {
     line.lineStyle(2, 0xf2cc1a, 0.6);
     line.lineBetween(cx - 220, cy + 100, cx + 220, cy + 100);
 
+    // Splash logo (bottom-right)
+    const logo = this.add.image(width - 20, height - 20, 'splash-logo')
+      .setOrigin(1, 1)
+      .setDisplaySize(140, 140)
+      .setAlpha(0);
+    
+    // Auto-advance after 3 s; input can skip at any time
+    this.autoTimer = this.time.delayedCall(3000, () => this.fadeToGame());
+    this.enableInput();
+
     // Animate sequence
     this.tweens.add({ targets: bg, alpha: 0.18, duration: 1200, ease: 'Sine.easeIn' });
+    this.tweens.add({ targets: logo, alpha: 0.85, duration: 800, delay: 400 });
 
     this.tweens.add({
       targets: title,
@@ -87,7 +99,6 @@ export class SplashScene extends Phaser.Scene {
       duration: 600,
       delay: 1500,
       onComplete: () => {
-        // Pulse the hint
         this.tweens.add({
           targets: hint,
           alpha: 0.3,
@@ -96,20 +107,22 @@ export class SplashScene extends Phaser.Scene {
           duration: 900,
           ease: 'Sine.easeInOut',
         });
-        this.enableInput();
       },
     });
+
+    playSplash();
   }
 
   private enableInput(): void {
     const advance = () => { playClick(); this.fadeToGame(); };
-
     this.input.keyboard?.once('keydown', advance);
     this.input.once('pointerdown', advance);
   }
 
   private fadeToGame(): void {
-    // Prevent double-firing
+    if (this.done) return;
+    this.done = true;
+    this.autoTimer.remove();
     this.input.keyboard?.removeAllListeners();
     this.input.removeAllListeners();
 
