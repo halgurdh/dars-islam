@@ -18,6 +18,7 @@ export default defineConfig(({ mode }) => {
 
     server: {
       port: 5173,
+      host: true,  // listen on all interfaces so other devices on the network can connect
       open: true,
     },
 

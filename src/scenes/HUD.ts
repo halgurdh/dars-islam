@@ -5,22 +5,27 @@ import { Access, isAlive, effectiveAttack } from '../game/systems/PlayerFactory'
 import { HeroClass, CLASS_DEFS } from '../game/data/classes';
 import { suitSymbol, rankLabel, effectSummary } from '../game/data/cards';
 import { playClick } from '../sfx';
+import { networkManager } from '../net/NetworkManager';
+import { reconstitute } from '../net/GameSerializer';
+import type { GameSnap } from '../net/protocol';
 
-/**
- * HTML/CSS overlay HUD. Phaser renders the board; the DOM renders crisp
- * text, buttons and the card hand. Communicates with the FSM purely via
- * machine.send(); reads state from GameContext for display.
- */
+type UIMode = 'landing' | 'local' | 'online' | 'net-pick';
+
 export class HUD {
-  private root: HTMLDivElement;
-  private ctx: GameContext;
+  private root:    HTMLDivElement;
+  private ctx:     GameContext;
   private machine: StateMachine<GameContext>;
   private logLines: string[] = [];
 
+  // Multiplayer state
+  private _uiMode:    UIMode  = 'landing';
+  private _lobbyCode          = '';
+  private _netPicked          = false;
+
   constructor(parent: HTMLElement, ctx: GameContext, machine: StateMachine<GameContext>) {
-    this.ctx = ctx;
+    this.ctx     = ctx;
     this.machine = machine;
-    this.root = document.createElement('div');
+    this.root    = document.createElement('div');
     this.root.className = 'hud-root';
     parent.appendChild(this.root);
     this.injectStyles();
@@ -29,30 +34,245 @@ export class HUD {
 
   private subscribe(): void {
     const bus = this.ctx.bus;
-    bus.on('log', ({ text }) => this.addLog(text));
-    bus.on('hud:refresh', () => this.render());
-    bus.on('state:changed', () => this.render());
-    bus.on('dice:rolled', ({ d1, d2, total }) => this.addLog(`🎲 ${d1} + ${d2} = ${total}`));
-    bus.on('game:over', () => this.render());
+    bus.on('log',          ({ text }) => this.addLog(text));
+    bus.on('hud:refresh',  () => this.render());
+    bus.on('state:changed',() => this.render());
+    bus.on('dice:rolled',  ({ d1, d2, total }) => this.addLog(`🎲 ${d1} + ${d2} = ${total}`));
+    bus.on('game:over',    () => this.render());
   }
 
-  // ── public ──
-  setMachine(machine: StateMachine<GameContext>): void {
-    this.machine = machine;
+  setMachine(machine: StateMachine<GameContext>): void { this.machine = machine; }
+  setContext(ctx: GameContext): void { this.ctx = ctx; this.subscribe(); }
+
+  /** Called by GameScene when host clicks "Start" in the lobby. */
+  startNetClassPick(): void {
+    this._uiMode   = 'net-pick';
+    this._netPicked = false;
+    this.render();
   }
-  setContext(ctx: GameContext): void {
-    this.ctx = ctx;
-    this.subscribe();
+
+  /** Called by GameScene for every snapshot received (guest only). */
+  applySnapshot(snap: GameSnap): void {
+    this.ctx      = reconstitute(snap);
+    this.logLines = [...snap.log];
+    if (snap.phase === S.GameOver) { this.renderGameOver(); return; }
+    this.renderGame(snap.phase);
   }
+
+  // ── Router ────────────────────────────────────────────────────────────────
 
   render(): void {
     const phase = this.machine.currentName as string | null;
-    if (phase === S.ClassSelect) { this.renderClassSelect(); return; }
+
+    // Active game phase: render game HUD (host-driven)
+    if (phase && phase !== S.ClassSelect && phase !== S.GameOver) {
+      this.renderGame(phase); return;
+    }
     if (phase === S.GameOver) { this.renderGameOver(); return; }
-    this.renderGame(phase);
+
+    // Pre-game screens
+    if (this._uiMode === 'local')    { this.renderClassSelect(); return; }
+    if (this._uiMode === 'online')   { this.renderOnlineLobby(); return; }
+    if (this._uiMode === 'net-pick') { this.renderNetClassPick(); return; }
+    this.renderLanding();
   }
 
-  // ── Class select ──
+  // ── Landing ───────────────────────────────────────────────────────────────
+
+  private renderLanding(): void {
+    this.root.innerHTML = `
+      <div class="overlay">
+        <div class="panel center">
+          <h1>⚔ BOARD RUSH ⚔</h1>
+          <p class="sub">A fantasy board game adventure</p>
+          <div class="actions col" style="margin-top:24px; gap:14px">
+            <button id="btnLocal"  style="font-size:16px; padding:12px 28px">👥 Local Hotseat</button>
+            <button id="btnOnline" style="font-size:16px; padding:12px 28px">🌐 Play Online</button>
+          </div>
+        </div>
+      </div>`;
+
+    (this.root.querySelector('#btnLocal') as HTMLButtonElement).onclick = () => {
+      playClick();
+      this._uiMode    = 'local';
+      this.pending    = [];
+      this.numPlayers = 2;
+      this.render();
+    };
+    (this.root.querySelector('#btnOnline') as HTMLButtonElement).onclick = () => {
+      playClick();
+      this._uiMode = 'online';
+      this.render();
+    };
+  }
+
+  // ── Online lobby ──────────────────────────────────────────────────────────
+
+  private renderOnlineLobby(): void {
+    const nm = networkManager;
+
+    // ── Hosting: show room code + player list ──
+    if (nm.isHost) {
+      const members  = nm.members;
+      const canStart = members.length >= 2;
+      this.root.innerHTML = `
+        <div class="overlay"><div class="panel center">
+          <h2>🏠 Room Ready</h2>
+          <div class="room-code">${this._lobbyCode}</div>
+          <p class="sub">Share this code with friends</p>
+          <div class="player-list">
+            ${members.map(m => `<div class="pcard">${m.isHost ? '👑' : '👤'} ${m.name}</div>`).join('')}
+          </div>
+          <div class="actions" style="margin-top:16px">
+            <button id="startGame" ${canStart ? '' : 'disabled'}>▶ Start${!canStart ? ' (need ≥2)' : ''}</button>
+            <button id="cancelRoom">✕ Cancel</button>
+          </div>
+        </div></div>`;
+
+      (this.root.querySelector('#startGame') as HTMLButtonElement).onclick = () => {
+        if (!canStart) return;
+        playClick();
+        nm.startClassPick();
+      };
+      (this.root.querySelector('#cancelRoom') as HTMLButtonElement).onclick = () => {
+        playClick(); nm.destroy(); this.render();
+      };
+      return;
+    }
+
+    // ── Guest: waiting for host ──
+    if (nm.isGuest) {
+      const members = nm.members;
+      this.root.innerHTML = `
+        <div class="overlay"><div class="panel center">
+          <h2>✓ Joined Room</h2>
+          <p class="sub">Waiting for host to start…</p>
+          <div class="player-list">
+            ${members.map(m => `<div class="pcard">${m.isHost ? '👑' : '👤'} ${m.name}</div>`).join('')}
+          </div>
+        </div></div>`;
+      return;
+    }
+
+    // ── Not connected: create / join form ──
+    this.root.innerHTML = `
+      <div class="overlay"><div class="panel center">
+        <h2>🌐 Play Online</h2>
+        <div class="row"><label>Your name:&nbsp;
+          <input id="pname" value="${nm.myName}" maxlength="16" style="width:140px" />
+        </label></div>
+        <div class="actions col" style="margin-top:16px; gap:10px">
+          <button id="createRoom" style="font-size:15px">🏠 Create Room</button>
+          <div style="display:flex; gap:8px; align-items:center; justify-content:center">
+            <input id="joinCode" placeholder="XXXXXX" maxlength="6"
+              style="width:100px; text-transform:uppercase; letter-spacing:3px; font-size:16px;
+                     background:#2a3a24; color:#eee; border:1px solid #4d6640; border-radius:4px; padding:6px 8px; text-align:center" />
+            <button id="joinRoom">🔗 Join</button>
+          </div>
+        </div>
+        <div id="netErr" style="color:#e54040; font-size:12px; margin-top:8px; min-height:16px"></div>
+        <div class="actions" style="margin-top:16px">
+          <button id="backBtn">← Back</button>
+        </div>
+      </div></div>`;
+
+    const pname    = this.root.querySelector('#pname')    as HTMLInputElement;
+    const joinCode = this.root.querySelector('#joinCode') as HTMLInputElement;
+    const netErr   = this.root.querySelector('#netErr')   as HTMLElement;
+
+    pname.onchange = () => nm.setName(pname.value);
+
+    const setStatus = (msg: string, isError = false) => {
+      netErr.style.color = isError ? '#e54040' : '#d9c060';
+      netErr.textContent = msg;
+    };
+    const setBusy = (busy: boolean) => {
+      (this.root.querySelector('#createRoom') as HTMLButtonElement).disabled = busy;
+      (this.root.querySelector('#joinRoom')   as HTMLButtonElement).disabled = busy;
+    };
+
+    (this.root.querySelector('#createRoom') as HTMLButtonElement).onclick = async () => {
+      playClick();
+      nm.setName(pname.value);
+      setBusy(true); setStatus('Creating room…');
+      try {
+        this._lobbyCode = await nm.createRoom();
+        this.render();
+      } catch (e) {
+        setBusy(false); setStatus('Could not create room — try again.', true);
+        console.error(e);
+      }
+    };
+
+    (this.root.querySelector('#joinRoom') as HTMLButtonElement).onclick = async () => {
+      playClick();
+      nm.setName(pname.value);
+      const code = joinCode.value.trim();
+      if (code.length !== 6) { setStatus('Enter the 6-character code.', true); return; }
+      setBusy(true); setStatus('Connecting…');
+      try {
+        await nm.joinRoom(code);
+        this.render();
+      } catch (e: unknown) {
+        setBusy(false);
+        setStatus((e instanceof Error ? e.message : null) ?? 'Could not connect — check the code.', true);
+        console.error(e);
+      }
+    };
+
+    (this.root.querySelector('#backBtn') as HTMLButtonElement).onclick = () => {
+      playClick(); this._uiMode = 'landing'; this.render();
+    };
+  }
+
+  // ── Net class pick ────────────────────────────────────────────────────────
+
+  private renderNetClassPick(): void {
+    const nm = networkManager;
+
+    if (this._netPicked) {
+      const members     = nm.members;
+      const pickedCount = members.filter(m => m.cls).length;
+      this.root.innerHTML = `
+        <div class="overlay"><div class="panel center">
+          <h2>✓ Class selected</h2>
+          <p class="sub">Waiting for others… (${pickedCount}/${members.length})</p>
+          <div class="player-list">
+            ${members.map(m => `<div class="pcard">${m.cls ? '✓' : '⏳'} ${m.name}${m.cls ? ` — ${m.cls}` : ''}</div>`).join('')}
+          </div>
+        </div></div>`;
+      return;
+    }
+
+    const classes = Object.values(HeroClass);
+    this.root.innerHTML = `
+      <div class="overlay"><div class="panel center">
+        <h1>⚔ BOARD RUSH ⚔</h1>
+        <p class="sub">${nm.myName}, pick your class:</p>
+        <div class="classGrid">
+          ${classes.map((c) => {
+            const d = CLASS_DEFS[c];
+            return `<button class="classCard" data-cls="${c}" style="border-color:#${d.color.toString(16)}">
+              <span class="cname" style="color:#${d.color.toString(16)}">${c}</span>
+              <span class="cstat">HP ${d.maxHP} · ATK ${d.attack} · DEF ${d.defense} · MAG ${d.magic}</span>
+              <span class="cdesc">${d.description}</span>
+            </button>`;
+          }).join('')}
+        </div>
+      </div></div>`;
+
+    this.root.querySelectorAll('.classCard').forEach((btn) => {
+      (btn as HTMLButtonElement).onclick = () => {
+        playClick();
+        this._netPicked = true;
+        nm.sendClassPick((btn as HTMLElement).dataset.cls as HeroClass);
+        this.render();
+      };
+    });
+  }
+
+  // ── Local class select ────────────────────────────────────────────────────
+
   private pending: { name: string; cls: HeroClass }[] = [];
   private numPlayers = 2;
 
@@ -82,6 +302,9 @@ export class HUD {
               </button>`;
             }).join('')}
           </div>
+          <div class="actions" style="margin-top:14px">
+            <button id="backToLanding">← Back</button>
+          </div>
         </div>
       </div>`;
 
@@ -102,6 +325,10 @@ export class HUD {
         }
       };
     });
+
+    (this.root.querySelector('#backToLanding') as HTMLButtonElement).onclick = () => {
+      playClick(); this._uiMode = 'landing'; this.render();
+    };
   }
 
   private updatePicksLabel(): void {
@@ -112,14 +339,32 @@ export class HUD {
     }
   }
 
-  // ── Main game HUD ──
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
+  private _isMyTurn(): boolean {
+    if (!networkManager.isOnline) return true;
+    return this.ctx.currentIndex === networkManager.myPlayerIndex();
+  }
+
+  private _sendAction(name: string, payload?: unknown): void {
+    if (networkManager.isGuest) {
+      networkManager.sendAction(name, payload);
+    } else {
+      this.machine.send(name, payload);
+    }
+  }
+
+  // ── Main game HUD ─────────────────────────────────────────────────────────
+
   private renderGame(phase: string | null): void {
     const ctx = this.ctx;
     const cur = ctx.current;
+    const myTurn = this._isMyTurn();
+
     const playerCards = ctx.players.map((p) => {
       const id = Access.id(p), hp = Access.hp(p), w = Access.wallet(p), st = Access.stats(p), stt = Access.status(p);
       const active = p === cur;
-      const dead = !isAlive(p);
+      const dead   = !isAlive(p);
       return `<div class="pcard ${active ? 'active' : ''} ${dead ? 'dead' : ''}" style="border-left-color:#${CLASS_DEFS[id.cls].color.toString(16)}">
         <div class="pname">${active ? '▶ ' : ''}${id.name} <span class="pcls">${id.cls}</span></div>
         <div class="pstat">❤ ${hp.hp}/${hp.maxHP} &nbsp; 🪙 ${w.gold} &nbsp; ⚔ ${effectiveAttack(p)} 🛡 ${st.defense}${stt.shield ? ` ✦${stt.shield}` : ''}</div>
@@ -127,7 +372,7 @@ export class HUD {
       </div>`;
     }).join('');
 
-    const sq = ctx.board[Access.pos(cur).square];
+    const sq   = ctx.board[Access.pos(cur).square];
     const hand = Access.hand(cur).cards;
     const handHtml = hand.length
       ? hand.map((c, i) => {
@@ -138,93 +383,119 @@ export class HUD {
         }).join('')
       : '<span class="dim">no cards</span>';
 
-    const canRoll = phase === S.Roll;
-    const canEnd = phase === S.CardPlay;
+    const canRoll = phase === S.Roll     && myTurn;
+    const canEnd  = phase === S.CardPlay && myTurn;
     const inCombat = phase === S.Combat;
     const inMarket = phase === S.Market;
 
+    const turnLabel = networkManager.isOnline && !myTurn
+      ? `<span class="dim" style="font-size:12px"> · waiting for ${Access.id(cur).name}…</span>`
+      : '';
+
     this.root.innerHTML = `
       <div class="sidebar">
-        <div class="round">Round ${ctx.round} — ${Access.id(cur).name}'s turn</div>
+        <div class="round">Round ${ctx.round} — ${Access.id(cur).name}'s turn${turnLabel}</div>
         <div class="players">${playerCards}</div>
         <div class="square"><b>${sq.label}</b><br><span class="dim">${sq.description}</span></div>
         <div class="actions">
           <button id="roll" ${canRoll ? '' : 'disabled'}>🎲 Roll Dice</button>
-          <button id="end" ${canEnd ? '' : 'disabled'}>⏩ End Turn</button>
+          <button id="end"  ${canEnd  ? '' : 'disabled'}>⏩ End Turn</button>
         </div>
         <div class="log">${this.logLines.map((l) => `<div>${l}</div>`).join('')}</div>
       </div>
       <div class="handbar"><span class="handlabel">Hand:</span>${handHtml}</div>
-      ${inCombat ? this.combatPanel() : ''}
-      ${inMarket ? this.marketPanel() : ''}
+      ${inCombat ? this.combatPanel(myTurn) : ''}
+      ${inMarket ? this.marketPanel(myTurn) : ''}
     `;
 
-    const roll = this.root.querySelector('#roll') as HTMLButtonElement | null;
-    if (roll) roll.onclick = () => { playClick(); this.machine.send('roll'); };
-    const end = this.root.querySelector('#end') as HTMLButtonElement | null;
-    if (end) end.onclick = () => { playClick(); this.machine.send('endTurn'); };
+    (this.root.querySelector('#roll') as HTMLButtonElement | null)
+      ?.addEventListener('click', () => { playClick(); this._sendAction('roll'); });
+    (this.root.querySelector('#end') as HTMLButtonElement | null)
+      ?.addEventListener('click', () => { playClick(); this._sendAction('endTurn'); });
 
     this.root.querySelectorAll('.card').forEach((b) => {
       (b as HTMLButtonElement).onclick = () => {
-        if (phase !== S.CardPlay) return;
+        if (phase !== S.CardPlay || !myTurn) return;
         playClick();
-        this.machine.send('playCard', parseInt((b as HTMLElement).dataset.i!));
+        this._sendAction('playCard', parseInt((b as HTMLElement).dataset.i!));
       };
     });
 
-    if (inCombat) {
-      (this.root.querySelector('#atk') as HTMLButtonElement).onclick = () => { playClick(); this.machine.send('attack'); };
-      (this.root.querySelector('#flee') as HTMLButtonElement).onclick = () => { playClick(); this.machine.send('flee'); };
+    if (inCombat && myTurn) {
+      (this.root.querySelector('#atk')  as HTMLButtonElement | null)
+        ?.addEventListener('click', () => { playClick(); this._sendAction('attack'); });
+      (this.root.querySelector('#flee') as HTMLButtonElement | null)
+        ?.addEventListener('click', () => { playClick(); this._sendAction('flee'); });
     }
-    if (inMarket) {
+    if (inMarket && myTurn) {
       this.root.querySelectorAll('[data-buy]').forEach((b) =>
-        ((b as HTMLButtonElement).onclick = () => { playClick(); this.machine.send('buy', (b as HTMLElement).dataset.buy); }));
-      (this.root.querySelector('#leave') as HTMLButtonElement).onclick = () => { playClick(); this.machine.send('leave'); };
+        ((b as HTMLButtonElement).onclick = () => { playClick(); this._sendAction('buy', (b as HTMLElement).dataset.buy); }));
+      (this.root.querySelector('#leave') as HTMLButtonElement | null)
+        ?.addEventListener('click', () => { playClick(); this._sendAction('leave'); });
     }
   }
 
-  private combatPanel(): string {
+  private combatPanel(myTurn: boolean): string {
     const c = this.ctx.combat;
     if (!c) return '';
     const p = this.ctx.current;
+    const dis = myTurn ? '' : 'disabled';
     return `<div class="overlay"><div class="panel">
       <h2 style="color:#e54040">⚔ COMBAT</h2>
       <p><b>${c.enemyName}</b> — HP ${Math.max(0, c.enemyHP)} · ATK ${c.enemyAttack} · DEF ${c.enemyDefense}</p>
       <p>${Access.id(p).name}: HP ${Access.hp(p).hp}/${Access.hp(p).maxHP} · ATK ${effectiveAttack(p)}</p>
       <div class="actions">
-        <button id="atk">⚔ Attack</button>
-        <button id="flee">🏃 Flee (-5 HP)</button>
+        <button id="atk"  ${dis}>⚔ Attack</button>
+        <button id="flee" ${dis}>🏃 Flee (-5 HP)</button>
       </div>
     </div></div>`;
   }
 
-  private marketPanel(): string {
-    const p = this.ctx.current;
-    const s = Access.stats(p);
+  private marketPanel(myTurn: boolean): string {
+    const p   = this.ctx.current;
+    const s   = Access.stats(p);
+    const dis = myTurn ? '' : 'disabled';
     return `<div class="overlay"><div class="panel">
       <h2 style="color:#e0a020">⚙ MARKET</h2>
       <p>Gold: ${Access.wallet(p).gold}</p>
       <div class="actions col">
-        <button data-buy="attack">⚔ +2 Attack (${15 + s.attackUpgrades * 10}g)</button>
-        <button data-buy="defense">🛡 +2 Defense (${15 + s.defenseUpgrades * 10}g)</button>
-        <button data-buy="potion">🧪 Heal +10 HP (10g)</button>
-        <button id="leave">Leave Market</button>
+        <button data-buy="attack"  ${dis}>⚔ +2 Attack (${15 + s.attackUpgrades * 10}g)</button>
+        <button data-buy="defense" ${dis}>🛡 +2 Defense (${15 + s.defenseUpgrades * 10}g)</button>
+        <button data-buy="potion"  ${dis}>🧪 Heal +10 HP (10g)</button>
+        <button id="leave"         ${dis}>Leave Market</button>
       </div>
     </div></div>`;
   }
 
+  // ── Game over ─────────────────────────────────────────────────────────────
+
   private renderGameOver(): void {
-    const id = this.ctx.winnerId;
-    const w = id !== null ? this.ctx.players[id] : null;
+    const id  = this.ctx.winnerId;
+    const w   = id !== null ? this.ctx.players[id] : null;
     const def = w ? CLASS_DEFS[Access.id(w).cls] : null;
+    const isGuest = networkManager.isGuest;
     this.root.innerHTML = `
       <div class="overlay"><div class="panel center">
         <h1 style="color:#${def ? def.color.toString(16) : 'f2cc1a'}">🏆 ${w ? Access.id(w).name : 'Someone'} Wins!</h1>
         ${w ? `<p class="sub">${Access.id(w).cls} · ${Access.wallet(w).gold} gold · ${Access.hp(w).hp} HP</p>` : ''}
-        <div class="actions"><button id="again">Play Again</button></div>
+        <div class="actions">
+          <button id="again">${isGuest ? 'Leave Game' : 'Play Again'}</button>
+        </div>
       </div></div>`;
-    (this.root.querySelector('#again') as HTMLButtonElement).onclick = () => { playClick(); this.machine.send('restart'); };
+
+    (this.root.querySelector('#again') as HTMLButtonElement).onclick = () => {
+      playClick();
+      if (isGuest) {
+        networkManager.destroy();
+        this._uiMode = 'landing';
+        this.render();
+      } else {
+        this._sendAction('restart');
+      }
+    };
   }
+
+  // ── Log ───────────────────────────────────────────────────────────────────
 
   private addLog(text: string): void {
     this.logLines.unshift(text);
@@ -232,6 +503,8 @@ export class HUD {
     const log = this.root.querySelector('.log');
     if (log) log.innerHTML = this.logLines.map((l) => `<div>${l}</div>`).join('');
   }
+
+  // ── Styles ────────────────────────────────────────────────────────────────
 
   private injectStyles(): void {
     if (document.getElementById('hud-styles')) return;
@@ -280,12 +553,17 @@ export class HUD {
       .classGrid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px; }
       .classCard { display:flex; flex-direction:column; gap:4px; text-align:left; border:2px solid #555 !important;
         background:#1c241a !important; padding:12px !important;
-        transition:transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease !important; }
+        transition:transform 0.12s ease, box-shadow 0.12s ease !important; }
       .classCard:hover { transform:scale(1.04) !important; box-shadow:0 4px 14px rgba(0,0,0,0.55) !important; }
       .classCard:active { transform:scale(0.96) !important; box-shadow:none !important; }
       .cname { font-size:18px; font-weight:bold; } .cstat { font-size:12px; opacity:0.85; }
       .cdesc { font-size:11.5px; opacity:0.7; }
       select { background:#2a3a24; color:#eee; border:1px solid #4d6640; border-radius:4px; padding:3px 6px; }
+      input  { background:#2a3a24; color:#eee; border:1px solid #4d6640; border-radius:4px; padding:4px 7px; }
+      .room-code { font-size:42px; font-weight:bold; letter-spacing:8px; color:#f2cc1a;
+        background:rgba(242,204,26,0.08); border:2px solid #f2cc1a44; border-radius:8px;
+        padding:10px 20px; margin:10px auto; display:inline-block; }
+      .player-list { display:flex; flex-direction:column; gap:6px; margin:10px 0; min-width:200px; }
     `;
     document.head.appendChild(s);
   }
