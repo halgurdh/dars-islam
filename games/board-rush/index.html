@@ -11,6 +11,11 @@
     <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
     <link rel="manifest" href="manifest.json" />
     <title>Board Rush</title>
+    <script>
+      const savedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.setAttribute('data-theme', savedTheme || (prefersDark ? 'dark' : 'light'));
+    </script>
     <style>
       html, body {
         background: var(--bg-primary);
