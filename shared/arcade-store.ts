@@ -13,7 +13,7 @@
 
 const STORE_KEY = 'minitoon:arcade-store';
 
-const DEFAULT_CARD_BACK = 'cardBack_blue2';
+const DEFAULT_CARD_BACK = 'cardBack_blue1';
 
 // Set this to match the token in your Stripe Payment Link success URL.
 // In Stripe dashboard: Success URL = https://minitoon.games/?pt=YOUR_SECRET_TOKEN

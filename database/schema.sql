@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS sessions (
 CREATE TABLE IF NOT EXISTS profiles (
   user_id          CHAR(36)     NOT NULL PRIMARY KEY,
   coins            INT          NOT NULL DEFAULT 0,
-  active_card_back VARCHAR(64)  NOT NULL DEFAULT 'cardBack_blue2',
+  active_card_back VARCHAR(64)  NOT NULL DEFAULT 'cardBack_blue1',
   owned_card_backs JSON         NOT NULL,
   premium_until    DATETIME     NULL,
   last_coin_grant  DATETIME     NULL,
