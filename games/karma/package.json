@@ -2,7 +2,7 @@
   "name": "@karma/game",
   "version": "1.0.0",
   "private": true,
-  "description": "Karma — het Nederlandse Shithead kaartspel",
+  "description": "Karma — the Dutch Shithead card game",
   "type": "module",
   "scripts": {
     "dev": "vite",

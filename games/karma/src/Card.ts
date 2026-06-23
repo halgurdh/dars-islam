@@ -47,9 +47,9 @@ export function rankLabel(rank: Rank): string {
 
 export function rankName(rank: Rank): string {
   const names: Record<number, string> = {
-    2: 'Twee', 3: 'Drie', 4: 'Vier', 5: 'Vijf', 6: 'Zes',
-    7: 'Zeven', 8: 'Acht', 9: 'Negen', 10: 'Tien',
-    11: 'Boer', 12: 'Vrouw', 13: 'Koning', 14: 'Aas', 15: 'Joker',
+    2: 'Two', 3: 'Three', 4: 'Four', 5: 'Five', 6: 'Six',
+    7: 'Seven', 8: 'Eight', 9: 'Nine', 10: 'Ten',
+    11: 'Jack', 12: 'Queen', 13: 'King', 14: 'Ace', 15: 'Joker',
   };
   return names[rank] ?? String(rank);
 }

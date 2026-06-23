@@ -40,7 +40,7 @@ export class KarmaNetManager {
   private channel:             RealtimeChannel | null = null;
   private _role:               Role = 'offline';
   private _members:            KarmaRoomMember[] = [];
-  private _name                = 'Speler';
+  private _name                = 'Player';
   private _guid                = makeGuid();
   private _roomCode            = '';
   private _awaitingJoin        = false;
@@ -62,7 +62,7 @@ export class KarmaNetManager {
   get members()   { return [...this._members]; }
   get roomCode()  { return this._roomCode; }
 
-  setName(name: string) { this._name = name.trim() || 'Speler'; }
+  setName(name: string) { this._name = name.trim() || 'Player'; }
 
   /** Returns this client's player index in the roster (host = 0). */
   myPlayerIndex(): number {
@@ -81,7 +81,7 @@ export class KarmaNetManager {
       this.destroy();
       this._role = 'host';
     }
-    throw new Error('Kon geen lege kamer aanmaken. Probeer opnieuw.');
+    throw new Error('Could not create an empty room. Please try again.');
   }
 
   async joinRoom(code: string): Promise<void> {
@@ -151,9 +151,9 @@ export class KarmaNetManager {
       ch.subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
           try { await this._trackPresence({ isHost }); resolve(); }
-          catch { reject(new Error('Aanwezigheid bijhouden mislukt.')); }
+          catch { reject(new Error('Presence tracking failed.')); }
         } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
-          reject(new Error('Kan de multiplayer service niet bereiken.'));
+          reject(new Error('Could not reach the multiplayer service.'));
         }
       });
     });
@@ -175,7 +175,7 @@ export class KarmaNetManager {
         const rej = this._rejectJoin;
         this._clearJoin();
         this.destroy();
-        rej?.(new Error(`Kamer ${code} niet gevonden — controleer de code.`));
+        rej?.(new Error(`Room ${code} was not found — please check the code.`));
       }, JOIN_TIMEOUT);
       this._syncRoster();
     });
@@ -193,10 +193,10 @@ export class KarmaNetManager {
     };
     if (this._hasTrackedPresence) {
       const r = await this.channel.untrack();
-      if (r !== 'ok') throw new Error('Kon aanwezigheid niet verversen.');
+      if (r !== 'ok') throw new Error('Could not refresh presence.');
     }
     const r = await this.channel.track(payload);
-    if (r !== 'ok') throw new Error('Kon aanwezigheid niet bijhouden.');
+    if (r !== 'ok') throw new Error('Could not track presence.');
     this._hasTrackedPresence = true;
   }
 
@@ -244,7 +244,7 @@ export class KarmaNetManager {
   private async _send(event: KarmaRoomEvent): Promise<void> {
     if (!this.channel) return;
     const r = await this.channel.send({ type: 'broadcast', event: EVENT_NAME, payload: event });
-    if (r !== 'ok') throw new Error('Kon bericht niet sturen.');
+    if (r !== 'ok') throw new Error('Could not send message.');
   }
 
   private _handleEvent(event: KarmaRoomEvent): void {

@@ -61,10 +61,10 @@ function showMenu() {
   app.innerHTML = `
     <div class="menu-screen">
       <h1>♣ Karma ♠</h1>
-      <p>Het Nederlandse Shithead kaartspel</p>
+      <p>The Shithead | Karma card game</p>
       <div class="menu-btn-group">
         <button class="menu-btn" id="m-solo">🤖 Solo (vs AI)</button>
-        <button class="menu-btn" id="m-local">👥 Lokaal (2-4)</button>
+        <button class="menu-btn" id="m-local">👥 Local (2-4)</button>
         <button class="menu-btn" id="m-online">🌐 Online</button>
       </div>
       <div class="menu-card-preview" id="card-preview"></div>
@@ -92,11 +92,11 @@ function showSoloMenu() {
       <h1>🤖 Solo</h1>
       <p>Jij vs AI tegenstanders</p>
       <div class="menu-btn-group">
-        <button class="menu-btn" id="s2">2 Spelers (1 AI)</button>
-        <button class="menu-btn" id="s3">3 Spelers (2 AI)</button>
-        <button class="menu-btn" id="s4">4 Spelers (3 AI)</button>
+        <button class="menu-btn" id="s2">2 Players (1 AI)</button>
+        <button class="menu-btn" id="s3">3 Players (2 AI)</button>
+        <button class="menu-btn" id="s4">4 Players (3 AI)</button>
       </div>
-      <button class="back-btn" id="back">← Terug</button>
+      <button class="back-btn" id="back">← Back</button>
     </div>
   `;
   [2, 3, 4].forEach(n => doc(`s${n}`).addEventListener('click', () => startSolo(n)));
@@ -121,17 +121,17 @@ function showLocalMenu() {
   const app = document.getElementById('app')!;
   app.innerHTML = `
     <div class="menu-screen">
-      <h1>👥 Lokaal</h1>
-      <p>Scherm doorgeven tussen spelers</p>
+      <h1>👥 Local</h1>
+      <p>Pass the screen between players</p>
       <div class="name-inputs" id="name-area">
-        <p style="opacity:.6;margin-bottom:8px">Kies aantal spelers:</p>
+        <p style="opacity:.6;margin-bottom:8px">Choose player count:</p>
         <div class="menu-btn-group" style="gap:10px">
           <button class="menu-btn" id="l2">2</button>
           <button class="menu-btn" id="l3">3</button>
           <button class="menu-btn" id="l4">4</button>
         </div>
       </div>
-      <button class="back-btn" id="back">← Terug</button>
+      <button class="back-btn" id="back">← Back</button>
     </div>
   `;
   [2, 3, 4].forEach(n => doc(`l${n}`).addEventListener('click', () => startLocal(n)));
@@ -149,27 +149,27 @@ function startLocal(playerCount: number) {
 
   // Allow customising names
   const app = document.getElementById('app')!;
-  const names = ['Speler 1', 'Speler 2', 'Speler 3', 'Speler 4'];
+  const names = ['Player 1', 'Player 2', 'Player 3', 'Player 4'];
   app.innerHTML = `
     <div class="menu-screen">
-      <h1>👥 Lokaal — ${playerCount} spelers</h1>
-      <p>Vul namen in (optioneel)</p>
+      <h1>👥 Local — ${playerCount} players</h1>
+      <p>Enter names (optional)</p>
       <div class="name-inputs">
         ${Array.from({ length: playerCount }, (_, i) => `
           <div class="name-row">
-            <label>Speler ${i + 1}:</label>
+            <label>Player ${i + 1}:</label>
             <input type="text" id="name-${i}" value="${names[i]}" maxlength="16">
           </div>
         `).join('')}
       </div>
-      <button class="menu-btn" id="start-local" style="margin-top:16px">Start spel →</button>
-      <button class="back-btn" id="back">← Terug</button>
+      <button class="menu-btn" id="start-local" style="margin-top:16px">Start game →</button>
+      <button class="back-btn" id="back">← Back</button>
     </div>
   `;
   doc('start-local').addEventListener('click', () => {
     for (let i = 0; i < playerCount; i++) {
       const val = (document.getElementById(`name-${i}`) as HTMLInputElement).value.trim();
-      game.setPlayerName(i, val || `Speler ${i + 1}`);
+      game.setPlayerName(i, val || `Player ${i + 1}`);
     }
     localSetupQueue = Array.from({ length: playerCount }, (_, i) => i);
     runNextLocalSetup();
@@ -208,11 +208,11 @@ function showSetupForPlayer(playerId: number, onDone: () => void) {
     app.innerHTML = `
       <div class="setup-overlay">
         <div class="setup-box">
-          <h2>🃏 ${esc(p.name)} — kies 3 tafelkaarten</h2>
-          <p>Deze leggen we face-up voor je. De rest wordt je starthand.</p>
+          <h2>🃏 ${esc(p.name)} — choose 3 table cards</h2>
+          <p>These will be placed face-up on the table. The rest becomes your starting hand.</p>
           <div class="setup-cards" id="setup-cards"></div>
-          <div class="setup-counter">${count} / 3 geselecteerd</div>
-          <button class="setup-confirm" id="setup-confirm" ${count === 3 ? '' : 'disabled'}>Bevestigen →</button>
+          <div class="setup-counter">${count} / 3 selected</div>
+          <button class="setup-confirm" id="setup-confirm" ${count === 3 ? '' : 'disabled'}>Confirm →</button>
         </div>
       </div>
     `;
@@ -246,8 +246,8 @@ function showSetupForPlayer(playerId: number, onDone: () => void) {
 function showPassDevice(playerName: string, reason: 'turn' | 'setup', onReady: () => void) {
   const app = document.getElementById('app')!;
   const label = reason === 'setup'
-    ? 'Geef het scherm aan voor de setup'
-    : 'Jij bent aan de beurt!';
+    ? 'Pass the screen for setup'
+    : 'It is your turn!';
   const overlay = document.createElement('div');
   overlay.className = 'pass-device-overlay';
   overlay.innerHTML = `
@@ -255,8 +255,8 @@ function showPassDevice(playerName: string, reason: 'turn' | 'setup', onReady: (
       <div class="pass-device-icon">📱</div>
       <h2>${label}</h2>
       <h3>${esc(playerName)}</h3>
-      <p>Geef het scherm door en tik op Klaar.</p>
-      <button class="menu-btn" id="pass-ready">Ik ben klaar →</button>
+      <p>Pass the screen and tap Ready.</p>
+      <button class="menu-btn" id="pass-ready">Ready →</button>
     </div>
   `;
   app.appendChild(overlay);
@@ -272,32 +272,32 @@ function showOnlineLobby() {
   const app = document.getElementById('app')!;
   app.innerHTML = `
     <div class="lobby-screen">
-      <h1>🌐 Online spelen</h1>
+      <h1>🌐 Play Online</h1>
       <div class="lobby-form">
         <div class="name-row">
-          <label>Jouw naam:</label>
-          <input id="online-name" type="text" maxlength="16" placeholder="Naam" value="Speler">
+          <label>Your name:</label>
+          <input id="online-name" type="text" maxlength="16" placeholder="Name" value="Player">
         </div>
         <div class="lobby-actions">
-          <button class="menu-btn" id="create-room">🏠 Kamer aanmaken</button>
+          <button class="menu-btn" id="create-room">🏠 Create room</button>
           <div class="join-row">
             <input id="join-code" type="text" maxlength="6" placeholder="XXXXXX">
-            <button class="menu-btn" id="join-room">🔗 Joinen</button>
+            <button class="menu-btn" id="join-room">🔗 Join</button>
           </div>
         </div>
         <div class="lobby-error" id="lobby-error"></div>
       </div>
-      <button class="back-btn" id="back">← Terug</button>
+      <button class="back-btn" id="back">← Back</button>
     </div>
   `;
 
   const nameInput = document.getElementById('online-name') as HTMLInputElement;
 
   doc('create-room').addEventListener('click', async () => {
-    const name = nameInput.value.trim() || 'Speler';
+    const name = nameInput.value.trim() || 'Player';
     karmaNet.setName(name);
     try {
-      setLobbyError('Kamer aanmaken…');
+      setLobbyError('Creating room…');
       const code = await karmaNet.createRoom();
       showRoomScreen(code, true, name);
     } catch (e) {
@@ -307,11 +307,11 @@ function showOnlineLobby() {
 
   doc('join-room').addEventListener('click', async () => {
     const code = (document.getElementById('join-code') as HTMLInputElement).value.trim().toUpperCase();
-    const name = nameInput.value.trim() || 'Speler';
-    if (code.length < 4) { setLobbyError('Voer een geldige kamercode in.'); return; }
+    const name = nameInput.value.trim() || 'Player';
+    if (code.length < 4) { setLobbyError('Enter a valid room code.'); return; }
     karmaNet.setName(name);
     try {
-      setLobbyError('Verbinden…');
+      setLobbyError('Connecting…');
       await karmaNet.joinRoom(code);
       showRoomScreen(code, false, name);
     } catch (e) {
@@ -331,13 +331,13 @@ function showRoomScreen(code: string, isHost: boolean, myName: string) {
   const app = document.getElementById('app')!;
   app.innerHTML = `
     <div class="room-screen">
-      <h1>Kamer</h1>
+      <h1>Room</h1>
       <div class="room-code-display">${code}</div>
-      <p class="room-hint">${isHost ? 'Deel deze code met vrienden' : 'Wacht op de host om te starten…'}</p>
+      <p class="room-hint">${isHost ? 'Share this code with friends' : 'Wait for the host to start…'}</p>
       <div class="member-list" id="member-list"></div>
-      <div class="room-status" id="room-status">Wacht op meer spelers…</div>
-      ${isHost ? '<button class="menu-btn" id="start-online" disabled>▶ Spel starten (min. 2)</button>' : ''}
-      <button class="back-btn" id="leave-room">← Verlaten</button>
+      <div class="room-status" id="room-status">Waiting for more players…</div>
+      ${isHost ? '<button class="menu-btn" id="start-online" disabled>▶ Start game (min. 2)</button>' : ''}
+      <button class="back-btn" id="leave-room">← Leave</button>
     </div>
   `;
 
@@ -356,7 +356,7 @@ function showRoomScreen(code: string, isHost: boolean, myName: string) {
     ).join('');
 
     const statusEl = document.getElementById('room-status');
-    if (statusEl) statusEl.textContent = `${members.length} speler(s) aanwezig`;
+    if (statusEl) statusEl.textContent = `${members.length} player(s) present`;
 
     if (isHost) {
       const startBtn = document.getElementById('start-online') as HTMLButtonElement | null;
@@ -400,7 +400,7 @@ function launchOnlineGame(hostName: string) {
   showSetupForPlayer(0, () => {
     // Host setup done — now wait for guests to setup too
     const hostSetupDone = true; void hostSetupDone;
-    broadcastSnap('🃏 Kies je tafelkaarten!');
+    broadcastSnap('🃏 Choose your table cards!');
     showOnlineWaitingForSetup(guestSetupsReceived, playerCount);
   });
 
@@ -409,10 +409,10 @@ function launchOnlineGame(hostName: string) {
       if (action.type === 'setup') {
         game.playerSetup(action.playerIndex, action.selectedIds);
         guestSetupsReceived.add(action.playerIndex);
-        broadcastSnap(`${game.players[action.playerIndex].name} klaar met setup`);
+        broadcastSnap(`${game.players[action.playerIndex].name} finished setup`);
         if (guestSetupsReceived.size >= playerCount) {
           game.startGame();
-          broadcastSnap('Spel begint!');
+          broadcastSnap('Game starting!');
           initGameView();
         }
       }
@@ -432,8 +432,8 @@ function showOnlineWaitingForSetup(done: Set<number>, total: number) {
   const app = document.getElementById('app')!;
   app.innerHTML = `
     <div class="menu-screen">
-      <h2>⏳ Wachten op andere spelers…</h2>
-      <p>${done.size} / ${total} klaar met setup</p>
+      <h2>⏳ Waiting for other players…</h2>
+      <p>${done.size} / ${total} finished setup</p>
       <div class="setup-waiting" id="setup-progress"></div>
     </div>
   `;
@@ -468,11 +468,11 @@ function showGuestSetup(cards: Card[], playerIndex: number) {
     app.innerHTML = `
       <div class="setup-overlay">
         <div class="setup-box">
-          <h2>🃏 Kies jouw 3 tafelkaarten</h2>
-          <p>Deze leggen we face-up voor je. De rest wordt je starthand.</p>
+          <h2>🃏 Choose your 3 table cards</h2>
+          <p>These will be placed face-up on the table. The rest becomes your starting hand.</p>
           <div class="setup-cards" id="setup-cards-g"></div>
-          <div class="setup-counter">${count} / 3 geselecteerd</div>
-          <button class="setup-confirm" id="setup-confirm-g" ${count === 3 ? '' : 'disabled'}>Bevestigen →</button>
+          <div class="setup-counter">${count} / 3 selected</div>
+          <button class="setup-confirm" id="setup-confirm-g" ${count === 3 ? '' : 'disabled'}>Confirm →</button>
         </div>
       </div>
     `;
@@ -492,7 +492,7 @@ function showGuestSetup(cards: Card[], playerIndex: number) {
       if (setupSelected.size !== 3) return;
       karmaNet.sendAction({ type: 'setup', playerIndex, selectedIds: [...setupSelected] });
       const app2 = document.getElementById('app')!;
-      app2.innerHTML = `<div class="menu-screen"><h2>⏳ Wachten op andere spelers…</h2></div>`;
+      app2.innerHTML = `<div class="menu-screen"><h2>⏳ Waiting for other players…</h2></div>`;
       karmaNet.onSnapshot = (s) => { guestSnap = s; if (s.phase === 'play') initGuestGameView(); };
     });
   }
@@ -586,13 +586,13 @@ function _buildGameTable() {
         </div>
         <div class="discard-zone" id="discard-zone">
           <div class="pile-shadow"></div>
-          <div class="pile-empty-label" id="pile-empty">Leeg<br>stapel</div>
+          <div class="pile-empty-label" id="pile-empty">Empty<br>pile</div>
           <img class="discard-top" id="discard-top" src="" alt="" style="display:none">
         </div>
         <div class="game-info">
           <div class="status-text" id="status-text">—</div>
           <div class="under7-banner" id="under7-banner">⬇️ Onder 7!</div>
-          <button class="take-pile-btn" id="take-pile-btn">Stapel pakken</button>
+          <button class="take-pile-btn" id="take-pile-btn">Take pile</button>
           <div class="game-log" id="game-log"></div>
         </div>
       </div>
@@ -660,9 +660,9 @@ function renderAIAreas(players: PlayerView[]) {
     ).join('');
 
     hcEl.textContent = pv.hasFinished
-      ? '✓ Klaar!'
-      : `${pv.hand.length} kaart${pv.hand.length !== 1 ? 'en' : ''} in hand`;
-    stEl.textContent = isActive ? '▼ aan de beurt' : '';
+      ? '✓ Done!'
+      : `${pv.hand.length} card${pv.hand.length !== 1 ? 's' : ''} in hand`;
+    stEl.textContent = isActive ? '▼ current turn' : '';
   }
 }
 
@@ -697,17 +697,17 @@ function renderCenter(players: PlayerView[]) {
       if (source === 'hand') {
         const validGroups = getValidGroups(me.hand, game.pile, game.under7);
         statusEl.textContent = validGroups.length > 0
-          ? 'Jouw beurt — sleep een kaart naar de stapel'
-          : 'Geen geldige kaart — pak de stapel!';
+          ? 'Your turn — drag a card to the pile'
+          : 'No valid card — take the pile!';
       } else if (source === 'faceup') {
-        statusEl.textContent = 'Klik een open tafelkaart om te spelen';
+        statusEl.textContent = 'Click a face-up table card to play it';
       } else if (source === 'facedown') {
-        statusEl.textContent = 'Klik een omgekeerde kaart om te draaien';
+        statusEl.textContent = 'Click a face-down card to flip it';
       } else {
-        statusEl.textContent = '✓ Klaar!';
+        statusEl.textContent = '✓ Done!';
       }
     } else {
-      statusEl.textContent = `${game.players[game.currentPlayer].name} is aan de beurt…`;
+      statusEl.textContent = `${game.players[game.currentPlayer].name} is taking their turn…`;
     }
   }
 
@@ -869,8 +869,8 @@ function renderGuestGame() {
       `<div class="ai-card"><img src="${CARD_BACK}" alt="?"></div>`).join('');
     fuEl.innerHTML = sp.faceUp.map(c => c
       ? `<div class="ai-card"><img src="${cardImgSrc(c)}" alt="${cardLabel(c)}"></div>` : '').join('');
-    hcEl.textContent = sp.hasFinished ? '✓ Klaar!' : `${sp.hand.length} kaarten`;
-    stEl.textContent = isActive ? '▼ aan de beurt' : '';
+    hcEl.textContent = sp.hasFinished ? '✓ Done!' : `${sp.hand.length} cards`;
+    stEl.textContent = isActive ? '▼ current turn' : '';
   }
 
   // My player
@@ -889,17 +889,17 @@ function renderGuestGame() {
       if (me.hand.length > 0) {
         const vg = getValidGroups(me.hand, snap.pile, snap.under7);
         statusEl.textContent = vg.length > 0
-          ? 'Jouw beurt — sleep een kaart'
-          : 'Geen geldige kaart — pak de stapel!';
+          ? 'Your turn — drag a card'
+          : 'No valid card — take the pile!';
       } else if (me.faceUp.some(c => c !== null)) {
-        statusEl.textContent = 'Klik een open tafelkaart';
+        statusEl.textContent = 'Click a face-up table card';
       } else if (me.faceDownCount > 0) {
-        statusEl.textContent = 'Klik een omgekeerde kaart';
+        statusEl.textContent = 'Click a face-down card';
       } else {
-        statusEl.textContent = '✓ Klaar!';
+        statusEl.textContent = '✓ Done!';
       }
     } else {
-      statusEl.textContent = `${snap.players[snap.currentPlayer]?.name ?? '?'} is aan de beurt…`;
+      statusEl.textContent = `${snap.players[snap.currentPlayer]?.name ?? '?'} is taking their turn…`;
     }
   }
 
@@ -1057,7 +1057,7 @@ function attemptPlaySelected() {
   const under7 = mode === 'online-guest' ? (guestSnap?.under7 ?? false) : game.under7;
 
   if (!canPlay(cards, pile, under7)) {
-    showToast('Kan niet spelen op huidige stapel!', 'error');
+    showToast('Cannot play on the current pile!', 'error');
     clearSelection();
     if (mode === 'online-guest') renderGuestGame(); else renderAll();
     return;
@@ -1215,10 +1215,10 @@ function _renderEndScreen(winnerName?: string, shitheadName?: string, msg?: stri
   const endDiv = document.createElement('div');
   endDiv.className = 'end-screen';
   endDiv.innerHTML = `
-    <h2>🏆 ${esc(winnerName ?? '?')} wint!</h2>
+    <h2>🏆 ${esc(winnerName ?? '?')} wins!</h2>
     ${shitheadName ? `<div class="shithead-label">💀 ${esc(shitheadName)} is de Karma!</div>` : ''}
     ${msg ? `<p>${esc(msg)}</p>` : ''}
-    <button class="play-again-btn" id="end-again">Nog een keer</button>
+    <button class="play-again-btn" id="end-again">Play again</button>
     <button class="play-again-btn" id="end-menu" style="border-color:#aaa;color:#aaa">Menu</button>
   `;
   app.appendChild(endDiv);
@@ -1250,7 +1250,7 @@ function showKnock(playerName: string) {
   document.querySelector('.knock-overlay')?.remove();
   const ov = document.createElement('div');
   ov.className = 'knock-overlay';
-  ov.innerHTML = `<div class="knock-badge">🤜 ${esc(playerName)} klopt! Laatste kaart!</div>`;
+  ov.innerHTML = `<div class="knock-badge">🤜 ${esc(playerName)} knocks! Last card!</div>`;
   document.body.appendChild(ov);
   setTimeout(() => ov.remove(), 2500);
 }
@@ -1265,20 +1265,20 @@ function flashBurn() {
 
 function cardTooltip(card: Card): string {
   const tips: Partial<Record<Rank, string>> = {
-    [Rank.Two]:   '2 — Overal op spelen (reset)',
-    [Rank.Three]: '3 — Doorzichtig (pile waarde ongewijzigd)',
-    [Rank.Seven]: '7 — Volgende speler moet ONDER 7 gooien',
-    [Rank.Eight]: '8 — Volgende speler overgeslagen',
-    [Rank.Ten]:   '10 — BURN: de hele stapel gaat weg',
-    [Rank.Ace]:   'Aas — Hoogste; daarna alleen Aas, 2, 3 of 10',
-    [Rank.Joker]: 'Joker — Doorzichtig (zoals 3)',
+    [Rank.Two]:   '2 — Play on anything (reset)',
+    [Rank.Three]: '3 — Transparent (pile value unchanged)',
+    [Rank.Seven]: '7 — Next player must play UNDER 7',
+    [Rank.Eight]: '8 — Next player is skipped',
+    [Rank.Ten]:   '10 — BURN: the whole pile is cleared',
+    [Rank.Ace]:   'Ace — Highest; after this only Ace, 2, 3, or 10',
+    [Rank.Joker]: 'Joker — Transparent (like 3)',
   };
   return tips[card.rank] ?? `${rankName(card.rank)} ${suitSymbol(card.suit)}`;
 }
 
 function doc(id: string): HTMLElement {
   const el = document.getElementById(id);
-  if (!el) throw new Error(`Element #${id} niet gevonden`);
+  if (!el) throw new Error(`Element #${id} not found`);
   return el;
 }
 

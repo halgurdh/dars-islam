@@ -49,10 +49,10 @@ export class KarmaGame {
 
   /** humanIds: which player indices are human (default: [0] = solo). */
   constructor(playerCount: number, humanIds: number[] = [0]) {
-    const names = ['Jij', 'Dealer', 'Noord', 'Oost'];
+    const names = ['You', 'Dealer', 'North', 'East'];
     this.players = Array.from({ length: playerCount }, (_, i) => ({
       id: i,
-      name: names[i] ?? `Speler ${i + 1}`,
+      name: names[i] ?? `Player ${i + 1}`,
       isHuman: humanIds.includes(i),
       hand: [],
       faceUp: [null, null, null],
@@ -206,7 +206,7 @@ export class KarmaGame {
       this.currentPlayer = next;
       return {
         type: 'cant_flip', cards: [card], playerId: p.id, nextPlayerId: next,
-        message: `${p.name} draait ${cardLabel(card)} om — kan niet spelen en pakt de stapel! 😬`,
+        message: `${p.name} flips ${cardLabel(card)} — can't play it and must take the pile! 😬`,
         burnedPile: false, drewCount: 0, skippedIds: [],
         under7After: false, playerFinished: false, gameOver: false,
       };
@@ -227,7 +227,7 @@ export class KarmaGame {
     this.currentPlayer = next;
     return {
       type: 'took_pile', cards: [], playerId: p.id, nextPlayerId: next,
-      message: `${p.name} kan niet spelen en pakt de stapel!`,
+      message: `${p.name} can't play and takes the pile!`,
       burnedPile: false, drewCount: 0, skippedIds: [],
       under7After: false, playerFinished: false, gameOver: false,
     };
@@ -256,7 +256,7 @@ export class KarmaGame {
       this.phase = GamePhase.End;
       return {
         type: 'played', cards, playerId: p.id, nextPlayerId: p.id,
-        message: `${p.name} heeft gewonnen! 🎉${shithead ? `  ${shithead.name} is de Karma! 💀` : ''}`,
+        message: `${p.name} wins! 🎉${shithead ? `  ${shithead.name} is the Karma! 💀` : ''}`,
         burnedPile: false, drewCount, skippedIds: [], under7After: false,
         playerFinished: true, gameOver: true,
         winner: p.id, shithead: shithead?.id,
@@ -267,7 +267,7 @@ export class KarmaGame {
       this.burned.push(...this.pile); this.pile = []; this.under7 = false;
       return {
         type: 'burned', cards, playerId: p.id, nextPlayerId: p.id,
-        message: `${p.name} speelt 10 — BURN! 🔥 Nog een keer!`,
+        message: `${p.name} plays 10 — BURN! 🔥 Go again!`,
         burnedPile: true, drewCount, skippedIds: [], under7After: false,
         playerFinished: isEmpty, gameOver: false,
       };
@@ -277,7 +277,7 @@ export class KarmaGame {
       this.burned.push(...this.pile); this.pile = []; this.under7 = false;
       return {
         type: 'quartet', cards, playerId: p.id, nextPlayerId: p.id,
-        message: `${p.name} maakt KWARTET! 🃏 Nog een keer!`,
+        message: `${p.name} makes FOUR OF A KIND! 🃏 Go again!`,
         burnedPile: true, drewCount, skippedIds: [], under7After: false,
         playerFinished: isEmpty, gameOver: false,
       };
@@ -296,8 +296,8 @@ export class KarmaGame {
     }
     this.currentPlayer = next;
 
-    const skipMsg  = skippedIds.length ? ` (${skippedIds.map(id => this.players[id].name).join(', ')} overgeslagen)` : '';
-    const u7msg    = this.under7 ? ' ⬇️ Volgende moet ONDER 7 gooien!' : '';
+    const skipMsg  = skippedIds.length ? ` (${skippedIds.map(id => this.players[id].name).join(', ')} skipped)` : '';
+    const u7msg    = this.under7 ? ' ⬇️ Next player must play UNDER 7!' : '';
     const cardNames = cards.map(c => cardLabel(c)).join(' + ');
 
     return {
