@@ -17,8 +17,9 @@ export function initTheme() {
     localStorage.setItem('theme', theme);
   };
 
-  const savedTheme = localStorage.getItem('theme') || 'dark';
-  applyTheme(savedTheme);
+  const savedTheme = localStorage.getItem('theme');
+  const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  applyTheme(savedTheme || systemTheme);
 
   const attachToggle = () => {
     const themeToggle = document.getElementById('theme-toggle');
