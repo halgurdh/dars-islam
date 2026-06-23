@@ -59,6 +59,16 @@ export interface WorkspaceInvite {
   created_at: string;
 }
 
+export interface WorkspaceBillingSummary {
+  plan_key: string;
+  seats_used: number;
+  seat_limit: number;
+  games_limit: number;
+  private_rooms_limit: number;
+  upgrade_label: string;
+  can_manage_subscription: boolean;
+}
+
 interface ServerProfile {
   user_id:          string;
   email:            string;
@@ -85,6 +95,7 @@ class SyncManager {
   private _workspaces: WorkspaceSummary[] = [];
   private _members: WorkspaceMember[] = [];
   private _invites: WorkspaceInvite[] = [];
+  private _billing: WorkspaceBillingSummary | null = null;
   private _timer:     ReturnType<typeof setTimeout> | null = null;
   private _listeners: Set<AuthListener> = new Set();
   private _ready      = false;
@@ -97,6 +108,7 @@ class SyncManager {
   get workspaces(){ return this._workspaces; }
   get workspaceMembers(){ return this._members; }
   get workspaceInvites(){ return this._invites; }
+  get workspaceBilling(){ return this._billing; }
   get isLoggedIn(){ return !!this._userId; }
   get isReady()   { return this._ready; }
 
@@ -137,6 +149,7 @@ class SyncManager {
         this._workspaces = [];
         this._members = [];
         this._invites = [];
+        this._billing = null;
       }
     }
 
@@ -159,6 +172,7 @@ class SyncManager {
     this._workspaces = [];
     this._members = [];
     this._invites = [];
+    this._billing = null;
     this._notify(false, null);
   }
 
@@ -222,6 +236,23 @@ class SyncManager {
     this._workspaces = result.workspaces;
     this._members = result.members;
     this._invites = result.invites;
+    const billing = await api.get<{ billing: WorkspaceBillingSummary }>('/workspace/billing.php');
+    this._billing = billing.billing;
+  }
+
+  async createWorkspace(name: string): Promise<void> {
+    const result = await api.post<{
+      ok: true;
+      workspace: WorkspaceSummary;
+      workspaces: WorkspaceSummary[];
+      members: WorkspaceMember[];
+      invites: WorkspaceInvite[];
+    }>('/workspace/create.php', { name });
+    this._workspace = result.workspace;
+    this._workspaces = result.workspaces;
+    this._members = result.members;
+    this._invites = result.invites;
+    await this.refreshWorkspaceBilling();
   }
 
   async switchWorkspace(workspaceId: string): Promise<void> {
@@ -236,6 +267,8 @@ class SyncManager {
     this._workspaces = result.workspaces;
     this._members = result.members;
     this._invites = result.invites;
+    const billing = await api.get<{ billing: WorkspaceBillingSummary }>('/workspace/billing.php');
+    this._billing = billing.billing;
   }
 
   async inviteToWorkspace(email: string, role: 'admin' | 'member' = 'member'): Promise<{ invite_url: string }> {
@@ -253,6 +286,67 @@ class SyncManager {
   async revokeWorkspaceInvite(inviteId: string): Promise<void> {
     const result = await api.post<{ ok: true; invites: WorkspaceInvite[] }>('/workspace/revoke-invite.php', { invite_id: inviteId });
     this._invites = result.invites;
+  }
+
+  async updateWorkspaceMemberRole(userId: string, role: 'admin' | 'member'): Promise<void> {
+    const result = await api.post<{ ok: true; members: WorkspaceMember[] }>('/workspace/members.php', {
+      user_id: userId,
+      role,
+    });
+    this._members = result.members;
+    const billing = await api.get<{ billing: WorkspaceBillingSummary }>('/workspace/billing.php');
+    this._billing = billing.billing;
+  }
+
+  async removeWorkspaceMember(userId: string): Promise<void> {
+    const result = await api.post<{ ok: true; members: WorkspaceMember[] }>('/workspace/remove-member.php', {
+      user_id: userId,
+    });
+    this._members = result.members;
+    const billing = await api.get<{ billing: WorkspaceBillingSummary }>('/workspace/billing.php');
+    this._billing = billing.billing;
+  }
+
+  async transferWorkspaceOwner(userId: string): Promise<void> {
+    const result = await api.post<{
+      ok: true;
+      workspace: WorkspaceSummary;
+      members: WorkspaceMember[];
+    }>('/workspace/transfer-owner.php', { user_id: userId });
+    this._workspace = result.workspace;
+    this._members = result.members;
+    await this.refreshWorkspace();
+  }
+
+  async leaveWorkspace(workspaceId: string): Promise<void> {
+    const result = await api.post<{
+      ok: true;
+      workspace: WorkspaceSummary;
+      workspaces: WorkspaceSummary[];
+      members: WorkspaceMember[];
+      invites: WorkspaceInvite[];
+    }>('/workspace/leave.php', { workspace_id: workspaceId });
+    this._workspace = result.workspace;
+    this._workspaces = result.workspaces;
+    this._members = result.members;
+    this._invites = result.invites;
+    await this.refreshWorkspaceBilling();
+  }
+
+  async refreshWorkspaceBilling(): Promise<void> {
+    if (!getSessionToken()) return;
+    const billing = await api.get<{ billing: WorkspaceBillingSummary }>('/workspace/billing.php');
+    this._billing = billing.billing;
+  }
+
+  async startWorkspaceUpgrade(): Promise<string> {
+    const result = await api.post<{ url: string }>('/stripe/create-checkout.php');
+    return result.url;
+  }
+
+  async openWorkspaceBillingPortal(): Promise<string> {
+    const result = await api.post<{ url: string }>('/stripe/create-portal.php');
+    return result.url;
   }
 
   async acceptPendingInvite(): Promise<void> {

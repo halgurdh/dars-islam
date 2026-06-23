@@ -374,6 +374,39 @@ function assert_workspace_member_capacity(array $workspace): void {
     }
 }
 
+function create_workspace_for_user(string $userId, string $email, string $name, bool $switchToNew = true): array {
+    $db = db();
+    $name = trim($name);
+    if ($name === '') {
+        $name = workspace_name_for_email($email, classify_account_type($email));
+    }
+    $name = substr($name, 0, 120);
+    $accountType = classify_account_type($email);
+    $domain = email_domain($email);
+    $slug = unique_workspace_slug($db, $name);
+    $orgId = uuid();
+
+    $db->prepare(
+        'INSERT INTO organizations (id, owner_user_id, name, slug, account_type, email_domain, plan_key, is_personal)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+    )->execute([$orgId, $userId, $name, $slug, $accountType, $domain !== '' ? $domain : null, 'free', 0]);
+
+    $db->prepare(
+        'INSERT INTO organization_members (organization_id, user_id, role) VALUES (?, ?, ?)'
+    )->execute([$orgId, $userId, 'owner']);
+
+    $db->prepare(
+        'INSERT INTO workspace_settings (organization_id, brand_name, brand_tagline, accent_color, logo_url)
+         VALUES (?, ?, ?, ?, ?)'
+    )->execute([$orgId, $name, 'A private Minitoon workspace.', '#ff6b35', null]);
+
+    if ($switchToNew) {
+        $db->prepare('UPDATE users SET active_organization_id = ? WHERE id = ?')->execute([$orgId, $userId]);
+    }
+
+    return get_workspace_for_user($userId);
+}
+
 function create_workspace_invite(string $workspaceId, string $inviterUserId, string $email, string $role = 'member'): array {
     $db = db();
     $email = strtolower(trim($email));
@@ -426,6 +459,116 @@ function revoke_workspace_invite(string $workspaceId, string $inviteId): void {
         'UPDATE organization_invites SET revoked_at = NOW()
          WHERE id = ? AND organization_id = ? AND accepted_at IS NULL AND revoked_at IS NULL'
     )->execute([$inviteId, $workspaceId]);
+}
+
+function get_workspace_member(string $workspaceId, string $memberUserId): ?array {
+    $stmt = db()->prepare(
+        'SELECT u.id, u.email, u.account_type, om.role, om.created_at
+         FROM organization_members om
+         JOIN users u ON u.id = om.user_id
+         WHERE om.organization_id = ? AND om.user_id = ?
+         LIMIT 1'
+    );
+    $stmt->execute([$workspaceId, $memberUserId]);
+    $row = $stmt->fetch();
+    if (!$row) return null;
+    return [
+        'user_id' => $row['id'],
+        'email' => $row['email'],
+        'account_type' => $row['account_type'],
+        'role' => $row['role'],
+        'created_at' => $row['created_at'],
+    ];
+}
+
+function update_workspace_member_role(string $actingUserId, string $workspaceId, string $memberUserId, string $newRole): void {
+    $workspace = require_workspace_role($actingUserId, ['owner', 'admin']);
+    if (!in_array($newRole, ['admin', 'member'], true)) {
+        json_error('Invalid role');
+    }
+
+    $target = get_workspace_member($workspaceId, $memberUserId);
+    if (!$target) {
+        json_error('Member not found', 404);
+    }
+    if ($target['role'] === 'owner') {
+        json_error('Owner role cannot be changed', 409);
+    }
+    if ($workspace['role'] === 'admin' && $target['role'] !== 'member') {
+        json_error('Admins can only manage members', 403);
+    }
+
+    db()->prepare(
+        'UPDATE organization_members SET role = ? WHERE organization_id = ? AND user_id = ?'
+    )->execute([$newRole, $workspaceId, $memberUserId]);
+}
+
+function remove_workspace_member(string $actingUserId, string $workspaceId, string $memberUserId): void {
+    $workspace = require_workspace_role($actingUserId, ['owner', 'admin']);
+    $target = get_workspace_member($workspaceId, $memberUserId);
+    if (!$target) {
+        json_error('Member not found', 404);
+    }
+    if ($memberUserId === $actingUserId) {
+        json_error('Use leave-workspace instead of removing yourself', 409);
+    }
+    if ($target['role'] === 'owner') {
+        json_error('Owner cannot be removed', 409);
+    }
+    if ($workspace['role'] === 'admin' && $target['role'] !== 'member') {
+        json_error('Admins can only remove members', 403);
+    }
+
+    db()->prepare(
+        'DELETE FROM organization_members WHERE organization_id = ? AND user_id = ?'
+    )->execute([$workspaceId, $memberUserId]);
+}
+
+function transfer_workspace_owner(string $actingUserId, string $workspaceId, string $newOwnerUserId): void {
+    $workspace = require_workspace_role($actingUserId, ['owner']);
+    if ($workspace['id'] !== $workspaceId) {
+        $workspace = switch_workspace_for_user($actingUserId, $workspaceId);
+    }
+
+    $target = get_workspace_member($workspaceId, $newOwnerUserId);
+    if (!$target) {
+        json_error('Target member not found', 404);
+    }
+    if ($target['role'] === 'owner') {
+        return;
+    }
+
+    $db = db();
+    $db->prepare('UPDATE organization_members SET role = ? WHERE organization_id = ? AND user_id = ?')
+        ->execute(['admin', $workspaceId, $actingUserId]);
+    $db->prepare('UPDATE organization_members SET role = ? WHERE organization_id = ? AND user_id = ?')
+        ->execute(['owner', $workspaceId, $newOwnerUserId]);
+    $db->prepare('UPDATE organizations SET owner_user_id = ?, updated_at = NOW() WHERE id = ?')
+        ->execute([$newOwnerUserId, $workspaceId]);
+}
+
+function leave_workspace(string $userId, string $email, string $workspaceId): array {
+    $db = db();
+    $target = get_workspace_member($workspaceId, $userId);
+    if (!$target) {
+      json_error('You are not a member of that workspace', 404);
+    }
+    if ($target['role'] === 'owner') {
+      json_error('Transfer ownership before leaving this workspace', 409);
+    }
+
+    $db->prepare('DELETE FROM organization_members WHERE organization_id = ? AND user_id = ?')
+      ->execute([$workspaceId, $userId]);
+
+    $remaining = list_workspaces_for_user($userId);
+    if (count($remaining) === 0) {
+        $created = create_workspace_for_user($userId, $email, 'New Workspace', true);
+        return $created;
+    }
+
+    $nextWorkspaceId = $remaining[0]['id'];
+    $db->prepare('UPDATE users SET active_organization_id = ? WHERE id = ?')->execute([$nextWorkspaceId, $userId]);
+    return get_workspace_for_user($userId);
 }
 
 function accept_pending_invites_for_user(string $userId, string $email): void {

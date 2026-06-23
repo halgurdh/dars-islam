@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { playClick } from '@src/sfx';
+import { playClick, playSplash } from '@src/sfx';
 import { musicManager } from '@src/music';
 
 export class SplashScene extends Phaser.Scene {
@@ -118,14 +118,10 @@ export class SplashScene extends Phaser.Scene {
       if (this.sound && hasSplash) {
         this.sound.play('splash', { volume: 0.7 });
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const { playSplash } = require('@src/sfx');
         playSplash();
       }
-    } catch (err) {
+    } catch {
       // Protect against any runtime issues with the Phaser cache API
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { playSplash } = require('@src/sfx');
       playSplash();
     }
   }
