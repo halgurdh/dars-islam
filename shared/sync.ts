@@ -12,10 +12,33 @@ import { api, getSessionToken, setSessionToken, clearSessionToken } from './api'
 import { ArcadeStore } from './arcade-store';
 
 type AuthListener = (loggedIn: boolean, email: string | null) => void;
+export type AccountType = 'consumer' | 'commercial';
+
+export interface WorkspaceSettings {
+  brand_name: string;
+  brand_tagline: string | null;
+  accent_color: string;
+  logo_url: string | null;
+}
+
+export interface WorkspaceSummary {
+  id: string;
+  name: string;
+  slug: string;
+  plan_key: string;
+  account_type: AccountType;
+  email_domain: string | null;
+  is_personal: boolean;
+  role: string;
+  member_count: number;
+  settings: WorkspaceSettings;
+}
 
 interface ServerProfile {
   user_id:          string;
   email:            string;
+  account_type:     AccountType;
+  workspace:        WorkspaceSummary;
   coins:            number;
   active_card_back: string;
   owned_card_backs: string[];
@@ -31,12 +54,17 @@ interface ServerProfile {
 class SyncManager {
   private _userId:    string | null = null;
   private _email:     string | null = null;
+  private _accountType: AccountType = 'consumer';
+  private _workspace: WorkspaceSummary | null = null;
   private _timer:     ReturnType<typeof setTimeout> | null = null;
   private _listeners: Set<AuthListener> = new Set();
   private _ready      = false;
 
   get userId()    { return this._userId; }
   get email()     { return this._email; }
+  get accountType(){ return this._accountType; }
+  get workspace() { return this._workspace; }
+  get workspaceId(){ return this._workspace?.id ?? null; }
   get isLoggedIn(){ return !!this._userId; }
   get isReady()   { return this._ready; }
 
@@ -64,6 +92,8 @@ class SyncManager {
         clearSessionToken();
         this._userId = null;
         this._email  = null;
+        this._accountType = 'consumer';
+        this._workspace = null;
       }
     }
 
@@ -81,6 +111,8 @@ class SyncManager {
     clearSessionToken();
     this._userId = null;
     this._email  = null;
+    this._accountType = 'consumer';
+    this._workspace = null;
     this._notify(false, null);
   }
 
@@ -90,6 +122,8 @@ class SyncManager {
 
     this._userId = profile.user_id;
     this._email  = profile.email;
+    this._accountType = profile.account_type;
+    this._workspace = profile.workspace;
 
     // Merge card backs (union: never lose locally unlocked ones)
     const localOwned  = ArcadeStore.getOwnedCardBacks();
@@ -121,6 +155,12 @@ class SyncManager {
     if (finalCoins > profile.coins || merged.length > serverOwned.length) {
       void this.pushProfile();
     }
+  }
+
+  async saveWorkspaceSettings(input: Partial<WorkspaceSettings>): Promise<WorkspaceSummary> {
+    const result = await api.post<{ ok: true; workspace: WorkspaceSummary }>('/workspace/update.php', input);
+    this._workspace = result.workspace;
+    return result.workspace;
   }
 
   /** Debounced — triggers after any local write. Pushes after 2 s of silence. */

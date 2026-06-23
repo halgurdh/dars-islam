@@ -35,6 +35,10 @@ $db->prepare(
 
 // Ensure profile row exists
 ensure_profile($row['user_id']);
+$emailStmt = $db->prepare('SELECT email FROM users WHERE id = ?');
+$emailStmt->execute([$row['user_id']]);
+$user = $emailStmt->fetch();
+ensure_workspace_for_user($row['user_id'], $user['email'] ?? '');
 
 // Redirect back to site — JS will pick up mt_session and store it
 header('Location: ' . SITE_URL . '/?mt_session=' . urlencode($sessionToken));

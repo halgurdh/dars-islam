@@ -2,6 +2,7 @@ import type { RealtimeChannel } from '@supabase/supabase-js';
 import type { RoomEvent, RoomMember, GameSnap } from './protocol';
 import type { HeroClass } from '../game/data/classes';
 import { getSupabaseClient } from './supabaseClient';
+import { sync } from '../../shared/sync';
 
 type Role = 'offline' | 'host' | 'guest';
 
@@ -31,6 +32,11 @@ function makePeerId(): string {
     return crypto.randomUUID();
   }
   return `peer-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function workspaceTopicScope(): string {
+  const workspaceId = sync.workspaceId ?? 'public';
+  return workspaceId.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 64) || 'public';
 }
 
 function toError(message: string): Error {
@@ -152,7 +158,7 @@ class NetworkManager {
 
   private async _connectToRoom(roomCode: string, isHost: boolean, allowHostCollisionRetry: boolean): Promise<boolean> {
     const supabase = getSupabaseClient();
-    const topic = `room:${GAME_ID}:${roomCode}`;
+    const topic = `room:${GAME_ID}:${workspaceTopicScope()}:${roomCode}`;
     const channel = supabase.channel(topic, {
       config: {
         broadcast: { self: false, ack: true },
