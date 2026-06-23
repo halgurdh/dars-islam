@@ -130,27 +130,18 @@ npx tsx tests/logic.test.ts        # 817 logic assertions + 60 sim games
 npx tsx tests/integration.test.ts  # HUD-driven full playthrough
 ```
 
-### Multiplayer server
+### Multiplayer via Supabase Realtime
 
-Board Rush now uses a central WebSocket room server instead of PeerJS/WebRTC. That is a better fit for turn-based multiplayer across restrictive networks and scales more naturally across many concurrent rooms and many games.
+Board Rush now uses Supabase Realtime instead of PeerJS/WebRTC or a custom Node room server. That means multiplayer can run from static hosting as long as the browser build has your Supabase project URL and anon key.
 
-For local development, `npm run dev` starts the room server automatically on:
-
-```bash
-ws://localhost:8787
-```
-
-For production, point the browser build at your deployed room service from the repo-root `.env.local`:
+Set these in the repo-root `.env.local`:
 
 ```bash
-VITE_MULTIPLAYER_URL=wss://ws.minitoon.games
+VITE_SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLISHABLE_KEY_HERE
 ```
 
-You can also run the server directly:
-
-```bash
-node scripts/multiplayer-server.mjs
-```
+The room layer uses Supabase Presence for lobby membership and Broadcast for gameplay events.
 
 ### Deploy
 
