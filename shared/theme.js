@@ -149,21 +149,24 @@ export function initFullscreen(options = {}) {
 }
 
 export function initInstallPrompt(options = {}) {
-  const {
-    buttonId = 'install-toggle',
-  } = options;
+  const { buttonId = 'install-toggle' } = options;
 
   const button = document.getElementById(buttonId);
   if (!button) return;
 
   let deferredPrompt = null;
+
   const isStandalone = () =>
     window.matchMedia('(display-mode: standalone)').matches ||
     window.matchMedia('(display-mode: fullscreen)').matches ||
     window.navigator.standalone === true;
 
+  const isIOS = () =>
+    /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+
   const updateVisibility = () => {
-    button.hidden = isStandalone() || !deferredPrompt;
+    // Show on iOS (manual instructions) or when browser prompt is available
+    button.hidden = isStandalone() || (!deferredPrompt && !isIOS());
   };
 
   window.addEventListener('beforeinstallprompt', (event) => {
@@ -178,14 +181,21 @@ export function initInstallPrompt(options = {}) {
   });
 
   button.addEventListener('click', async () => {
-    if (!deferredPrompt) return;
+    if (deferredPrompt) {
+      // Chrome / Android / Edge — native prompt
+      deferredPrompt.prompt();
+      try {
+        await deferredPrompt.userChoice;
+      } finally {
+        deferredPrompt = null;
+        updateVisibility();
+      }
+      return;
+    }
 
-    deferredPrompt.prompt();
-    try {
-      await deferredPrompt.userChoice;
-    } finally {
-      deferredPrompt = null;
-      updateVisibility();
+    if (isIOS()) {
+      // iOS Safari — browser has no API; show manual instructions
+      alert('To install:\n\n1. Tap the Share button (□↑) at the bottom of Safari\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add"');
     }
   });
 

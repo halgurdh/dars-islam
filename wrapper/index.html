@@ -141,8 +141,8 @@
       initTheme();
 
       (async () => {
-      // Init sync / auth (detects ?mt_session= from magic link, restores existing session)
-      await sync.init();
+      // Init sync / auth — wrapped so a failing API never blocks ads or UI
+      try { await sync.init(); } catch (e) { console.warn('sync.init failed:', e); }
 
       // Reflect premium status in the banner
       function updateBanner() {
