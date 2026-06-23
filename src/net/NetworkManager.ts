@@ -303,8 +303,8 @@ class NetworkManager {
         this.onClassPickStart?.();
         break;
       case 'game:start':
-        if (this.isGuest && isGameStartReady(this._members)) {
-          this.onGameStart?.(mapGamePicks(this._members));
+        if (this.isGuest) {
+          this.onGameStart?.(event.picks);
         }
         break;
       case 'snapshot':
@@ -319,8 +319,9 @@ class NetworkManager {
   private _checkAllPicked(): void {
     if (!this.isHost || this._sentGameStart || !isGameStartReady(this._members)) return;
     this._sentGameStart = true;
-    void this._sendEvent({ type: 'game:start' });
-    this.onGameStart?.(mapGamePicks(this._members));
+    const picks = mapGamePicks(this._members);
+    void this._sendEvent({ type: 'game:start', picks });
+    this.onGameStart?.(picks);
   }
 }
 

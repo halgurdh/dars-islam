@@ -41,6 +41,8 @@ const CARD_BACKS: CardBackDef[] = [
 
 const AD_REWARD_COINS = 50;
 const AD_DURATION_SEC = 30;
+const LOBBY_AUTO_START_MS = 30_000;
+const LOBBY_AUTO_START_MIN_PLAYERS = 3;
 
 export class HUD {
   private root:    HTMLDivElement;
@@ -58,6 +60,10 @@ export class HUD {
   private _uiMode:    UIMode  = 'landing';
   private _lobbyCode          = '';
   private _netPicked          = false;
+  private _lobbyAutoStartTimer: ReturnType<typeof setTimeout> | null = null;
+  private _lobbyCountdownTick: ReturnType<typeof setInterval> | null = null;
+  private _lobbyAutoStartAt = 0;
+  private _lobbyMembersKey = '';
 
   // Shop / ad state
   private _adInterval: ReturnType<typeof setInterval> | null = null;
@@ -113,6 +119,7 @@ export class HUD {
     this.busUnsubs.forEach((unsub) => unsub());
     this.busUnsubs = [];
     if (this._adInterval !== null) { clearInterval(this._adInterval); this._adInterval = null; }
+    this.clearLobbyAutoStart();
     this.resizeObserver?.disconnect();
     this.resizeObserver = null;
     window.removeEventListener('resize', this.windowResizeHandler);
@@ -130,6 +137,7 @@ export class HUD {
 
   /** Called by GameScene when host clicks "Start" in the lobby. */
   startNetClassPick(): void {
+    this.clearLobbyAutoStart();
     this._uiMode   = 'net-pick';
     this._netPicked = false;
     this.render();
@@ -454,11 +462,32 @@ export class HUD {
     if (nm.isHost) {
       const members  = nm.members;
       const canStart = members.length >= 2;
+      const autoStartReady = members.length >= LOBBY_AUTO_START_MIN_PLAYERS;
+      const membersKey = members.map((member) => member.peerId).sort().join('|');
+      if (membersKey !== this._lobbyMembersKey) {
+        this._lobbyMembersKey = membersKey;
+        if (autoStartReady) {
+          this.startLobbyAutoStart();
+        } else {
+          this.clearLobbyAutoStart();
+        }
+      } else if (!autoStartReady) {
+        this.clearLobbyAutoStart();
+      } else if (this._lobbyAutoStartTimer === null) {
+        this.startLobbyAutoStart();
+      }
+      const countdown = this._lobbyAutoStartAt > 0
+        ? Math.max(1, Math.ceil((this._lobbyAutoStartAt - Date.now()) / 1000))
+        : 30;
+      const autoStartText = autoStartReady
+        ? `<p class="sub">Auto-starting in ${countdown}s if the room stays inactive</p>`
+        : `<p class="sub">Auto-start unlocks at ${LOBBY_AUTO_START_MIN_PLAYERS}+ players</p>`;
       this.root.innerHTML = `
         <div class="overlay"><div class="panel center">
           <h2>🏠 Room Ready</h2>
           <div class="room-code">${this._lobbyCode}</div>
           <p class="sub">Share this code with friends</p>
+          ${autoStartText}
           <div class="player-list">
             ${members.map(m => `<div class="pcard">${m.isHost ? '👑' : '👤'} ${m.name}</div>`).join('')}
           </div>
@@ -471,13 +500,17 @@ export class HUD {
       (this.root.querySelector('#startGame') as HTMLButtonElement).onclick = () => {
         if (!canStart) return;
         playClick();
+        this.clearLobbyAutoStart();
         nm.startClassPick();
       };
       (this.root.querySelector('#cancelRoom') as HTMLButtonElement).onclick = () => {
+        this.clearLobbyAutoStart();
         playClick(); nm.destroy(); this.render();
       };
       return;
     }
+
+    this.clearLobbyAutoStart();
 
     // ── Guest: waiting for host ──
     if (nm.isGuest) {
@@ -691,6 +724,39 @@ export class HUD {
     } else {
       this.machine.send(name, payload);
     }
+  }
+
+  private startLobbyAutoStart(): void {
+    this.clearLobbyAutoStart();
+    this._lobbyAutoStartAt = Date.now() + LOBBY_AUTO_START_MS;
+    this._lobbyCountdownTick = setInterval(() => {
+      if (this._uiMode !== 'online' || !networkManager.isHost) {
+        this.clearLobbyAutoStart();
+        return;
+      }
+      this.render();
+    }, 1000);
+    this._lobbyAutoStartTimer = setTimeout(() => {
+      this._lobbyAutoStartTimer = null;
+      if (this._uiMode !== 'online' || !networkManager.isHost || networkManager.members.length < LOBBY_AUTO_START_MIN_PLAYERS) {
+        this.clearLobbyAutoStart();
+        return;
+      }
+      this.clearLobbyAutoStart();
+      networkManager.startClassPick();
+    }, LOBBY_AUTO_START_MS);
+  }
+
+  private clearLobbyAutoStart(): void {
+    if (this._lobbyAutoStartTimer !== null) {
+      clearTimeout(this._lobbyAutoStartTimer);
+      this._lobbyAutoStartTimer = null;
+    }
+    if (this._lobbyCountdownTick !== null) {
+      clearInterval(this._lobbyCountdownTick);
+      this._lobbyCountdownTick = null;
+    }
+    this._lobbyAutoStartAt = 0;
   }
 
   // ── Main game HUD ─────────────────────────────────────────────────────────

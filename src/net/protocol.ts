@@ -11,7 +11,7 @@ export interface RoomMember {
 
 export type RoomEvent =
   | { type: 'class-pick:start' }
-  | { type: 'game:start' }
+  | { type: 'game:start'; picks: { name: string; cls: HeroClass }[] }
   | { type: 'snapshot'; snap: GameSnap }
   | { type: 'action'; name: string; payload?: unknown };
 
