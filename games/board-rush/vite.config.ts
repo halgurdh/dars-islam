@@ -9,6 +9,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     base: GAME_BASE,
+    envDir: path.resolve(__dirname, '../../'),
 
     resolve: {
       alias: {

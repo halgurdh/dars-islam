@@ -42,6 +42,18 @@ This builds the wrapper and each game, then assembles `dist/`:
 - `dist/index.html` — wrapper hub
 - `dist/games/<game>/` — each game's production build, manifest and service worker
 
+Environment
+
+- Repo-wide Vite variables belong in the repo-root `.env.local`.
+- `games/board-rush` now reads env from the repo root during build.
+- For the shared multiplayer room service, set `VITE_MULTIPLAYER_URL` in the repo root for production builds.
+
+Multiplayer
+
+- `Board Rush` now targets a central WebSocket room service instead of browser-to-browser WebRTC.
+- Run the local service with `node scripts/multiplayer-server.mjs`, or just use `npm run dev` which now starts it automatically on `ws://localhost:8787`.
+- The room server uses per-game room namespaces so it can host many simultaneous rooms across multiple games.
+
 Preview the production build locally:
 
 ```bash

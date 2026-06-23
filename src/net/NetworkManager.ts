@@ -1,323 +1,369 @@
-import Peer, { type DataConnection } from 'peerjs';
-import type { NetMsg, RoomMember, GameSnap } from './protocol';
+import type { ClientNetMsg, RoomEvent, RoomMember, GameSnap, ServerNetMsg } from './protocol';
 import type { HeroClass } from '../game/data/classes';
 
 type Role = 'offline' | 'host' | 'guest';
+type JoinStage = 'connecting' | 'joining';
+type PendingRequest =
+  | { kind: 'create'; resolve: (code: string) => void; reject: (err: Error) => void }
+  | { kind: 'join'; resolve: () => void; reject: (err: Error) => void };
 
-const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-const JOIN_TIMEOUT_MS  = 15000; // 15 s — STUN-only ICE is fast; TURN adds ~5 s if configured
-const RECONNECT_DELAYS = [1000, 2000, 5000, 10000]; // ms between reconnect attempts
+const GAME_ID = 'board-rush';
+const ROOM_REQUEST_TIMEOUT_MS = 15000;
+const DEV_MULTIPLAYER_URL = 'ws://localhost:8787';
 
-type JoinStage = 'boot' | 'peer-open' | 'connecting' | 'connected';
+function resolveMultiplayerUrl(): string {
+  const configured = import.meta.env.VITE_MULTIPLAYER_URL as string | undefined;
+  if (configured && configured.trim()) return configured.trim();
 
-function peerOptions() {
-  // Keep to ≤ 4 servers — Firefox warns and slows ICE gathering above 5
-  const iceServers: Array<{ urls: string | string[]; username?: string; credential?: string }> = [
-    { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' },
-  ];
-
-  // Production TURN — set these in .env.local for cross-NAT / mobile play
-  // Recommended: sign up at metered.ca (free 0.5 GB/mo) or run coturn on a VPS
-  const turnUrl        = import.meta.env.VITE_TURN_URL        as string | undefined;
-  const turnUsername   = import.meta.env.VITE_TURN_USERNAME   as string | undefined;
-  const turnCredential = import.meta.env.VITE_TURN_CREDENTIAL as string | undefined;
-  if (turnUrl && turnUsername && turnCredential) {
-    iceServers.push({ urls: turnUrl, username: turnUsername, credential: turnCredential });
+  const { protocol, host, hostname } = window.location;
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return DEV_MULTIPLAYER_URL;
   }
 
-  return {
-    config: {
-      iceServers,
-      iceTransportPolicy: 'all' as const,
-    },
-  };
+  return `${protocol === 'https:' ? 'wss' : 'ws'}://${host}/ws`;
+}
+
+function normalizeRoomCode(code: string): string {
+  return code.toUpperCase().trim();
+}
+
+function toError(message: string): Error {
+  return new Error(message);
+}
+
+function isGameStartReady(members: RoomMember[]): members is Array<RoomMember & { cls: HeroClass }> {
+  return members.length >= 2 && members.every((member) => member.cls !== undefined);
+}
+
+function mapGamePicks(members: Array<RoomMember & { cls: HeroClass }>): { name: string; cls: HeroClass }[] {
+  return members.map(member => ({ name: member.name, cls: member.cls }));
 }
 
 class NetworkManager {
-  private peer:          Peer | null                 = null;
-  private conns:         Map<string, DataConnection> = new Map();
-  private _role:         Role                        = 'offline';
-  private _members:      RoomMember[]                = [];
-  private _name          = 'Player';
-  private _hostId        = '';
-  private _reconnectIdx  = 0;
-  private _reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  private socket: WebSocket | null = null;
+  private _role: Role = 'offline';
+  private _members: RoomMember[] = [];
+  private _name = 'Player';
+  private _hostId = '';
+  private _clientId = '';
+  private _roomCode = '';
+  private _pending: PendingRequest | null = null;
+  private _requestTimer: ReturnType<typeof setTimeout> | null = null;
+  private _manualClose = false;
+  private _joinStage: JoinStage = 'connecting';
+  private _lastError = '';
+  private _sentGameStart = false;
 
-  // ── Callbacks (set by GameScene / HUD) ───────────────────────────────────
   onRosterUpdate?:   (members: RoomMember[]) => void;
-  onClassPickStart?: () => void;   // host clicked "Start" → show class grid
+  onClassPickStart?: () => void;
   onGameStart?:      (picks: { name: string; cls: HeroClass }[]) => void;
   onSnapshot?:       (snap: GameSnap) => void;
-  onAction?:         (name: string, payload?: unknown) => void; // host only
+  onAction?:         (name: string, payload?: unknown) => void;
 
-  // ── Getters ───────────────────────────────────────────────────────────────
   get isHost()   { return this._role === 'host'; }
   get isGuest()  { return this._role === 'guest'; }
-  get isOnline() { return this._role !== 'offline'; }
+  get isOnline() { return this._role !== 'offline' && this.socket?.readyState === WebSocket.OPEN; }
   get members()  { return [...this._members]; }
   get myName()   { return this._name; }
+  get lastError(){ return this._lastError; }
 
   setName(name: string): void { this._name = name.trim() || 'Player'; }
 
   myPlayerIndex(): number {
-    return this._members.findIndex(m => m.peerId === this.peer?.id);
+    return this._members.findIndex(m => m.peerId === this._clientId);
   }
 
-  // ── Host ──────────────────────────────────────────────────────────────────
-
-  createRoom(): Promise<string> {
+  async createRoom(): Promise<string> {
+    this.destroy();
+    this._role = 'host';
+    this._joinStage = 'connecting';
+    await this._ensureSocket();
     return new Promise((resolve, reject) => {
-      this.destroy();
-      const code = Array.from({ length: 6 }, () => CHARS[Math.floor(Math.random() * CHARS.length)]).join('');
-      this.peer  = new Peer(`boardrush-${code}`, peerOptions());
-      this._role = 'host';
-
-      this.peer.on('open', (id) => {
-        this._reconnectIdx = 0;
-        this._members = [{ peerId: id, name: this._name, isHost: true }];
-        this.onRosterUpdate?.(this.members);
-        resolve(code);
-      });
-
-      // Signaling server dropped us (EXPIRE / idle timeout) — reconnect silently
-      this.peer.on('disconnected', () => {
-        if (this._role !== 'host' || !this.peer) return;
-        this._scheduleReconnect();
-      });
-
-      this.peer.on('error', (err) => {
-        const anyErr = err as Error & { type?: string };
-        // Non-fatal: lost signaling but WebRTC connections still alive
-        if (anyErr.type === 'server-disconnected' || anyErr.type === 'network') {
-          if (this._role === 'host') { this._scheduleReconnect(); return; }
-        }
-        this.destroy();
-        reject(err);
-      });
-
-      this.peer.on('connection', (conn) => {
-        conn.on('open', () => {
-          this.conns.set(conn.peer, conn);
-          conn.on('data',  (raw) => this._onGuestMsg(conn.peer, raw as NetMsg));
-          conn.on('close', () => {
-            this.conns.delete(conn.peer);
-            this._members = this._members.filter(m => m.peerId !== conn.peer);
-            this._broadcastRoster();
-          });
-        });
+      this._beginRequest({ kind: 'create', resolve, reject });
+      this._send({
+        type: 'create_room',
+        game: GAME_ID,
+        name: this._name,
       });
     });
   }
 
-  // ── Guest ─────────────────────────────────────────────────────────────────
-
-  joinRoom(code: string): Promise<void> {
+  async joinRoom(code: string): Promise<void> {
+    this.destroy();
+    this._role = 'guest';
+    this._roomCode = normalizeRoomCode(code);
+    this._hostId = `room:${this._roomCode}`;
+    this._joinStage = 'connecting';
+    await this._ensureSocket();
     return new Promise((resolve, reject) => {
-      this.destroy();
-
-      let stage: JoinStage = 'boot';
-      let settled = false;
-      const finish = (err?: unknown) => {
-        if (settled) return;
-        settled = true;
-        clearTimeout(timer);
-        if (err) {
-          this.destroy();
-          reject(this._describeJoinError(err, this._hostId, stage));
-          return;
-        }
-        resolve();
-      };
-
-      const timer = setTimeout(() => {
-        const hostHint = this._hostId.replace('boardrush-', '');
-        const reason = stage === 'boot' || stage === 'peer-open'
-          ? 'Could not reach the peer service — check your connection and try again.'
-          : `Timed out joining room ${hostHint} — the host may be offline or the code may be wrong.`;
-        finish(new Error(reason));
-      }, JOIN_TIMEOUT_MS);
-
-      this.peer    = new Peer(undefined, peerOptions());
-      this._role   = 'guest';
-      this._hostId = `boardrush-${code.toUpperCase().trim()}`;
-
-      this.peer.on('open', () => {
-        stage = 'peer-open';
-        const conn = this.peer!.connect(this._hostId, { reliable: true });
-        stage = 'connecting';
-        this.conns.set(this._hostId, conn);
-
-        conn.on('open',  () => {
-          stage = 'connected';
-          this._send(conn, { type: 'hello', name: this._name });
-          finish();
-        });
-        conn.on('data',  (raw) => this._onHostMsg(raw as NetMsg));
-        conn.on('close', ()    => {
-          this.conns.delete(this._hostId);
-          if (!settled) {
-            finish(new Error(`Room ${code.toUpperCase().trim()} closed before the join completed.`));
-          }
-          else this.destroy();
-        });
-        conn.on('error', (e)   => finish(e));
+      this._joinStage = 'joining';
+      this._beginRequest({ kind: 'join', resolve, reject });
+      this._send({
+        type: 'join_room',
+        game: GAME_ID,
+        roomCode: this._roomCode,
+        name: this._name,
       });
-
-      this.peer.on('error', (err) => finish(err));
     });
   }
 
-  // ── Sending ───────────────────────────────────────────────────────────────
-
-  /** Host: broadcast "go to class-pick" to all guests, then trigger locally. */
   startClassPick(): void {
     if (!this.isHost) return;
-    this.conns.forEach(c => this._send(c, { type: 'class-pick:start' }));
+    this._sentGameStart = false;
+    this._sendRoomEvent('guests', { type: 'class-pick:start' });
     this.onClassPickStart?.();
   }
 
-  /** Send this player's class pick to the host (or handle locally if host). */
   sendClassPick(cls: HeroClass): void {
-    if (this.isHost) {
-      const me = this._members.find(m => m.peerId === this.peer?.id);
-      if (me) { me.cls = cls; this._checkAllPicked(); }
-    } else {
-      this._sendToHost({ type: 'class:picked', cls });
-    }
+    const me = this._members.find(member => member.peerId === this._clientId);
+    if (me) me.cls = cls;
+    this._send({
+      type: 'member_update',
+      patch: { cls },
+    });
+    this.onRosterUpdate?.(this.members);
+    if (this.isHost) this._checkAllPicked();
   }
 
-  /** Send a player action (guest → host, or host executes directly). */
   sendAction(name: string, payload?: unknown): void {
     if (this.isHost) {
       this.onAction?.(name, payload);
-    } else {
-      this._sendToHost({ type: 'action', name, payload });
+      return;
     }
+    this._sendRoomEvent('host', { type: 'action', name, payload });
   }
 
-  /** Host: push the current game snapshot to all guests. */
   broadcastSnapshot(snap: GameSnap): void {
     if (!this.isHost) return;
-    const msg: NetMsg = { type: 'snapshot', snap };
-    this.conns.forEach(c => this._send(c, msg));
-  }
-
-  // ── Incoming ──────────────────────────────────────────────────────────────
-
-  private _onGuestMsg(fromId: string, msg: NetMsg): void {
-    switch (msg.type) {
-      case 'hello':
-        this._members.push({ peerId: fromId, name: msg.name, isHost: false });
-        this._broadcastRoster();
-        break;
-      case 'class:picked': {
-        const m = this._members.find(x => x.peerId === fromId);
-        if (m) { m.cls = msg.cls; this._checkAllPicked(); }
-        break;
-      }
-      case 'action':
-        this.onAction?.(msg.name, msg.payload);
-        break;
-    }
-  }
-
-  private _onHostMsg(msg: NetMsg): void {
-    switch (msg.type) {
-      case 'roster':
-        this._members = msg.members;
-        this.onRosterUpdate?.(this.members);
-        break;
-      case 'class-pick:start':
-        this.onClassPickStart?.();
-        break;
-      case 'game:start': {
-        const picks = this._members.map(m => ({ name: m.name, cls: m.cls! }));
-        this.onGameStart?.(picks);
-        break;
-      }
-      case 'snapshot':
-        this.onSnapshot?.(msg.snap);
-        break;
-    }
-  }
-
-  // ── Helpers ───────────────────────────────────────────────────────────────
-
-  private _broadcastRoster(): void {
-    const msg: NetMsg = { type: 'roster', members: this._members };
-    this.conns.forEach(c => this._send(c, msg));
-    this.onRosterUpdate?.(this.members);
-  }
-
-  private _checkAllPicked(): void {
-    this._broadcastRoster();
-    if (!this._members.every(m => m.cls !== undefined)) return;
-    // All picked — signal game start
-    this.conns.forEach(c => this._send(c, { type: 'game:start' }));
-    const picks = this._members.map(m => ({ name: m.name, cls: m.cls! }));
-    this.onGameStart?.(picks);
-  }
-
-  private _sendToHost(msg: NetMsg): void {
-    const conn = this.conns.get(this._hostId);
-    if (conn) this._send(conn, msg);
-  }
-
-  private _send(conn: DataConnection, msg: NetMsg): void {
-    try { if (conn.open) conn.send(msg); } catch { /* ignore closed conn */ }
-  }
-
-  private _describeJoinError(err: unknown, hostId: string, stage: JoinStage): Error {
-    if (err instanceof Error) {
-      const anyErr = err as Error & { type?: string };
-      const type = anyErr.type ?? '';
-      const rawMessage = err.message || 'Unknown connection error.';
-      const roomCode = hostId.replace('boardrush-', '') || 'unknown';
-
-      if (type === 'peer-unavailable' || /peer-unavailable/i.test(rawMessage)) {
-        return new Error(`Room ${roomCode} was not found — double-check the code and make sure the host is online.`);
-      }
-      if (type === 'network' || type === 'server-error' || type === 'socket-error' || /network|socket|server/i.test(rawMessage)) {
-        return new Error('Could not reach the peer service — check your internet connection and try again.');
-      }
-      if (type === 'socket-closed' || /socket closed/i.test(rawMessage)) {
-        return new Error('The peer connection closed unexpectedly — try creating the room again.');
-      }
-      if (type === 'webrtc' || /webrtc|ice|sdp|datachannel/i.test(rawMessage)) {
-        return new Error('WebRTC connection failed — this browser, network, or extension setup may be blocking peer-to-peer connections.');
-      }
-      if (stage === 'boot' || stage === 'peer-open') {
-        return new Error(`Could not start joining room ${roomCode} — ${rawMessage}`);
-      }
-      return new Error(rawMessage);
-    }
-
-    return new Error('Unknown connection error while joining the room.');
-  }
-
-  private _scheduleReconnect(): void {
-    if (this._reconnectTimer !== null) return;
-    const delay = RECONNECT_DELAYS[Math.min(this._reconnectIdx, RECONNECT_DELAYS.length - 1)];
-    this._reconnectIdx++;
-    this._reconnectTimer = setTimeout(() => {
-      this._reconnectTimer = null;
-      if (this.peer && !this.peer.destroyed) {
-        try { this.peer.reconnect(); } catch { /* peer already gone */ }
-      }
-    }, delay);
+    this._sendRoomEvent('guests', { type: 'snapshot', snap });
   }
 
   destroy(): void {
-    if (this._reconnectTimer !== null) { clearTimeout(this._reconnectTimer); this._reconnectTimer = null; }
-    this.conns.forEach(c => c.close());
-    this.peer?.destroy();
-    this.peer      = null;
-    this._role     = 'offline';
-    this._members  = [];
-    this._hostId   = '';
-    this._reconnectIdx = 0;
-    this.conns.clear();
+    this._clearPending();
+    this._members = [];
+    this._hostId = '';
+    this._roomCode = '';
+    this._sentGameStart = false;
+    this._lastError = '';
+    this._role = 'offline';
+    this._manualClose = true;
+    if (this.socket) {
+      try {
+        if (this.socket.readyState === WebSocket.OPEN) {
+          this.socket.send(JSON.stringify({ type: 'leave_room' }));
+        }
+        this.socket.close();
+      } catch {
+        // Ignore close races.
+      }
+    }
+    this.socket = null;
+    this._manualClose = false;
+  }
+
+  private async _ensureSocket(): Promise<void> {
+    const existing = this.socket;
+    if (existing && existing.readyState === WebSocket.OPEN) return;
+    if (existing && existing.readyState === WebSocket.CONNECTING) {
+      await new Promise<void>((resolve, reject) => {
+        const onOpen = () => { existing.removeEventListener('error', onError); resolve(); };
+        const onError = () => { existing.removeEventListener('open', onOpen); reject(toError('Could not reach the multiplayer service — check your connection and try again.')); };
+        existing.addEventListener('open', onOpen, { once: true });
+        existing.addEventListener('error', onError, { once: true });
+      });
+      return;
+    }
+
+    this._manualClose = false;
+    this.socket = new WebSocket(resolveMultiplayerUrl());
+    this.socket.addEventListener('message', (event) => this._handleMessage(String(event.data)));
+    this.socket.addEventListener('close', () => this._handleClose());
+    this.socket.addEventListener('error', () => {
+      if (this._pending) {
+        this._rejectPending(toError('Could not reach the multiplayer service — check your connection and try again.'));
+      }
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => reject(toError('Timed out connecting to the multiplayer service.')), ROOM_REQUEST_TIMEOUT_MS);
+      this.socket!.addEventListener('open', () => {
+        clearTimeout(timer);
+        resolve();
+      }, { once: true });
+      this.socket!.addEventListener('error', () => {
+        clearTimeout(timer);
+        reject(toError('Could not reach the multiplayer service — check your connection and try again.'));
+      }, { once: true });
+    });
+  }
+
+  private _beginRequest(pending: PendingRequest): void {
+    this._clearPending();
+    this._pending = pending;
+    this._requestTimer = setTimeout(() => {
+      const error = this._joinStage === 'connecting'
+        ? toError('Could not reach the multiplayer service — check your connection and try again.')
+        : toError(`Timed out joining room ${this._roomCode} — the host may be offline or the code may be wrong.`);
+      this._rejectPending(error);
+    }, ROOM_REQUEST_TIMEOUT_MS);
+  }
+
+  private _clearPending(): void {
+    if (this._requestTimer !== null) {
+      clearTimeout(this._requestTimer);
+      this._requestTimer = null;
+    }
+    this._pending = null;
+  }
+
+  private _resolvePendingCreate(roomCode: string): void {
+    if (this._pending?.kind !== 'create') return;
+    const pending = this._pending;
+    this._clearPending();
+    pending.resolve(roomCode);
+  }
+
+  private _resolvePendingJoin(): void {
+    if (this._pending?.kind !== 'join') return;
+    const pending = this._pending;
+    this._clearPending();
+    pending.resolve();
+  }
+
+  private _rejectPending(error: Error): void {
+    if (!this._pending) return;
+    const pending = this._pending;
+    this._clearPending();
+    pending.reject(error);
+  }
+
+  private _send(message: ClientNetMsg): void {
+    if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
+      throw toError('The multiplayer connection is not open.');
+    }
+    this.socket.send(JSON.stringify(message));
+  }
+
+  private _sendRoomEvent(target: 'all' | 'host' | 'guests', event: RoomEvent): void {
+    this._send({ type: 'room_event', target, event });
+  }
+
+  private _handleMessage(raw: string): void {
+    let message: ServerNetMsg;
+    try {
+      message = JSON.parse(raw) as ServerNetMsg;
+    } catch {
+      console.warn('[multiplayer] Ignored invalid server message.');
+      return;
+    }
+
+    switch (message.type) {
+      case 'welcome':
+        this._clientId = message.clientId;
+        break;
+      case 'room_created':
+        this._roomCode = message.roomCode;
+        this._hostId = this._clientId;
+        this._members = message.members;
+        this.onRosterUpdate?.(this.members);
+        this._resolvePendingCreate(message.roomCode);
+        break;
+      case 'room_joined':
+        this._roomCode = message.roomCode;
+        this._members = message.members;
+        this._hostId = message.members.find(member => member.isHost)?.peerId ?? '';
+        this.onRosterUpdate?.(this.members);
+        this._resolvePendingJoin();
+        break;
+      case 'roster':
+        this._members = message.members;
+        this._hostId = message.members.find(member => member.isHost)?.peerId ?? this._hostId;
+        this.onRosterUpdate?.(this.members);
+        if (this.isHost) this._checkAllPicked();
+        break;
+      case 'room_event':
+        this._handleRoomEvent(message);
+        break;
+      case 'room_closed':
+        this._lastError = message.reason;
+        this._resetConnectionState();
+        this.onRosterUpdate?.(this.members);
+        break;
+      case 'error':
+        this._lastError = message.message;
+        this._rejectPending(this._describeServerError(message.code, message.message));
+        break;
+    }
+  }
+
+  private _handleRoomEvent(message: Extract<ServerNetMsg, { type: 'room_event' }>): void {
+    switch (message.event.type) {
+      case 'class-pick:start':
+        this._sentGameStart = false;
+        this.onClassPickStart?.();
+        break;
+      case 'game:start':
+        if (this.isGuest && isGameStartReady(this._members)) {
+          this.onGameStart?.(mapGamePicks(this._members));
+        }
+        break;
+      case 'snapshot':
+        this.onSnapshot?.(message.event.snap);
+        break;
+      case 'action':
+        if (this.isHost) {
+          this.onAction?.(message.event.name, message.event.payload);
+        }
+        break;
+    }
+  }
+
+  private _checkAllPicked(): void {
+    if (!this.isHost || this._sentGameStart || !isGameStartReady(this._members)) return;
+    this._sentGameStart = true;
+    const picks = mapGamePicks(this._members);
+    this._sendRoomEvent('guests', { type: 'game:start' });
+    this.onGameStart?.(picks);
+  }
+
+  private _describeServerError(code: string, message: string): Error {
+    if (code === 'room-not-found') {
+      return toError(`Room ${this._roomCode} was not found — double-check the code and make sure the host is online.`);
+    }
+    if (code === 'room-full') {
+      return toError(`Room ${this._roomCode} is full.`);
+    }
+    if (code === 'invalid-room-code') {
+      return toError('Enter a valid 6-character room code.');
+    }
+    if (code === 'service-unavailable') {
+      return toError('Could not reach the multiplayer service — check your connection and try again.');
+    }
+    return toError(message || 'Unknown multiplayer error.');
+  }
+
+  private _handleClose(): void {
+    const wasManual = this._manualClose;
+    const hadPending = this._pending !== null;
+    if (hadPending) {
+      this._rejectPending(toError('Could not reach the multiplayer service — check your connection and try again.'));
+    }
+    this.socket = null;
+    if (wasManual) return;
+
+    if (this._role !== 'offline' && !this._lastError) {
+      this._lastError = 'The multiplayer connection closed unexpectedly — try reconnecting.';
+    }
+    this._resetConnectionState();
+    this.onRosterUpdate?.(this.members);
+  }
+
+  private _resetConnectionState(): void {
+    this._members = [];
+    this._hostId = '';
+    this._roomCode = '';
+    this._sentGameStart = false;
+    this._role = 'offline';
   }
 }
 
