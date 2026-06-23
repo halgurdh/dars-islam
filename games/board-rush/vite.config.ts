@@ -33,7 +33,6 @@ export default defineConfig(({ mode }) => {
     plugins: [
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['assets/**/*'],
         manifest: {
           name: 'Board Rush',
           short_name: 'BoardRush',
@@ -64,7 +63,6 @@ export default defineConfig(({ mode }) => {
           ],
         },
         workbox: {
-          globPatterns: ['**/*.{js,css,html,png,jpg,mp3,webp}'],
           maximumFileSizeToCacheInBytes: 15 * 1024 * 1024,
           navigateFallback: GAME_BASE + 'index.html',
         },

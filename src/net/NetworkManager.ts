@@ -5,6 +5,34 @@ import type { HeroClass } from '../game/data/classes';
 type Role = 'offline' | 'host' | 'guest';
 
 const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const JOIN_TIMEOUT_MS = 12000;
+
+type JoinStage = 'boot' | 'peer-open' | 'connecting' | 'connected';
+
+function peerOptions() {
+  const iceServers: Array<{ urls: string | string[]; username?: string; credential?: string }> = [
+    { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
+  ];
+
+  const turnUrl = import.meta.env.VITE_TURN_URL as string | undefined;
+  const turnUsername = import.meta.env.VITE_TURN_USERNAME as string | undefined;
+  const turnCredential = import.meta.env.VITE_TURN_CREDENTIAL as string | undefined;
+
+  if (turnUrl && turnUsername && turnCredential) {
+    iceServers.push({
+      urls: turnUrl,
+      username: turnUsername,
+      credential: turnCredential,
+    });
+  }
+
+  return {
+    config: {
+      iceServers,
+      iceTransportPolicy: 'all' as const,
+    },
+  };
+}
 
 class NetworkManager {
   private peer:       Peer | null                    = null;
@@ -40,7 +68,7 @@ class NetworkManager {
     return new Promise((resolve, reject) => {
       this.destroy();
       const code = Array.from({ length: 6 }, () => CHARS[Math.floor(Math.random() * CHARS.length)]).join('');
-      this.peer  = new Peer(`boardrush-${code}`);
+      this.peer  = new Peer(`boardrush-${code}`, peerOptions());
       this._role = 'host';
 
       this.peer.on('open', (id) => {
@@ -74,6 +102,7 @@ class NetworkManager {
     return new Promise((resolve, reject) => {
       this.destroy();
 
+      let stage: JoinStage = 'boot';
       let settled = false;
       const finish = (err?: unknown) => {
         if (settled) return;
@@ -81,29 +110,41 @@ class NetworkManager {
         clearTimeout(timer);
         if (err) {
           this.destroy();
-          reject(err);
+          reject(this._describeJoinError(err, this._hostId, stage));
           return;
         }
         resolve();
       };
 
       const timer = setTimeout(() => {
-        finish(new Error('Connection timed out — check the code and try again.'));
-      }, 12000);
+        const hostHint = this._hostId.replace('boardrush-', '');
+        const reason = stage === 'boot' || stage === 'peer-open'
+          ? 'Could not reach the peer service — check your connection and try again.'
+          : `Timed out joining room ${hostHint} — the host may be offline or the code may be wrong.`;
+        finish(new Error(reason));
+      }, JOIN_TIMEOUT_MS);
 
-      this.peer    = new Peer();
+      this.peer    = new Peer(undefined, peerOptions());
       this._role   = 'guest';
       this._hostId = `boardrush-${code.toUpperCase().trim()}`;
 
       this.peer.on('open', () => {
+        stage = 'peer-open';
         const conn = this.peer!.connect(this._hostId, { reliable: true });
+        stage = 'connecting';
         this.conns.set(this._hostId, conn);
 
-        conn.on('open',  () => { this._send(conn, { type: 'hello', name: this._name }); finish(); });
+        conn.on('open',  () => {
+          stage = 'connected';
+          this._send(conn, { type: 'hello', name: this._name });
+          finish();
+        });
         conn.on('data',  (raw) => this._onHostMsg(raw as NetMsg));
         conn.on('close', ()    => {
           this.conns.delete(this._hostId);
-          if (!settled) finish(new Error('Connection closed before the room finished joining.'));
+          if (!settled) {
+            finish(new Error(`Room ${code.toUpperCase().trim()} closed before the join completed.`));
+          }
           else this.destroy();
         });
         conn.on('error', (e)   => finish(e));
@@ -211,6 +252,34 @@ class NetworkManager {
 
   private _send(conn: DataConnection, msg: NetMsg): void {
     try { if (conn.open) conn.send(msg); } catch { /* ignore closed conn */ }
+  }
+
+  private _describeJoinError(err: unknown, hostId: string, stage: JoinStage): Error {
+    if (err instanceof Error) {
+      const anyErr = err as Error & { type?: string };
+      const type = anyErr.type ?? '';
+      const rawMessage = err.message || 'Unknown connection error.';
+      const roomCode = hostId.replace('boardrush-', '') || 'unknown';
+
+      if (type === 'peer-unavailable' || /peer-unavailable/i.test(rawMessage)) {
+        return new Error(`Room ${roomCode} was not found — double-check the code and make sure the host is online.`);
+      }
+      if (type === 'network' || type === 'server-error' || type === 'socket-error' || /network|socket|server/i.test(rawMessage)) {
+        return new Error('Could not reach the peer service — check your internet connection and try again.');
+      }
+      if (type === 'socket-closed' || /socket closed/i.test(rawMessage)) {
+        return new Error('The peer connection closed unexpectedly — try creating the room again.');
+      }
+      if (type === 'webrtc' || /webrtc|ice|sdp|datachannel/i.test(rawMessage)) {
+        return new Error('WebRTC connection failed — this browser, network, or extension setup may be blocking peer-to-peer connections.');
+      }
+      if (stage === 'boot' || stage === 'peer-open') {
+        return new Error(`Could not start joining room ${roomCode} — ${rawMessage}`);
+      }
+      return new Error(rawMessage);
+    }
+
+    return new Error('Unknown connection error while joining the room.');
   }
 
   destroy(): void {
