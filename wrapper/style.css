@@ -465,13 +465,15 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 16px;
+  padding: 14px 16px;
+  padding-bottom: max(14px, env(safe-area-inset-bottom));
   background: rgba(14, 14, 24, 0.96);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.4);
   animation: adSlideUp 0.35s ease;
+  min-height: 64px;
 }
 
 @keyframes adSlideUp {
@@ -573,11 +575,41 @@ body {
 
 /* Prevent footer from being hidden behind sticky banner */
 .hub-footer {
-  padding-bottom: 56px;
+  padding-bottom: 72px;
 }
 
 @media (max-width: 600px) {
-  .ad-banner__link span:not(.ad-banner__cta) {
-    display: none;
+  .ad-banner {
+    flex-wrap: wrap;
+    padding: 12px 14px;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+    gap: 8px;
+    min-height: 72px;
+  }
+
+  .ad-banner__content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .ad-banner__link {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .ad-banner__link strong {
+    font-size: 13px;
+  }
+
+  .ad-banner__link span {
+    white-space: normal;
+    font-size: 11px;
+  }
+
+  .ad-banner__cta {
+    font-size: 11px !important;
+    margin-top: 2px;
   }
 }
