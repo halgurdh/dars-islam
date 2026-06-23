@@ -94,16 +94,83 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+.fullscreen-toggle {
+  position: fixed;
+  top: calc(max(var(--control-offset), var(--safe-top)) + var(--control-size) + 0.55rem);
+  right: max(var(--control-offset), var(--safe-right));
+  z-index: 1000;
+  width: var(--control-size);
+  height: var(--control-size);
+  border-radius: 50%;
+  border: 2px solid var(--text-primary);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  padding: 0;
+  font-size: clamp(1rem, 3vw, 1.2rem);
+  line-height: 1;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.install-toggle {
+  position: fixed;
+  top: calc(max(var(--control-offset), var(--safe-top)) + (var(--control-size) + 0.55rem) * 2);
+  right: max(var(--control-offset), var(--safe-right));
+  z-index: 1000;
+  min-height: 40px;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  border: 2px solid var(--accent);
+  background: rgba(255, 107, 53, 0.92);
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  transition: all 0.3s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
 @media (hover: hover) and (pointer: fine) {
   .theme-toggle:hover {
     background: var(--accent);
     border-color: var(--accent);
     transform: scale(1.1);
   }
+
+  .fullscreen-toggle:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    transform: scale(1.1);
+  }
+
+  .install-toggle:hover {
+    background: rgba(255, 107, 53, 1);
+    border-color: var(--accent);
+    transform: scale(1.04);
+  }
 }
 
 .theme-toggle:active {
   transform: scale(0.95);
+}
+
+.fullscreen-toggle:active {
+  transform: scale(0.95);
+}
+
+.install-toggle:active {
+  transform: scale(0.97);
 }
 
 .theme-icon {
@@ -179,6 +246,17 @@ body {
     border-width: 1.5px;
   }
 
+  .fullscreen-toggle {
+    border-width: 1.5px;
+  }
+
+  .install-toggle {
+    border-width: 1.5px;
+    min-height: 38px;
+    padding: 0.4rem 0.7rem;
+    font-size: 0.76rem;
+  }
+
   .theme-icon {
     width: 22px;
     height: 22px;
@@ -201,6 +279,16 @@ body {
   .theme-icon {
     width: 18px;
     height: 18px;
+  }
+
+  .fullscreen-toggle {
+    font-size: 0.95rem;
+  }
+
+  .install-toggle {
+    min-height: 34px;
+    padding: 0.35rem 0.6rem;
+    font-size: 0.72rem;
   }
 
   .game-exit {

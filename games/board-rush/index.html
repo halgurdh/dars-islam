@@ -61,12 +61,16 @@
         <line x1="1" y1="1" x2="23" y2="23"></line>
       </svg>
     </button>
+    <button id="fullscreen-toggle" class="fullscreen-toggle" aria-label="Enter fullscreen" hidden>⛶</button>
+    <button id="install-toggle" class="install-toggle" aria-label="Install app" hidden>📲 Install</button>
     <div id="game"></div>
     <script type="module" src="./src/main.ts"></script>
     <script type="module">
       import '@shared/theme.css';
-      import { initTheme } from '@shared/theme.js';
+      import { initTheme, initFullscreen, initInstallPrompt } from '@shared/theme.js';
       initTheme();
+      initFullscreen({ targetId: 'game' });
+      initInstallPrompt();
     </script>
   </body>
 </html>
