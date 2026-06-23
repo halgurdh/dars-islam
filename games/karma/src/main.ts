@@ -1,5 +1,7 @@
 import './style.css';
+import { escapeHtml } from './utils';
 import { Card, Rank, cardImgSrc, cardLabel, CARD_BACK, rankName, suitSymbol } from './Card';
+const esc = escapeHtml;
 import { KarmaGame, GamePhase, PlayResult } from './KarmaGame';
 import { canPlay, getValidGroups } from './Rules';
 import { aiDecide, validateAIDecision } from './AI';
@@ -206,7 +208,7 @@ function showSetupForPlayer(playerId: number, onDone: () => void) {
     app.innerHTML = `
       <div class="setup-overlay">
         <div class="setup-box">
-          <h2>🃏 ${p.name} — kies 3 tafelkaarten</h2>
+          <h2>🃏 ${esc(p.name)} — kies 3 tafelkaarten</h2>
           <p>Deze leggen we face-up voor je. De rest wordt je starthand.</p>
           <div class="setup-cards" id="setup-cards"></div>
           <div class="setup-counter">${count} / 3 geselecteerd</div>
@@ -252,7 +254,7 @@ function showPassDevice(playerName: string, reason: 'turn' | 'setup', onReady: (
     <div class="pass-device-box">
       <div class="pass-device-icon">📱</div>
       <h2>${label}</h2>
-      <h3>${playerName}</h3>
+      <h3>${esc(playerName)}</h3>
       <p>Geef het scherm door en tik op Klaar.</p>
       <button class="menu-btn" id="pass-ready">Ik ben klaar →</button>
     </div>
@@ -350,7 +352,7 @@ function showRoomScreen(code: string, isHost: boolean, myName: string) {
     const list = document.getElementById('member-list');
     if (!list) return;
     list.innerHTML = members.map(m =>
-      `<div class="member-item">${m.isHost ? '👑' : '👤'} ${m.name}</div>`,
+      `<div class="member-item">${m.isHost ? '👑' : '👤'} ${esc(m.name)}</div>`,
     ).join('');
 
     const statusEl = document.getElementById('room-status');
@@ -415,6 +417,8 @@ function launchOnlineGame(hostName: string) {
         }
       }
     } else if (game.phase === GamePhase.Play) {
+      // Reject any action that claims a player index other than the current player.
+      if (action.playerIndex !== game.currentPlayer) return;
       let result: PlayResult | undefined;
       if (action.type === 'play')  result = game.playCards(action.cardIds);
       if (action.type === 'flip')  result = game.flipFaceDown(action.slotIndex);
@@ -564,7 +568,7 @@ function _buildGameTable() {
     : game.players;
   const aiAreas = players.filter((_, i) => i !== myIndex).map(p => `
     <div class="ai-area" id="ai-area-${p.id}">
-      <div class="ai-name" id="ai-name-${p.id}">${p.name}</div>
+      <div class="ai-name" id="ai-name-${p.id}">${esc(p.name)}</div>
       <div class="ai-cards-row" id="ai-facedown-${p.id}"></div>
       <div class="ai-cards-row" id="ai-faceup-${p.id}"></div>
       <div class="ai-hand-count" id="ai-handcount-${p.id}"></div>
@@ -1211,9 +1215,9 @@ function _renderEndScreen(winnerName?: string, shitheadName?: string, msg?: stri
   const endDiv = document.createElement('div');
   endDiv.className = 'end-screen';
   endDiv.innerHTML = `
-    <h2>🏆 ${winnerName ?? '?'} wint!</h2>
-    ${shitheadName ? `<div class="shithead-label">💀 ${shitheadName} is de Karma!</div>` : ''}
-    ${msg ? `<p>${msg}</p>` : ''}
+    <h2>🏆 ${esc(winnerName ?? '?')} wint!</h2>
+    ${shitheadName ? `<div class="shithead-label">💀 ${esc(shitheadName)} is de Karma!</div>` : ''}
+    ${msg ? `<p>${esc(msg)}</p>` : ''}
     <button class="play-again-btn" id="end-again">Nog een keer</button>
     <button class="play-again-btn" id="end-menu" style="border-color:#aaa;color:#aaa">Menu</button>
   `;
@@ -1246,7 +1250,7 @@ function showKnock(playerName: string) {
   document.querySelector('.knock-overlay')?.remove();
   const ov = document.createElement('div');
   ov.className = 'knock-overlay';
-  ov.innerHTML = `<div class="knock-badge">🤜 ${playerName} klopt! Laatste kaart!</div>`;
+  ov.innerHTML = `<div class="knock-badge">🤜 ${esc(playerName)} klopt! Laatste kaart!</div>`;
   document.body.appendChild(ov);
   setTimeout(() => ov.remove(), 2500);
 }

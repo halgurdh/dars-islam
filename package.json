@@ -12,7 +12,13 @@
     "electron:dev": "node scripts/build.mjs && electron .",
     "electron:build": "node scripts/build.mjs && electron-builder --win --x64",
     "deploy:sftp": "node scripts/deploy-sftp.mjs",
-    "deploy": "node scripts/build.mjs && node scripts/deploy-sftp.mjs"
+    "deploy": "node scripts/build.mjs && node scripts/deploy-sftp.mjs",
+    "test": "tsx tests/logic.test.ts && tsx tests/integration.test.ts && tsx tests/karma.test.ts && tsx tests/rogue.test.ts && tsx tests/security.test.ts",
+    "test:logic": "tsx tests/logic.test.ts",
+    "test:integration": "tsx tests/integration.test.ts",
+    "test:karma": "tsx tests/karma.test.ts",
+    "test:rogue": "tsx tests/rogue.test.ts",
+    "test:security": "tsx tests/security.test.ts"
   },
   "workspaces": [
     "games/*"
@@ -23,6 +29,7 @@
     "ssh2-sftp-client": "^9.0.0"
   },
   "devDependencies": {
+    "tsx": "^4.19.2",
     "typescript": "^5.4.5",
     "vite": "^5.2.11",
     "vite-plugin-pwa": "^1.3.0"

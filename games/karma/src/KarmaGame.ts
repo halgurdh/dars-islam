@@ -67,10 +67,7 @@ export class KarmaGame {
     this.currentPlayer = 0;
     this.under7 = false;
 
-    // AI players count as already set up (will be done in startGame)
-    this.setupsDone = new Set(
-      this.players.filter(p => !p.isHuman).map(p => p.id),
-    );
+    this.setupsDone = new Set();
 
     this._deal();
   }
