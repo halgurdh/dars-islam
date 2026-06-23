@@ -5,26 +5,33 @@ import type { HeroClass } from '../game/data/classes';
 type Role = 'offline' | 'host' | 'guest';
 
 const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-const JOIN_TIMEOUT_MS  = 12000;
+const JOIN_TIMEOUT_MS  = 30000; // 30 s — ICE over TURN can be slow on mobile/NAT
 const RECONNECT_DELAYS = [1000, 2000, 5000, 10000]; // ms between reconnect attempts
 
 type JoinStage = 'boot' | 'peer-open' | 'connecting' | 'connected';
 
 function peerOptions() {
   const iceServers: Array<{ urls: string | string[]; username?: string; credential?: string }> = [
+    // STUN — direct connection when both peers can punch through NAT
     { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
+    // Free public TURN relay — required for symmetric NAT / mobile / Firefox
+    {
+      urls: [
+        'turn:openrelay.metered.ca:80',
+        'turn:openrelay.metered.ca:443',
+        'turns:openrelay.metered.ca:443',
+      ],
+      username:   'openrelayproject',
+      credential: 'openrelayproject',
+    },
   ];
 
-  const turnUrl = import.meta.env.VITE_TURN_URL as string | undefined;
-  const turnUsername = import.meta.env.VITE_TURN_USERNAME as string | undefined;
+  // Optional: override with your own TURN server (no rate limits)
+  const turnUrl        = import.meta.env.VITE_TURN_URL        as string | undefined;
+  const turnUsername   = import.meta.env.VITE_TURN_USERNAME   as string | undefined;
   const turnCredential = import.meta.env.VITE_TURN_CREDENTIAL as string | undefined;
-
   if (turnUrl && turnUsername && turnCredential) {
-    iceServers.push({
-      urls: turnUrl,
-      username: turnUsername,
-      credential: turnCredential,
-    });
+    iceServers.push({ urls: turnUrl, username: turnUsername, credential: turnCredential });
   }
 
   return {
