@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Karma" />
+    <meta name="theme-color" content="#1b4332" />
+    <title>Karma</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body {
+        width: 100%; height: 100%;
+        overflow: hidden;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        background: #1b4332;
+        touch-action: none;
+        user-select: none;
+      }
+      #app {
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        position: relative;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="toast" style="display:none"></div>
+    <div id="drag-layer" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:500"></div>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>
