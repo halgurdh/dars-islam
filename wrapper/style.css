@@ -242,6 +242,7 @@ body {
 
 .game-card__emoji {
   font-size: 4rem;
+  ease: transform 0.2s;
 }
 
 .game-card__body {
