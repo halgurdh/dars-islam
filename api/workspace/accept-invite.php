@@ -1,13 +1,17 @@
 <?php
 require_once __DIR__ . '/../_helpers.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== 'GET') json_error('Method not allowed', 405);
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') json_error('Method not allowed', 405);
 
 $session = require_session();
-$workspace = ensure_workspace_for_user($session['user_id'], $session['email']);
+$body = body();
+$token = (string) ($body['token'] ?? '');
+if ($token === '') json_error('token is required');
+
+$workspace = accept_invite_token_for_user($session['user_id'], $token);
 
 json_out([
-    'account_type' => $session['account_type'] ?? classify_account_type($session['email']),
+    'ok' => true,
     'workspace' => $workspace,
     'workspaces' => list_workspaces_for_user($session['user_id']),
     'members' => list_workspace_members($workspace['id']),
