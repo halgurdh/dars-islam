@@ -765,6 +765,10 @@ export class HUD {
     const ctx = this.ctx;
     const cur = ctx.current;
     const myTurn = this._isMyTurn();
+    const myIndex = networkManager.myPlayerIndex();
+    const me = networkManager.isOnline && myIndex >= 0
+      ? ctx.players[myIndex]
+      : cur;
 
     const playerCards = ctx.players.map((p) => {
       const id = Access.id(p), hp = Access.hp(p), w = Access.wallet(p), st = Access.stats(p), stt = Access.status(p);
@@ -778,7 +782,7 @@ export class HUD {
     }).join('');
 
     const sq   = ctx.board[Access.pos(cur).square];
-    const hand = Access.hand(cur).cards;
+    const hand = Access.hand(me).cards;
     const handHtml = hand.length
       ? hand.map((c, i) => {
           const red = c.suit === 'Hearts' || c.suit === 'Diamonds';
@@ -818,9 +822,9 @@ export class HUD {
         </div>
         <div class="log">${this.logLines.map((l) => `<div>${l}</div>`).join('')}</div>
       </div>
-      <div class="handbar"><span class="handlabel">Hand:</span>${handHtml}</div>
-      ${inCombat ? this.combatPanel(myTurn) : ''}
-      ${inMarket ? this.marketPanel(myTurn) : ''}
+      <div class="handbar"><span class="handlabel">${networkManager.isOnline ? 'Your hand:' : 'Hand:'}</span>${handHtml}</div>
+      ${inCombat && (myTurn || !networkManager.isOnline) ? this.combatPanel(myTurn) : ''}
+      ${inMarket && (myTurn || !networkManager.isOnline) ? this.marketPanel(myTurn) : ''}
     `;
 
     (this.root.querySelector('#roll') as HTMLButtonElement | null)
