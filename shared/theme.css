@@ -130,6 +130,14 @@ body {
   color: #fff;
   cursor: pointer;
   display: inline-flex;
+}
+
+.install-toggle[hidden] {
+  display: none !important;
+}
+
+.install-toggle:not([hidden]) {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
