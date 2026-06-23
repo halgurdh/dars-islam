@@ -251,7 +251,13 @@ export const CombatState: GS = {
 // ─────────────────────────────────────────────────────────────────────────
 export const MarketState: GS = {
   name: S.Market,
-  onEnter(ctx) {
+  onEnter(ctx, m) {
+    if (Access.wallet(ctx.current).gold < 10) {
+      ctx.log(`${Access.id(ctx.current).name} cannot afford the market and moves on.`);
+      ctx.bus.emit('hud:refresh', {});
+      m.transition(S.CardPlay);
+      return;
+    }
     ctx.bus.emit('hud:refresh', {});
   },
   onEvent(ctx, m, event, payload) {

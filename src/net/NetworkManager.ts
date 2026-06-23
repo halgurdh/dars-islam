@@ -38,6 +38,7 @@ class NetworkManager {
 
   createRoom(): Promise<string> {
     return new Promise((resolve, reject) => {
+      this.destroy();
       const code = Array.from({ length: 6 }, () => CHARS[Math.floor(Math.random() * CHARS.length)]).join('');
       this.peer  = new Peer(`boardrush-${code}`);
       this._role = 'host';
@@ -48,7 +49,10 @@ class NetworkManager {
         resolve(code);
       });
 
-      this.peer.on('error', (err) => { this._role = 'offline'; reject(err); });
+      this.peer.on('error', (err) => {
+        this.destroy();
+        reject(err);
+      });
 
       this.peer.on('connection', (conn) => {
         conn.on('open', () => {
@@ -68,12 +72,24 @@ class NetworkManager {
 
   joinRoom(code: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => {
-        this._role = 'offline';
-        reject(new Error('Connection timed out — check the code and try again.'));
-      }, 12000);
+      this.destroy();
 
-      const done = (err?: unknown) => { clearTimeout(timer); err ? reject(err) : resolve(); };
+      let settled = false;
+      const finish = (err?: unknown) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        if (err) {
+          this.destroy();
+          reject(err);
+          return;
+        }
+        resolve();
+      };
+
+      const timer = setTimeout(() => {
+        finish(new Error('Connection timed out — check the code and try again.'));
+      }, 12000);
 
       this.peer    = new Peer();
       this._role   = 'guest';
@@ -83,12 +99,17 @@ class NetworkManager {
         const conn = this.peer!.connect(this._hostId, { reliable: true });
         this.conns.set(this._hostId, conn);
 
-        conn.on('open',  () => { this._send(conn, { type: 'hello', name: this._name }); done(); });
+        conn.on('open',  () => { this._send(conn, { type: 'hello', name: this._name }); finish(); });
         conn.on('data',  (raw) => this._onHostMsg(raw as NetMsg));
-        conn.on('error', (e)   => { this._role = 'offline'; done(e); });
+        conn.on('close', ()    => {
+          this.conns.delete(this._hostId);
+          if (!settled) finish(new Error('Connection closed before the room finished joining.'));
+          else this.destroy();
+        });
+        conn.on('error', (e)   => finish(e));
       });
 
-      this.peer.on('error', (err) => { this._role = 'offline'; done(err); });
+      this.peer.on('error', (err) => finish(err));
     });
   }
 
@@ -198,6 +219,7 @@ class NetworkManager {
     this.peer   = null;
     this._role  = 'offline';
     this._members = [];
+    this._hostId = '';
     this.conns.clear();
   }
 }

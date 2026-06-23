@@ -22,7 +22,10 @@ export class GameScene extends Phaser.Scene {
   constructor() { super('Game'); }
 
   create(): void {
-    this.add.image(640, 400, 'background').setAlpha(0.25).setDisplaySize(1280, 800);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.hud?.destroy());
+    this.events.once(Phaser.Scenes.Events.DESTROY, () => this.hud?.destroy());
+    const { width, height } = this.scale;
+    this.add.image(width / 2, height / 2, 'background').setAlpha(0.25).setDisplaySize(width, height);
     this.startNewGame();
   }
 
@@ -37,7 +40,7 @@ export class GameScene extends Phaser.Scene {
 
     this.board  = new BoardView(this, this.ctx.board);
     this.tokens = new TokenView(this, this.board.centres);
-    this.dice   = new DiceView(this, 400, 400);
+    this.dice   = new DiceView(this, this.scale.width * 0.3125, this.scale.height * 0.5);
 
     const parent = document.getElementById('game') ?? document.body;
     this.hud = new HUD(parent as HTMLElement, this.ctx, this.machine);

@@ -9,15 +9,21 @@ export class BoardView {
   readonly centres: Phaser.Math.Vector2[] = [];
   private scene: Phaser.Scene;
 
-  // Board occupies the left region of the 1280×800 canvas.
-  private readonly left = 30;
-  private readonly top = 60;
-  private readonly right = 790;
-  private readonly bottom = 750;
-  private readonly sq = 72;
+  // Board occupies the left region of the canvas using the original layout ratios.
+  private readonly left: number;
+  private readonly top: number;
+  private readonly right: number;
+  private readonly bottom: number;
+  private readonly sq: number;
 
   constructor(scene: Phaser.Scene, board: BoardSquare[]) {
     this.scene = scene;
+    const { width, height } = scene.scale;
+    this.left = width * (30 / 1280);
+    this.top = height * (60 / 800);
+    this.right = width * (790 / 1280);
+    this.bottom = height * (750 / 800);
+    this.sq = height * (72 / 800);
     this.computeCentres(board.length);
     this.draw(board);
   }
