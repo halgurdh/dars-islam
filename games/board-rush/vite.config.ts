@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import path from 'path';
 
 const GAME_BASE = '/games/board-rush/';
 
@@ -8,6 +9,13 @@ export default defineConfig(({ mode }) => {
 
   return {
     base: GAME_BASE,
+
+    resolve: {
+      alias: {
+        '@src':    path.resolve(__dirname, '../../src'),
+        '@scenes': path.resolve(__dirname, '../../src/scenes'),
+      },
+    },
 
     build: {
       target: 'es2020',

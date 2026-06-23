@@ -1,15 +1,15 @@
 import Phaser from 'phaser';
-import { GameContext } from '../game/GameContext';
-import { StateMachine } from '../core/fsm/StateMachine';
-import { registerAllStates } from '../game/states/gameStates';
-import { S } from '../game/states/stateNames';
-import { BoardView } from './BoardView';
-import { TokenView } from './TokenView';
-import { DiceView } from './DiceView';
-import { HUD } from './HUD';
-import { musicManager } from '../music';
-import { networkManager } from '../net/NetworkManager';
-import { serialize } from '../net/GameSerializer';
+import { GameContext } from '@src/game/GameContext';
+import { StateMachine } from '@src/core/fsm/StateMachine';
+import { registerAllStates } from '@src/game/states/gameStates';
+import { S } from '@src/game/states/stateNames';
+import { BoardView } from '../views/BoardView';
+import { TokenView } from '../views/TokenView';
+import { DiceView } from '../views/DiceView';
+import { HUD } from '../views/HUD';
+import { musicManager } from '@src/music';
+import { networkManager } from '@src/net/NetworkManager';
+import { serialize } from '@src/net/GameSerializer';
 
 export class GameScene extends Phaser.Scene {
   private ctx!:     GameContext;

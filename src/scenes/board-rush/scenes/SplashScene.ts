@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
-import { playClick, playSplash } from '../sfx';
-import { musicManager } from '../music';
+import { playClick } from '@src/sfx';
+import { musicManager } from '@src/music';
 
 export class SplashScene extends Phaser.Scene {
   private autoTimer!: Phaser.Time.TimerEvent;
@@ -61,7 +61,7 @@ export class SplashScene extends Phaser.Scene {
       .setOrigin(1, 1)
       .setDisplaySize(140, 140)
       .setAlpha(0);
-    
+
     // Auto-advance after 3 s; input can skip at any time
     this.autoTimer = this.time.delayedCall(3000, () => this.fadeToGame());
     this.enableInput();
@@ -111,7 +111,23 @@ export class SplashScene extends Phaser.Scene {
       },
     });
 
-    playSplash();
+    // Play the preloaded splash audio via Phaser's sound manager if it's available
+    // and the audio key exists in the cache. Otherwise fall back to the helper.
+    try {
+      const hasSplash = !!(this.cache && (this.cache as any).audio && (this.cache as any).audio.exists && (this.cache as any).audio.exists('splash'));
+      if (this.sound && hasSplash) {
+        this.sound.play('splash', { volume: 0.7 });
+      } else {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const { playSplash } = require('@src/sfx');
+        playSplash();
+      }
+    } catch (err) {
+      // Protect against any runtime issues with the Phaser cache API
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { playSplash } = require('@src/sfx');
+      playSplash();
+    }
   }
 
   private enableInput(): void {

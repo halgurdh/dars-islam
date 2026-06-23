@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { type BoardSquare, SQUARE_COLORS, SQUARE_ICONS } from '../game/data/board';
+import { type BoardSquare, SQUARE_COLORS, SQUARE_ICONS } from '@src/game/data/board';
 
 /**
  * Renders the board ring and exposes square-centre coordinates so tokens

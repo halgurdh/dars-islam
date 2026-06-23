@@ -1,13 +1,13 @@
-import type { GameContext } from '../game/GameContext';
-import type { StateMachine } from '../core/fsm/StateMachine';
-import { S } from '../game/states/stateNames';
-import { Access, isAlive, effectiveAttack } from '../game/systems/PlayerFactory';
-import { HeroClass, CLASS_DEFS } from '../game/data/classes';
-import { suitSymbol, rankLabel, effectSummary } from '../game/data/cards';
-import { playClick } from '../sfx';
-import { networkManager } from '../net/NetworkManager';
-import { reconstitute } from '../net/GameSerializer';
-import type { GameSnap } from '../net/protocol';
+import type { GameContext } from '@src/game/GameContext';
+import type { StateMachine } from '@src/core/fsm/StateMachine';
+import { S } from '@src/game/states/stateNames';
+import { Access, isAlive, effectiveAttack } from '@src/game/systems/PlayerFactory';
+import { HeroClass, CLASS_DEFS } from '@src/game/data/classes';
+import { suitSymbol, rankLabel, effectSummary } from '@src/game/data/cards';
+import { playClick } from '@src/sfx';
+import { networkManager } from '@src/net/NetworkManager';
+import { reconstitute } from '@src/net/GameSerializer';
+import type { GameSnap } from '@src/net/protocol';
 
 type UIMode = 'landing' | 'local' | 'online' | 'net-pick';
 

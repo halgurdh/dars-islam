@@ -1,5 +1,5 @@
-import { fullDeck, cardAsset } from '../game/data/cards';
-import { CLASS_DEFS, HeroClass } from '../game/data/classes';
+import { fullDeck, cardAsset } from '@src/game/data/cards';
+import { CLASS_DEFS, HeroClass } from '@src/game/data/classes';
 
 /**
  * Builds the list of image keys → file paths to preload.

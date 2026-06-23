@@ -13,5 +13,13 @@ export default defineConfig({
     port: 5173,
     host: true,
     open: true,
+    proxy: {
+      // Forward requests under /games/board-rush to the board-rush dev server
+      '/games/board-rush': {
+        target: 'http://localhost:5174',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   },
 });

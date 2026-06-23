@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { assetManifest } from './assets';
+import { assetManifest } from '../views/assets';
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -26,6 +26,8 @@ export class BootScene extends Phaser.Scene {
       this.load.image(key, path);
     }
     this.load.image('splash-logo', 'assets/splash.png');
+    // Preload splash audio so it's available on the Splash scene
+    this.load.audio('splash', 'assets/splash.mp3');
   }
 
   create(): void {

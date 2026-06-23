@@ -11,7 +11,11 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "types": []
+    "types": [],
+    "paths": {
+      "@src/*":    ["../../src/*"],
+      "@scenes/*": ["../../scenes/*"]
+    }
   },
-  "include": ["src"]
+  "include": ["src", "../../src", "../../scenes"]
 }

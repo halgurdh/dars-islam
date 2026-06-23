@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
-import { Entity } from '../core/ecs/Entity';
-import { Access } from '../game/systems/PlayerFactory';
-import { CLASS_DEFS } from '../game/data/classes';
+import { Entity } from '@src/core/ecs/Entity';
+import { Access } from '@src/game/systems/PlayerFactory';
+import { CLASS_DEFS } from '@src/game/data/classes';
 
 /** Renders and animates player tokens on the board. */
 export class TokenView {
