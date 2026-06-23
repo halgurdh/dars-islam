@@ -5,7 +5,8 @@ import type { HeroClass } from '../game/data/classes';
 type Role = 'offline' | 'host' | 'guest';
 
 const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-const JOIN_TIMEOUT_MS = 12000;
+const JOIN_TIMEOUT_MS  = 12000;
+const RECONNECT_DELAYS = [1000, 2000, 5000, 10000]; // ms between reconnect attempts
 
 type JoinStage = 'boot' | 'peer-open' | 'connecting' | 'connected';
 
@@ -35,12 +36,14 @@ function peerOptions() {
 }
 
 class NetworkManager {
-  private peer:       Peer | null                    = null;
-  private conns:      Map<string, DataConnection>    = new Map();
-  private _role:      Role                           = 'offline';
-  private _members:   RoomMember[]                   = [];
-  private _name       = 'Player';
-  private _hostId     = '';
+  private peer:          Peer | null                 = null;
+  private conns:         Map<string, DataConnection> = new Map();
+  private _role:         Role                        = 'offline';
+  private _members:      RoomMember[]                = [];
+  private _name          = 'Player';
+  private _hostId        = '';
+  private _reconnectIdx  = 0;
+  private _reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
   // ── Callbacks (set by GameScene / HUD) ───────────────────────────────────
   onRosterUpdate?:   (members: RoomMember[]) => void;
@@ -72,12 +75,24 @@ class NetworkManager {
       this._role = 'host';
 
       this.peer.on('open', (id) => {
+        this._reconnectIdx = 0;
         this._members = [{ peerId: id, name: this._name, isHost: true }];
         this.onRosterUpdate?.(this.members);
         resolve(code);
       });
 
+      // Signaling server dropped us (EXPIRE / idle timeout) — reconnect silently
+      this.peer.on('disconnected', () => {
+        if (this._role !== 'host' || !this.peer) return;
+        this._scheduleReconnect();
+      });
+
       this.peer.on('error', (err) => {
+        const anyErr = err as Error & { type?: string };
+        // Non-fatal: lost signaling but WebRTC connections still alive
+        if (anyErr.type === 'server-disconnected' || anyErr.type === 'network') {
+          if (this._role === 'host') { this._scheduleReconnect(); return; }
+        }
         this.destroy();
         reject(err);
       });
@@ -282,13 +297,27 @@ class NetworkManager {
     return new Error('Unknown connection error while joining the room.');
   }
 
+  private _scheduleReconnect(): void {
+    if (this._reconnectTimer !== null) return;
+    const delay = RECONNECT_DELAYS[Math.min(this._reconnectIdx, RECONNECT_DELAYS.length - 1)];
+    this._reconnectIdx++;
+    this._reconnectTimer = setTimeout(() => {
+      this._reconnectTimer = null;
+      if (this.peer && !this.peer.destroyed) {
+        try { this.peer.reconnect(); } catch { /* peer already gone */ }
+      }
+    }, delay);
+  }
+
   destroy(): void {
+    if (this._reconnectTimer !== null) { clearTimeout(this._reconnectTimer); this._reconnectTimer = null; }
     this.conns.forEach(c => c.close());
     this.peer?.destroy();
-    this.peer   = null;
-    this._role  = 'offline';
-    this._members = [];
-    this._hostId = '';
+    this.peer      = null;
+    this._role     = 'offline';
+    this._members  = [];
+    this._hostId   = '';
+    this._reconnectIdx = 0;
     this.conns.clear();
   }
 }
