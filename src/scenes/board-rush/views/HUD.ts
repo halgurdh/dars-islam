@@ -22,8 +22,8 @@ interface CardBackDef {
 }
 
 const CARD_BACKS: CardBackDef[] = [
-  { key: 'cardBack_blue2', label: 'Classic Blue',  price: 0,   tier: 'free' },
-  { key: 'cardBack_blue1', label: 'Blue I',        price: 100, tier: 'coins' },
+  { key: 'cardBack_blue1', label: 'Blue I',        price: 0,   tier: 'free' },
+  { key: 'cardBack_blue2', label: 'Classic Blue',  price: 100, tier: 'coins' },
   { key: 'cardBack_blue3', label: 'Blue III',      price: 100, tier: 'coins' },
   { key: 'cardBack_blue4', label: 'Blue IV',       price: 150, tier: 'coins' },
   { key: 'cardBack_blue5', label: 'Blue V',        price: 200, tier: 'coins' },

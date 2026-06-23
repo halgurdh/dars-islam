@@ -77,7 +77,7 @@ function ensure_profile(string $user_id): void {
     if (!$exists->fetch()) {
         $db->prepare(
             "INSERT INTO profiles (user_id, owned_card_backs)
-             VALUES (?, JSON_ARRAY('cardBack_blue2'))"
+             VALUES (?, JSON_ARRAY('cardBack_blue1'))"
         )->execute([$user_id]);
     }
 }

@@ -93,7 +93,7 @@ class SyncManager {
 
     // Merge card backs (union: never lose locally unlocked ones)
     const localOwned  = ArcadeStore.getOwnedCardBacks();
-    const serverOwned = profile.owned_card_backs ?? ['cardBack_blue2'];
+    const serverOwned = profile.owned_card_backs ?? ['cardBack_blue1'];
     const merged      = [...new Set([...localOwned, ...serverOwned])];
 
     // Coins: take the higher value
