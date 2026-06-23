@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { musicManager } from '../../../music';
 import { CHIP_LIBRARY, CUSTOM_GAUGE_MAX, ENEMY_MAX_HP, ENEMY_MOVE_MS, PLAYER_MAX_HP, PLAYER_MOVE_MS, SCENE_HEIGHT, SCENE_WIDTH } from '../constants';
 import { EnemyCharacter, PlayerCharacter } from '../entities/Character';
 import { ChipManager } from '../systems/ChipManager';
@@ -43,6 +44,16 @@ export class BattleScene extends Phaser.Scene {
   }
 
   create(): void {
+    // Reset all mutable state so scene.restart() starts clean
+    this.battleState = 'BATTLE_INTRO';
+    this.gaugeValue = 0;
+    this.combatFrozen = true;
+    this.enemyActionLocked = false;
+    this.customHand = [];
+    this.customCursor = 0;
+    this.selectedChipIndices = [];
+    this.projectiles = [];
+
     this.createBackdrop();
     this.grid = new GridSystem(this, 278, 258, 112, 96, 26);
     this.grid.create();
@@ -129,6 +140,8 @@ export class BattleScene extends Phaser.Scene {
     this.wasd = this.input.keyboard!.addKeys('W,A,S,D') as Record<'W' | 'A' | 'S' | 'D', Phaser.Input.Keyboard.Key>;
     this.enterKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
     this.spaceKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+    this.input.keyboard!.once('keydown', () => musicManager.init());
+    this.input.once('pointerdown', () => musicManager.init());
   }
 
   private startRealtimeCombat(): void {
@@ -330,7 +343,7 @@ export class BattleScene extends Phaser.Scene {
     if (targetColumn === null) {
       return;
     }
-    this.player.shootPulse();
+    this.player.swordSlash();
     const slashX = this.grid.getColumnX(targetColumn);
     const slash = this.add.graphics().setDepth(940);
     slash.fillStyle(0x52ff9f, 0.25).fillRect(slashX - 32, 220, 64, 280);

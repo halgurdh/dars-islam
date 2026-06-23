@@ -57,7 +57,7 @@ function mergeGamePublicAssets(gameDir: string) {
     configureServer(server: { middlewares: { use: (handler: (req: { url?: string }, res: { setHeader: (name: string, value: string) => void; end: (body?: string | Buffer) => void }, next: () => void) => void) => void } }) {
       server.middlewares.use((req, res, next) => {
         const url = req.url?.split('?')[0] ?? '';
-        if (!url.startsWith('/assets/icons/') && !url.startsWith('/assets/music/')) {
+        if (!url.startsWith('/assets/icons/')) {
           next();
           return;
         }
@@ -92,7 +92,7 @@ function mergeGamePublicAssets(gameDir: string) {
 export default defineConfig({
   base: GAME_BASE,
   envDir: path.resolve(__dirname, '../../'),
-  publicDir: path.resolve(__dirname, '../board-rush/public'),
+  publicDir: path.resolve(__dirname, 'public'),
 
   resolve: {
     alias: {

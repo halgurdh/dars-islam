@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { BootScene } from '../../../src/scenes/net-strike/scenes/BootScene';
+import { SplashScene } from '../../../src/scenes/net-strike/scenes/SplashScene';
 import { BattleScene } from '../../../src/scenes/net-strike/scenes/BattleScene';
 
 const config: Phaser.Types.Core.GameConfig = {
@@ -12,7 +13,7 @@ const config: Phaser.Types.Core.GameConfig = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, BattleScene],
+  scene: [BootScene, SplashScene, BattleScene],
 };
 
 new Phaser.Game(config);

@@ -1,5 +1,8 @@
 import './style.css';
+import { musicManager } from '../../../src/music';
 import { escapeHtml } from './utils';
+
+const splashLogoUrl = new URL('../../../shared/splash.png', import.meta.url).href;
 import { Card, Rank, cardImgSrc, cardLabel, CARD_BACK, rankName, suitSymbol } from './Card';
 const esc = escapeHtml;
 import { KarmaGame, GamePhase, PlayResult } from './KarmaGame';
@@ -48,7 +51,90 @@ const logLines: string[] = [];
 
 // ─── Boot ─────────────────────────────────────────────────────────────────────
 
-showMenu();
+showSplash();
+
+function showSplash() {
+  const app = document.getElementById('app')!;
+  app.innerHTML = `
+    <div id="karma-splash" style="
+      position:absolute;inset:0;display:flex;flex-direction:column;
+      align-items:center;justify-content:center;
+      background:#0d2b1a;cursor:pointer;overflow:hidden;
+    ">
+      <div style="
+        position:absolute;inset:0;
+        background:radial-gradient(ellipse at 50% 50%, #1b4332 0%, #0a1f12 70%, #060f09 100%);
+      "></div>
+      <img src="${splashLogoUrl}" alt="minitoon" style="
+        position:absolute;bottom:16px;right:16px;
+        width:90px;height:90px;opacity:0;
+        transition:opacity .7s .3s;pointer-events:none;
+      " id="splash-logo">
+      <div style="position:relative;text-align:center;">
+        <div style="
+          font-family:'Georgia',serif;font-size:clamp(52px,8vw,80px);font-weight:bold;
+          color:#c8f7c5;letter-spacing:4px;
+          text-shadow:0 0 40px rgba(100,255,100,.35),0 4px 8px rgba(0,0,0,.7);
+          opacity:0;transform:scale(.7);
+          transition:opacity .8s .2s, transform .8s .2s cubic-bezier(.34,1.56,.64,1);
+        " id="splash-title">♣ KARMA ♠</div>
+        <div style="
+          font-family:'Segoe UI',sans-serif;font-size:clamp(14px,2.5vw,20px);
+          color:#7abf8e;margin-top:10px;letter-spacing:1px;
+          opacity:0;transition:opacity .6s .7s;
+        " id="splash-sub">The Shithead Card Game</div>
+        <div style="
+          width:clamp(160px,30vw,260px);height:1px;background:#2d6b45;
+          margin:20px auto 0;opacity:0;transition:opacity .5s .9s;
+        " id="splash-line"></div>
+        <div style="
+          font-family:'Segoe UI',sans-serif;font-size:clamp(12px,1.8vw,16px);
+          color:#3d6b4f;margin-top:20px;
+          opacity:0;transition:opacity .5s 1.4s;
+        " id="splash-hint">Tap to start</div>
+      </div>
+    </div>
+  `;
+
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const el = (id: string) => document.getElementById(id);
+    const set = (id: string, s: Partial<CSSStyleDeclaration>) => Object.assign(el(id)!.style, s);
+    set('splash-logo',  { opacity: '0.75' });
+    set('splash-title', { opacity: '1', transform: 'scale(1)' });
+    set('splash-sub',   { opacity: '1' });
+    set('splash-line',  { opacity: '1' });
+    set('splash-hint',  { opacity: '1' });
+
+    // pulse hint
+    setTimeout(() => {
+      const hint = el('splash-hint');
+      if (!hint) return;
+      let tick = 0;
+      setInterval(() => {
+        hint.style.opacity = tick++ % 2 === 0 ? '0.3' : '1';
+      }, 820);
+    }, 2200);
+  }));
+
+  const el = (id: string) => document.getElementById(id);
+  let done = false;
+  const advance = () => {
+    if (done) return;
+    done = true;
+    musicManager.init();
+    const splash = el('karma-splash');
+    if (splash) {
+      splash.style.transition = 'opacity .45s';
+      splash.style.opacity = '0';
+      setTimeout(showMenu, 450);
+    } else {
+      showMenu();
+    }
+  };
+
+  setTimeout(() => { app.addEventListener('pointerdown', advance, { once: true }); }, 400);
+  setTimeout(() => advance(), 4000);
+}
 
 // ─── MENU ─────────────────────────────────────────────────────────────────────
 

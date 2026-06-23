@@ -2,6 +2,8 @@ import Phaser from 'phaser';
 import type { GridCoord, GridOwner } from '../types';
 import { GridSystem } from '../systems/GridSystem';
 
+type AnimationName = 'idle' | 'dash' | 'shoot' | 'sword' | 'hit';
+
 export class Character extends Phaser.GameObjects.Container {
   readonly owner: GridOwner;
   coord: GridCoord;
@@ -9,17 +11,17 @@ export class Character extends Phaser.GameObjects.Container {
   health: number;
   isMoving = false;
   private readonly grid: GridSystem;
-  private readonly glow: Phaser.GameObjects.Arc;
-  private readonly bodyShape: Phaser.GameObjects.Ellipse;
-  private readonly head: Phaser.GameObjects.Arc;
-  private readonly visor: Phaser.GameObjects.Rectangle;
+  readonly sprite: Phaser.GameObjects.Sprite;
   private readonly hpBack: Phaser.GameObjects.Rectangle;
   private readonly hpUnder: Phaser.GameObjects.Rectangle;
   private readonly hpFront: Phaser.GameObjects.Rectangle;
   private readonly shadow: Phaser.GameObjects.Ellipse;
   private displayedHealth: number;
+  private currentAnim: AnimationName = 'idle';
+  private animQueue: AnimationName[] = [];
+  private charPrefix: string;
 
-  constructor(scene: Phaser.Scene, grid: GridSystem, owner: GridOwner, coord: GridCoord, tint: number, accent: number, maxHealth: number) {
+  constructor(scene: Phaser.Scene, grid: GridSystem, owner: GridOwner, coord: GridCoord, maxHealth: number, charPrefix: string) {
     const world = grid.getCharacterPosition(coord);
     super(scene, world.x, world.y);
     scene.add.existing(this);
@@ -29,27 +31,58 @@ export class Character extends Phaser.GameObjects.Container {
     this.maxHealth = maxHealth;
     this.health = maxHealth;
     this.displayedHealth = maxHealth;
+    this.charPrefix = charPrefix;
 
-    this.shadow = scene.add.ellipse(0, 30, 76, 24, 0x000000, 0.32);
-    this.glow = scene.add.circle(0, -6, 42, accent, 0.18);
-    this.bodyShape = scene.add.ellipse(0, 4, 54, 66, tint, 1);
-    this.head = scene.add.circle(0, -30, 26, tint, 1);
-    this.visor = scene.add.rectangle(0, -30, 28, 8, 0xdff7ff, 0.95);
-    const shoulderL = scene.add.circle(-20, -6, 9, accent, 0.9);
-    const shoulderR = scene.add.circle(20, -6, 9, accent, 0.9);
-    const core = scene.add.rectangle(0, 6, 14, 24, accent, 0.95);
+    // Shadow
+    this.shadow = scene.add.ellipse(0, 10, 76, 18, 0x000000, 0.45);
+
+    // Sprite
+    this.sprite = scene.add.sprite(0, -18, `${charPrefix}_idle`);
+    this.sprite.setOrigin(0.5, 0.5);
+    this.sprite.play(`${charPrefix}_idle`);
+
+    // HP bar
     this.hpBack = scene.add.rectangle(0, -72, 88, 9, 0x07111f, 0.92);
     this.hpUnder = scene.add.rectangle(-44, -72, 88, 5, 0xff7a7a, 0.45).setOrigin(0, 0.5);
-    this.hpFront = scene.add.rectangle(-44, -72, 88, 5, 0x67f7a1, 0.95).setOrigin(0, 0.5);
+    this.hpFront = scene.add.rectangle(-44, -72, 88, 5, this.owner === 'player' ? 0x67f7a1 : 0xff9eb0, 0.95).setOrigin(0, 0.5);
 
-    this.add([this.shadow, this.glow, this.bodyShape, this.head, this.visor, shoulderL, shoulderR, core, this.hpBack, this.hpUnder, this.hpFront]);
+    this.add([this.shadow, this.sprite, this.hpBack, this.hpUnder, this.hpFront]);
     this.setSize(96, 120);
+    this.setDepth(500);
+  }
+
+  private playAnim(name: AnimationName, onComplete?: () => void): void {
+    this.currentAnim = name;
+    const key = `${this.charPrefix}_${name}`;
+    this.sprite.play(key, true);
+    this.sprite.once('animationcomplete', () => {
+      if (onComplete) onComplete();
+      this.animQueue.shift();
+      if (this.animQueue.length > 0) {
+        this.playAnim(this.animQueue[0]);
+      } else if (this.currentAnim !== 'idle') {
+        this.idle();
+      }
+    });
+  }
+
+  idle(): void {
+    if (this.currentAnim !== 'idle') {
+      this.currentAnim = 'idle';
+      this.animQueue = [];
+      this.sprite.play(`${this.charPrefix}_idle`, true);
+    }
   }
 
   dashTo(coord: GridCoord, duration: number, onComplete?: () => void): void {
     const world = this.grid.getCharacterPosition(coord);
     this.coord = { ...coord };
     this.isMoving = true;
+
+    // Play dash animation
+    this.animQueue = [];
+    this.playAnim('dash');
+
     this.scene.tweens.add({
       targets: this,
       x: world.x,
@@ -68,6 +101,7 @@ export class Character extends Phaser.GameObjects.Container {
       },
       onComplete: () => {
         this.isMoving = false;
+        this.idle();
         onComplete?.();
       },
     });
@@ -82,36 +116,56 @@ export class Character extends Phaser.GameObjects.Container {
   }
 
   shootPulse(): void {
+    this.animQueue = [];
+    this.playAnim('shoot', () => this.idle());
+
     this.scene.tweens.add({
-      targets: this.bodyShape,
-      scaleX: 1.18,
-      scaleY: 0.82,
+      targets: this.sprite,
+      scaleX: 1.12,
+      scaleY: 0.88,
       duration: 70,
       yoyo: true,
       ease: 'Quad.easeOut',
     });
   }
 
+  swordSlash(onComplete?: () => void): void {
+    this.animQueue = [];
+    this.playAnim('sword', () => {
+      this.idle();
+      onComplete?.();
+    });
+  }
+
   takeDamage(amount: number): void {
     this.health = Math.max(0, this.health - amount);
+    this.animQueue = [];
+    this.playAnim('hit', () => {
+      if (this.health > 0) {
+        this.idle();
+      }
+    });
     this.scene.tweens.add({
-      targets: [this.bodyShape, this.head],
-      alpha: 0.2,
-      duration: 60,
+      targets: this.sprite,
+      alpha: 0.3,
+      duration: 80,
       yoyo: true,
-      repeat: 3,
+      repeat: 2,
+      onComplete: () => {
+        this.sprite.alpha = 1;
+      },
     });
   }
 }
 
 export class PlayerCharacter extends Character {
   constructor(scene: Phaser.Scene, grid: GridSystem, coord: GridCoord, maxHealth: number) {
-    super(scene, grid, 'player', coord, 0x36a2ff, 0xb3f1ff, maxHealth);
+    super(scene, grid, 'player', coord, maxHealth, 'player');
   }
 }
 
 export class EnemyCharacter extends Character {
   constructor(scene: Phaser.Scene, grid: GridSystem, coord: GridCoord, maxHealth: number) {
-    super(scene, grid, 'enemy', coord, 0xff4778, 0xffb2c8, maxHealth);
+    super(scene, grid, 'enemy', coord, maxHealth, 'enemy');
   }
 }

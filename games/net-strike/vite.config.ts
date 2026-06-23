@@ -49,13 +49,54 @@ function mergeBoardRushSharedAssets(gameDir: string) {
   };
 }
 
+function mergeGamePublicAssets(gameDir: string) {
+  let outDir = path.resolve(gameDir, 'dist');
+  const localAssetsDir = path.resolve(gameDir, 'public/assets');
+
+  return {
+    name: 'merge-game-public-assets',
+    configureServer(server: { middlewares: { use: (handler: (req: { url?: string }, res: { setHeader: (name: string, value: string) => void; end: (body?: string | Buffer) => void }, next: () => void) => void) => void } }) {
+      server.middlewares.use((req, res, next) => {
+        const url = req.url?.split('?')[0] ?? '';
+        if (!url.startsWith('/assets/icons/')) {
+          next();
+          return;
+        }
+
+        const relPath = url.replace(/^\/assets\//, '');
+        const filePath = path.join(localAssetsDir, relPath);
+        if (!fs.existsSync(filePath)) {
+          next();
+          return;
+        }
+
+        const ext = path.extname(filePath).toLowerCase();
+        const contentType =
+          ext === '.png' ? 'image/png' :
+          ext === '.mp3' ? 'audio/mpeg' :
+          'application/octet-stream';
+
+        res.setHeader('Content-Type', contentType);
+        res.end(fs.readFileSync(filePath));
+      });
+    },
+    configResolved(config: { build: { outDir: string } }) {
+      outDir = path.resolve(gameDir, config.build.outDir);
+    },
+    closeBundle() {
+      if (!fs.existsSync(localAssetsDir)) return;
+      fs.cpSync(localAssetsDir, path.join(outDir, 'assets'), { recursive: true, force: true });
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => {
   const isPWA = mode === 'pwa';
 
   return {
     base: GAME_BASE,
     envDir: path.resolve(__dirname, '../../'),
-    publicDir: path.resolve(__dirname, '../board-rush/public'),
+    publicDir: path.resolve(__dirname, 'public'),
     resolve: {
       alias: {
         '@src': path.resolve(__dirname, '../../src'),
@@ -75,6 +116,7 @@ export default defineConfig(({ mode }) => {
       open: true,
     },
     plugins: [
+      mergeGamePublicAssets(__dirname),
       mergeBoardRushSharedAssets(__dirname),
       VitePWA({
         registerType: 'autoUpdate',

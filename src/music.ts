@@ -24,7 +24,7 @@ const GAINS: Record<MusicState, [number, number, number]> = {
   GameOver:       [0.00, 0.00, 0.00],
 };
 
-const LAYER_FILES = ['assets/music/bg1.mp3', 'assets/music/bg2.mp3', 'assets/music/bg3.mp3'];
+const LAYER_FILES = ['music/bg1.mp3', 'music/bg2.mp3', 'music/bg3.mp3'];
 const FADE_S = 2.0; // crossfade duration in seconds
 
 // ── Manager ─────────────────────────────────────────────────────────────────
