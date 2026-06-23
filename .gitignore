@@ -5,4 +5,5 @@ release/
 .DS_Store
 
 .env
+.env.local
 .clinerules

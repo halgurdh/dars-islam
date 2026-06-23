@@ -76,7 +76,25 @@ const games = readdirSync(GAMES_DIR, { withFileTypes: true })
     }
   }
 
-// 4. Copy shared assets from root public/ into dist if they exist
+// 4. Copy PHP API files into dist/api/ (exclude _config.php — set manually on server)
+const apiSrc = join(ROOT, 'api');
+const apiDest = join(DIST, 'api');
+if (existsSync(apiSrc)) {
+  log('Copying api/ PHP files...');
+  cpSync(apiSrc, apiDest, {
+    recursive: true,
+    filter: (src) => !src.endsWith('_config.php'),
+  });
+}
+
+// 4b. Copy SQL schema for reference (not served, but handy for db setup)
+const dbSrc = join(ROOT, 'database');
+if (existsSync(dbSrc)) {
+  mkdirSync(join(DIST, 'database'), { recursive: true });
+  cpSync(dbSrc, join(DIST, 'database'), { recursive: true });
+}
+
+// 6. Copy shared assets from root public/ into dist if they exist
 const rootPublic = join(ROOT, 'public');
 if (existsSync(rootPublic)) {
   for (const entry of readdirSync(rootPublic)) {
@@ -88,7 +106,7 @@ if (existsSync(rootPublic)) {
   }
 }
 
-// 5. Copy wrapper assets explicitly
+// 7. Copy wrapper assets explicitly
 const wrapperAssetsSource = join(ROOT, 'wrapper', 'public');
 if (existsSync(wrapperAssetsSource)) {
   for (const entry of readdirSync(wrapperAssetsSource)) {

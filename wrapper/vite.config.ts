@@ -20,6 +20,12 @@ export default defineConfig({
     host: true,
     open: true,
     proxy: {
+      // PHP API — run a local PHP server: `php -S localhost:8000 -t .` from repo root
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
+      },
       // Forward requests under /games/board-rush to the board-rush dev server
       '/games/board-rush': {
         target: 'http://localhost:5174',
