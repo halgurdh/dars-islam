@@ -335,8 +335,10 @@ export class HUD {
     const canEdit = workspace.role === 'owner' || workspace.role === 'admin';
     const isOwner = workspace.role === 'owner';
     const billing = sync.workspaceBilling;
+    const billingStatus = billing?.subscription_status ?? 'none';
+    const billingPeriodEnd = billing?.current_period_end ? this.formatWorkspaceTimestamp(billing.current_period_end) : null;
     const memberOptions = sync.workspaces.map((item) =>
-      `<option value="${this.escapeAttr(item.id)}" ${item.id === workspace.id ? 'selected' : ''}>${this.escapeHtml(item.settings.brand_name)} (${this.escapeHtml(item.role)})</option>`,
+      `<option value="${this.escapeAttr(item.id)}" ${item.id === workspace.id ? 'selected' : ''} ${item.is_archived && item.id !== workspace.id ? 'disabled' : ''}>${this.escapeHtml(item.settings.brand_name)} (${this.escapeHtml(item.role)}${item.is_archived ? ' · archived' : ''})</option>`,
     ).join('');
     const membersHtml = sync.workspaceMembers.length
       ? sync.workspaceMembers.map((member) =>
@@ -364,6 +366,14 @@ export class HUD {
         </div>`,
       ).join('')
       : '<div class="dim">No pending invites.</div>';
+    const activityHtml = sync.workspaceActivity.length
+      ? sync.workspaceActivity.map((entry) =>
+        `<div class="pcard">
+          <div class="pname">${this.escapeHtml(entry.message)}</div>
+          <div class="pstat dim">${this.escapeHtml(entry.actor_email ?? 'System')} · ${this.escapeHtml(this.formatWorkspaceTimestamp(entry.created_at))}</div>
+        </div>`,
+      ).join('')
+      : '<div class="dim">No recent activity yet.</div>';
     this.root.innerHTML = `
       <div class="overlay">
         <div class="panel" style="max-width:560px">
@@ -372,10 +382,13 @@ export class HUD {
           <p class="sub">Members: ${workspace.usage.members}/${workspace.limits.members} · Games: ${workspace.limits.games} · Rooms: ${workspace.limits.private_rooms} · Role: ${this.escapeHtml(workspace.role)}</p>
           <div class="square" style="margin-top:10px">
             <b>Subscription / Seats</b><br>
-            <span class="dim">Plan: ${this.escapeHtml(billing?.plan_key ?? workspace.plan_key)} · Seats: ${billing?.seats_used ?? workspace.usage.members}/${billing?.seat_limit ?? workspace.limits.members}</span>
-            ${workspace.plan_key !== 'studio'
-              ? `<div class="actions" style="margin-top:10px; justify-content:flex-start"><button id="wsUpgrade">Upgrade to Studio</button></div>`
-              : `<div class="actions" style="margin-top:10px; justify-content:flex-start"><button id="wsRefreshBilling">Refresh Billing</button><button id="wsPortal">Manage Subscription</button></div>`}
+            <span class="dim">Plan: ${this.escapeHtml(billing?.plan_key ?? workspace.plan_key)} · Seats: ${billing?.seats_used ?? workspace.usage.members}/${billing?.seat_limit ?? workspace.limits.members}</span><br>
+            <span class="dim">Stripe: ${this.escapeHtml(billingStatus)}${billingPeriodEnd ? ` · renews/ends ${this.escapeHtml(billingPeriodEnd)}` : ''}</span>
+            <div class="actions" style="margin-top:10px; justify-content:flex-start">
+              ${workspace.plan_key !== 'studio' ? '<button id="wsUpgrade">Upgrade to Studio</button>' : ''}
+              <button id="wsRefreshBilling">Refresh Billing</button>
+              ${billing?.can_manage_subscription ? '<button id="wsPortal">Manage Subscription</button>' : ''}
+            </div>
           </div>
           <div class="square" style="margin-top:10px">
             <b>Create Workspace</b><br>
@@ -425,8 +438,11 @@ export class HUD {
             </div>
           ` : ''}
           <div class="players">${invitesHtml}</div>
+          <h3 style="margin:14px 0 6px">Activity</h3>
+          <div class="players">${activityHtml}</div>
           <div class="actions col" style="gap:10px">
             ${canEdit ? '<button id="wsSave" style="font-size:15px; padding:12px">Save Workspace</button>' : ''}
+            ${isOwner ? '<button id="wsArchive" class="btn-auth-sm">Archive Workspace</button>' : ''}
             <button id="wsLeave">Leave Workspace</button>
             <button id="wsBack" style="opacity:0.7">← Back</button>
           </div>
@@ -503,6 +519,20 @@ export class HUD {
       } catch (error) {
         msgEl.style.color = '#e54040';
         msgEl.textContent = error instanceof Error ? error.message : 'Could not open billing portal.';
+      }
+    });
+    (this.root.querySelector('#wsArchive') as HTMLButtonElement | null)?.addEventListener('click', async () => {
+      playClick();
+      msgEl.style.color = 'var(--accent)';
+      msgEl.textContent = 'Archiving workspace…';
+      try {
+        await sync.archiveWorkspace();
+        this.applyWorkspaceBranding();
+        msgEl.textContent = 'Workspace archived.';
+        this.render();
+      } catch (error) {
+        msgEl.style.color = '#e54040';
+        msgEl.textContent = error instanceof Error ? error.message : 'Could not archive workspace.';
       }
     });
     (this.root.querySelector('#wsCreateBtn') as HTMLButtonElement | null)?.addEventListener('click', async () => {
@@ -1215,6 +1245,18 @@ export class HUD {
     return this.escapeHtml(value)
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
+  }
+
+  private formatWorkspaceTimestamp(value: string): string {
+    const parsed = new Date(value.replace(' ', 'T'));
+    if (Number.isNaN(parsed.getTime())) return value;
+    return new Intl.DateTimeFormat(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(parsed);
   }
 
   private combatPanel(myTurn: boolean): string {

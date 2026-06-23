@@ -8,6 +8,9 @@ $body  = body();
 $email = strtolower(trim($body['email'] ?? ''));
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) json_error('Invalid email');
 
+rate_limit_or_fail('auth-request-link-ip', 10, 900);
+rate_limit_or_fail('auth-request-link-email', 5, 900, $email);
+
 try {
     $db = db();
     $accountType = classify_account_type($email);

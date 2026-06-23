@@ -14,4 +14,5 @@ revoke_workspace_invite($workspace['id'], $inviteId);
 json_out([
     'ok' => true,
     'invites' => list_workspace_invites($workspace['id']),
+    'activity' => list_workspace_activity($workspace['id']),
 ]);

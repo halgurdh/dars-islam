@@ -2,9 +2,20 @@
 <FilesMatch "^_">
     Require all denied
 </FilesMatch>
+<FilesMatch "\.(sql|env|ini|log|md|txt|yml|yaml)$">
+    Require all denied
+</FilesMatch>
 
 # Ensure PHP is processed
 AddHandler application/x-httpd-php .php
 
 # No directory listing
 Options -Indexes
+
+<IfModule mod_headers.c>
+    Header always set X-Robots-Tag "noindex, nofollow, noarchive"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "DENY"
+    Header always set Referrer-Policy "no-referrer"
+    Header always set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+</IfModule>

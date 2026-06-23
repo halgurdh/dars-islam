@@ -31,6 +31,8 @@ if (isset($portal['error'])) {
     json_error('Stripe portal error: ' . $portal['error']['message'], 502);
 }
 
+log_workspace_activity($workspace['id'], $uid, 'billing.portal_opened', 'Opened Stripe customer portal', 'customer', $row['stripe_customer_id']);
+
 json_out(['url' => $portal['url']]);
 
 function stripe_post(string $endpoint, array $params): array {

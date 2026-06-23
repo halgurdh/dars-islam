@@ -19,12 +19,17 @@ function db(): PDO {
 }
 
 function uuid(): string {
-    return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-        mt_rand(0, 0xffff), mt_rand(0, 0xffff),
-        mt_rand(0, 0xffff),
-        mt_rand(0, 0x0fff) | 0x4000,
-        mt_rand(0, 0x3fff) | 0x8000,
-        mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+    $bytes = random_bytes(16);
+    $bytes[6] = chr((ord($bytes[6]) & 0x0f) | 0x40);
+    $bytes[8] = chr((ord($bytes[8]) & 0x3f) | 0x80);
+    $hex = bin2hex($bytes);
+    return sprintf(
+        '%s-%s-%s-%s-%s',
+        substr($hex, 0, 8),
+        substr($hex, 8, 4),
+        substr($hex, 12, 4),
+        substr($hex, 16, 4),
+        substr($hex, 20, 12)
     );
 }
 

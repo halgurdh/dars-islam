@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS organizations (
   email_domain  VARCHAR(191) NULL,
   plan_key      VARCHAR(32)  NOT NULL DEFAULT 'free',
   is_personal   TINYINT(1)   NOT NULL DEFAULT 1,
+  archived_at   DATETIME     NULL,
   created_at    DATETIME     NOT NULL DEFAULT NOW(),
   updated_at    DATETIME     NOT NULL DEFAULT NOW(),
   FOREIGN KEY (owner_user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -63,6 +64,20 @@ CREATE TABLE IF NOT EXISTS organization_invites (
   FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
   FOREIGN KEY (invited_by_user_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (accepted_by_user_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS organization_activity_logs (
+  id              CHAR(36)     NOT NULL PRIMARY KEY,
+  organization_id CHAR(36)     NOT NULL,
+  actor_user_id   CHAR(36)     NULL,
+  action_key      VARCHAR(64)  NOT NULL,
+  target_type     VARCHAR(32)  NULL,
+  target_id       VARCHAR(64)  NULL,
+  message         VARCHAR(255) NOT NULL,
+  metadata_json   JSON         NULL,
+  created_at      DATETIME     NOT NULL DEFAULT NOW(),
+  FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+  FOREIGN KEY (actor_user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ── Magic-link tokens (1-hour expiry, single use) ────────────────────────────
@@ -127,3 +142,4 @@ CREATE INDEX idx_org_owner          ON organizations (owner_user_id);
 CREATE INDEX idx_org_members_user   ON organization_members (user_id);
 CREATE INDEX idx_org_invites_org    ON organization_invites (organization_id);
 CREATE INDEX idx_org_invites_email  ON organization_invites (email);
+CREATE INDEX idx_org_activity_org   ON organization_activity_logs (organization_id);

@@ -20,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     json_out([
         'ok' => true,
         'members' => list_workspace_members($workspace['id']),
+        'activity' => list_workspace_activity($workspace['id']),
     ]);
 }
 

@@ -29,6 +29,8 @@ export interface WorkspaceSummary {
   account_type: AccountType;
   email_domain: string | null;
   is_personal: boolean;
+  is_archived: boolean;
+  archived_at: string | null;
   role: string;
   member_count: number;
   limits: {
@@ -67,6 +69,21 @@ export interface WorkspaceBillingSummary {
   private_rooms_limit: number;
   upgrade_label: string;
   can_manage_subscription: boolean;
+  subscription_status: string;
+  current_period_end: string | null;
+  has_customer: boolean;
+  has_subscription: boolean;
+}
+
+export interface WorkspaceActivity {
+  id: string;
+  action_key: string;
+  target_type: string | null;
+  target_id: string | null;
+  message: string;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+  actor_email: string | null;
 }
 
 interface ServerProfile {
@@ -96,6 +113,7 @@ class SyncManager {
   private _members: WorkspaceMember[] = [];
   private _invites: WorkspaceInvite[] = [];
   private _billing: WorkspaceBillingSummary | null = null;
+  private _activity: WorkspaceActivity[] = [];
   private _timer:     ReturnType<typeof setTimeout> | null = null;
   private _listeners: Set<AuthListener> = new Set();
   private _ready      = false;
@@ -109,6 +127,7 @@ class SyncManager {
   get workspaceMembers(){ return this._members; }
   get workspaceInvites(){ return this._invites; }
   get workspaceBilling(){ return this._billing; }
+  get workspaceActivity(){ return this._activity; }
   get isLoggedIn(){ return !!this._userId; }
   get isReady()   { return this._ready; }
 
@@ -150,6 +169,7 @@ class SyncManager {
         this._members = [];
         this._invites = [];
         this._billing = null;
+        this._activity = [];
       }
     }
 
@@ -173,6 +193,7 @@ class SyncManager {
     this._members = [];
     this._invites = [];
     this._billing = null;
+    this._activity = [];
     this._notify(false, null);
   }
 
@@ -221,6 +242,9 @@ class SyncManager {
   async saveWorkspaceSettings(input: Partial<WorkspaceSettings>): Promise<WorkspaceSummary> {
     const result = await api.post<{ ok: true; workspace: WorkspaceSummary }>('/workspace/update.php', input);
     this._workspace = result.workspace;
+    this._workspaces = this._workspaces.map((workspace) =>
+      workspace.id === result.workspace.id ? result.workspace : workspace,
+    );
     return result.workspace;
   }
 
@@ -231,11 +255,13 @@ class SyncManager {
       workspaces: WorkspaceSummary[];
       members: WorkspaceMember[];
       invites: WorkspaceInvite[];
+      activity: WorkspaceActivity[];
     }>('/workspace/get.php');
     this._workspace = result.workspace;
     this._workspaces = result.workspaces;
     this._members = result.members;
     this._invites = result.invites;
+    this._activity = result.activity;
     const billing = await api.get<{ billing: WorkspaceBillingSummary }>('/workspace/billing.php');
     this._billing = billing.billing;
   }
@@ -247,11 +273,13 @@ class SyncManager {
       workspaces: WorkspaceSummary[];
       members: WorkspaceMember[];
       invites: WorkspaceInvite[];
+      activity: WorkspaceActivity[];
     }>('/workspace/create.php', { name });
     this._workspace = result.workspace;
     this._workspaces = result.workspaces;
     this._members = result.members;
     this._invites = result.invites;
+    this._activity = result.activity;
     await this.refreshWorkspaceBilling();
   }
 
@@ -262,11 +290,13 @@ class SyncManager {
       workspaces: WorkspaceSummary[];
       members: WorkspaceMember[];
       invites: WorkspaceInvite[];
+      activity: WorkspaceActivity[];
     }>('/workspace/switch.php', { workspace_id: workspaceId });
     this._workspace = result.workspace;
     this._workspaces = result.workspaces;
     this._members = result.members;
     this._invites = result.invites;
+    this._activity = result.activity;
     const billing = await api.get<{ billing: WorkspaceBillingSummary }>('/workspace/billing.php');
     this._billing = billing.billing;
   }
@@ -275,34 +305,40 @@ class SyncManager {
     const result = await api.post<{
       ok: true;
       invite_url: string;
+      mail_sent: boolean;
       members: WorkspaceMember[];
       invites: WorkspaceInvite[];
+      activity: WorkspaceActivity[];
     }>('/workspace/invite.php', { email, role });
     this._members = result.members;
     this._invites = result.invites;
+    this._activity = result.activity;
     return { invite_url: result.invite_url };
   }
 
   async revokeWorkspaceInvite(inviteId: string): Promise<void> {
-    const result = await api.post<{ ok: true; invites: WorkspaceInvite[] }>('/workspace/revoke-invite.php', { invite_id: inviteId });
+    const result = await api.post<{ ok: true; invites: WorkspaceInvite[]; activity: WorkspaceActivity[] }>('/workspace/revoke-invite.php', { invite_id: inviteId });
     this._invites = result.invites;
+    this._activity = result.activity;
   }
 
   async updateWorkspaceMemberRole(userId: string, role: 'admin' | 'member'): Promise<void> {
-    const result = await api.post<{ ok: true; members: WorkspaceMember[] }>('/workspace/members.php', {
+    const result = await api.post<{ ok: true; members: WorkspaceMember[]; activity: WorkspaceActivity[] }>('/workspace/members.php', {
       user_id: userId,
       role,
     });
     this._members = result.members;
+    this._activity = result.activity;
     const billing = await api.get<{ billing: WorkspaceBillingSummary }>('/workspace/billing.php');
     this._billing = billing.billing;
   }
 
   async removeWorkspaceMember(userId: string): Promise<void> {
-    const result = await api.post<{ ok: true; members: WorkspaceMember[] }>('/workspace/remove-member.php', {
+    const result = await api.post<{ ok: true; members: WorkspaceMember[]; activity: WorkspaceActivity[] }>('/workspace/remove-member.php', {
       user_id: userId,
     });
     this._members = result.members;
+    this._activity = result.activity;
     const billing = await api.get<{ billing: WorkspaceBillingSummary }>('/workspace/billing.php');
     this._billing = billing.billing;
   }
@@ -312,9 +348,11 @@ class SyncManager {
       ok: true;
       workspace: WorkspaceSummary;
       members: WorkspaceMember[];
+      activity: WorkspaceActivity[];
     }>('/workspace/transfer-owner.php', { user_id: userId });
     this._workspace = result.workspace;
     this._members = result.members;
+    this._activity = result.activity;
     await this.refreshWorkspace();
   }
 
@@ -325,11 +363,30 @@ class SyncManager {
       workspaces: WorkspaceSummary[];
       members: WorkspaceMember[];
       invites: WorkspaceInvite[];
+      activity: WorkspaceActivity[];
     }>('/workspace/leave.php', { workspace_id: workspaceId });
     this._workspace = result.workspace;
     this._workspaces = result.workspaces;
     this._members = result.members;
     this._invites = result.invites;
+    this._activity = result.activity;
+    await this.refreshWorkspaceBilling();
+  }
+
+  async archiveWorkspace(): Promise<void> {
+    const result = await api.post<{
+      ok: true;
+      workspace: WorkspaceSummary;
+      workspaces: WorkspaceSummary[];
+      members: WorkspaceMember[];
+      invites: WorkspaceInvite[];
+      activity: WorkspaceActivity[];
+    }>('/workspace/archive.php');
+    this._workspace = result.workspace;
+    this._workspaces = result.workspaces;
+    this._members = result.members;
+    this._invites = result.invites;
+    this._activity = result.activity;
     await this.refreshWorkspaceBilling();
   }
 
@@ -359,12 +416,15 @@ class SyncManager {
         workspaces: WorkspaceSummary[];
         members: WorkspaceMember[];
         invites: WorkspaceInvite[];
+        activity: WorkspaceActivity[];
       }>('/workspace/accept-invite.php', { token });
       this._workspace = result.workspace;
       this._workspaces = result.workspaces;
       this._members = result.members;
       this._invites = result.invites;
+      this._activity = result.activity;
       localStorage.removeItem('minitoon:pending-invite');
+      await this.refreshWorkspaceBilling();
     } catch {
       // Keep token if acceptance fails, so the user can retry after reauth or deployment fixes.
     }

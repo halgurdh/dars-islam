@@ -5,8 +5,8 @@ require_once __DIR__ . '/../_helpers.php';
 // Validates the magic link token, creates a session, redirects to the site.
 
 $token = $_GET['token'] ?? '';
-if (!$token) {
-    header('Location: ' . SITE_URL . '/?auth_error=missing_token');
+if (!$token || !is_hex_token($token, 32)) {
+    header('Location: ' . SITE_URL . '/?auth_error=invalid_token');
     exit;
 }
 

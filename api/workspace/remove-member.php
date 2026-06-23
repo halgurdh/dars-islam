@@ -14,4 +14,5 @@ remove_workspace_member($session['user_id'], $workspace['id'], $memberUserId);
 json_out([
     'ok' => true,
     'members' => list_workspace_members($workspace['id']),
+    'activity' => list_workspace_activity($workspace['id']),
 ]);

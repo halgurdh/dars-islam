@@ -3,13 +3,23 @@ require_once __DIR__ . '/_db.php';
 
 // ── CORS + preflight ─────────────────────────────────────────────────────────
 header('Access-Control-Allow-Origin: ' . SITE_URL);
+header('Vary: Origin');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, X-Session-Token');
+header('X-Robots-Tag: noindex, nofollow, noarchive');
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: DENY');
+header('Referrer-Policy: no-referrer');
+header("Content-Security-Policy: default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'");
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
     exit;
 }
+
+enforce_same_origin_for_browser_requests();
 
 // ── Response helpers ─────────────────────────────────────────────────────────
 function json_out(mixed $data, int $status = 200): never {
@@ -26,6 +36,88 @@ function json_error(string $msg, int $status = 400): never {
 function server_error(string $publicMsg, string $logMsg): never {
     error_log('[minitoon api] ' . $logMsg);
     json_error($publicMsg, 500);
+}
+
+function enforce_same_origin_for_browser_requests(): void {
+    $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+    if (!in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'], true)) {
+        return;
+    }
+
+    $siteHost = parse_url(SITE_URL, PHP_URL_HOST) ?: '';
+    $siteScheme = parse_url(SITE_URL, PHP_URL_SCHEME) ?: 'https';
+    $siteOrigin = $siteScheme . '://' . $siteHost;
+    $origin = trim((string) ($_SERVER['HTTP_ORIGIN'] ?? ''));
+    $fetchSite = strtolower(trim((string) ($_SERVER['HTTP_SEC_FETCH_SITE'] ?? '')));
+
+    if ($origin !== '') {
+        $originHost = parse_url($origin, PHP_URL_HOST) ?: '';
+        $originScheme = parse_url($origin, PHP_URL_SCHEME) ?: '';
+        if ($originHost !== $siteHost || $originScheme !== $siteScheme) {
+            json_error('Forbidden origin', 403);
+        }
+    }
+
+    if ($fetchSite !== '' && !in_array($fetchSite, ['same-origin', 'same-site', 'none'], true)) {
+        json_error('Cross-site request blocked', 403);
+    }
+
+    header('Access-Control-Allow-Origin: ' . ($origin !== '' ? $origin : $siteOrigin));
+}
+
+function client_ip(): string {
+    $remote = trim((string) ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
+    return $remote !== '' ? $remote : 'unknown';
+}
+
+function rate_limit_or_fail(string $bucket, int $limit, int $windowSeconds, ?string $subject = null): void {
+    $subject = $subject !== null && $subject !== '' ? strtolower(trim($subject)) : client_ip();
+    $key = hash('sha256', $bucket . '|' . $subject);
+    $dir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'minitoon-rate-limit';
+    if (!is_dir($dir) && !@mkdir($dir, 0775, true) && !is_dir($dir)) {
+        return;
+    }
+
+    $path = $dir . DIRECTORY_SEPARATOR . $key . '.json';
+    $now = time();
+    $state = ['started_at' => $now, 'count' => 0];
+
+    $fh = @fopen($path, 'c+');
+    if ($fh === false) {
+        return;
+    }
+
+    try {
+        if (!flock($fh, LOCK_EX)) {
+            return;
+        }
+
+        $raw = stream_get_contents($fh);
+        if (is_string($raw) && $raw !== '') {
+            $decoded = json_decode($raw, true);
+            if (is_array($decoded)) {
+                $state = array_merge($state, $decoded);
+            }
+        }
+
+        if (($now - (int) ($state['started_at'] ?? $now)) >= $windowSeconds) {
+            $state = ['started_at' => $now, 'count' => 0];
+        }
+
+        $state['count'] = (int) ($state['count'] ?? 0) + 1;
+        if ($state['count'] > $limit) {
+            header('Retry-After: ' . max(1, $windowSeconds - ($now - (int) $state['started_at'])));
+            json_error('Too many requests. Please try again later.', 429);
+        }
+
+        ftruncate($fh, 0);
+        rewind($fh);
+        fwrite($fh, json_encode($state, JSON_UNESCAPED_UNICODE));
+        fflush($fh);
+        flock($fh, LOCK_UN);
+    } finally {
+        fclose($fh);
+    }
 }
 
 function body(): array {
@@ -78,6 +170,10 @@ function slugify_workspace(string $value): string {
     $value = preg_replace('/[^a-z0-9]+/', '-', $value);
     $value = trim($value ?? '', '-');
     return $value !== '' ? substr($value, 0, 80) : 'workspace';
+}
+
+function is_hex_token(string $value, int $bytes = 32): bool {
+    return (bool) preg_match('/^[a-f0-9]{' . ($bytes * 2) . '}$/', strtolower(trim($value)));
 }
 
 function title_from_domain(string $domain): string {
@@ -134,6 +230,55 @@ function workspace_usage(PDO $db, string $workspaceId): array {
     return [
         'members' => (int) $memberStmt->fetchColumn(),
     ];
+}
+
+function log_workspace_activity(
+    string $workspaceId,
+    ?string $actorUserId,
+    string $actionKey,
+    string $message,
+    ?string $targetType = null,
+    ?string $targetId = null,
+    ?array $metadata = null,
+): void {
+    db()->prepare(
+        'INSERT INTO organization_activity_logs
+         (id, organization_id, actor_user_id, action_key, target_type, target_id, message, metadata_json)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+    )->execute([
+        uuid(),
+        $workspaceId,
+        $actorUserId,
+        $actionKey,
+        $targetType,
+        $targetId,
+        substr($message, 0, 255),
+        $metadata ? json_encode($metadata, JSON_UNESCAPED_UNICODE) : null,
+    ]);
+}
+
+function list_workspace_activity(string $workspaceId, int $limit = 40): array {
+    $stmt = db()->prepare(
+        'SELECT l.id, l.action_key, l.target_type, l.target_id, l.message, l.metadata_json, l.created_at, u.email AS actor_email
+         FROM organization_activity_logs l
+         LEFT JOIN users u ON u.id = l.actor_user_id
+         WHERE l.organization_id = ?
+         ORDER BY l.created_at DESC
+         LIMIT ' . max(1, min(200, $limit))
+    );
+    $stmt->execute([$workspaceId]);
+    return array_map(static function (array $row): array {
+        return [
+            'id' => $row['id'],
+            'action_key' => $row['action_key'],
+            'target_type' => $row['target_type'],
+            'target_id' => $row['target_id'],
+            'message' => $row['message'],
+            'metadata' => $row['metadata_json'] ? json_decode($row['metadata_json'], true) : null,
+            'created_at' => $row['created_at'],
+            'actor_email' => $row['actor_email'],
+        ];
+    }, $stmt->fetchAll());
 }
 
 // ── Session auth ─────────────────────────────────────────────────────────────
@@ -216,6 +361,7 @@ function ensure_workspace_for_user(string $userId, string $email): array {
     ]);
 
     $db->prepare('UPDATE users SET active_organization_id = ? WHERE id = ?')->execute([$orgId, $userId]);
+    log_workspace_activity($orgId, $userId, 'workspace.auto_created', 'Workspace created automatically on sign-in', 'workspace', $orgId);
     return get_workspace_for_user($userId);
 }
 
@@ -230,6 +376,8 @@ function workspace_summary_from_row(PDO $db, array $row): array {
         'account_type' => $row['workspace_account_type'],
         'email_domain' => $row['email_domain'],
         'is_personal' => (bool) $row['is_personal'],
+        'is_archived' => !empty($row['archived_at']),
+        'archived_at' => $row['archived_at'] ?? null,
         'role' => $row['role'] ?? 'member',
         'member_count' => (int) $row['member_count'],
         'limits' => $limits,
@@ -256,6 +404,7 @@ function get_workspace_for_user(string $userId): array {
             o.account_type AS workspace_account_type,
             o.email_domain,
             o.is_personal,
+            o.archived_at,
             om.role,
             ws.brand_name,
             ws.brand_tagline,
@@ -297,6 +446,7 @@ function list_workspaces_for_user(string $userId): array {
             o.account_type AS workspace_account_type,
             o.email_domain,
             o.is_personal,
+            o.archived_at,
             om.role,
             ws.brand_name,
             ws.brand_tagline,
@@ -316,11 +466,19 @@ function list_workspaces_for_user(string $userId): array {
 function switch_workspace_for_user(string $userId, string $workspaceId): array {
     $db = db();
     $stmt = $db->prepare(
-        'SELECT 1 FROM organization_members WHERE organization_id = ? AND user_id = ? LIMIT 1'
+        'SELECT o.archived_at
+         FROM organization_members om
+         JOIN organizations o ON o.id = om.organization_id
+         WHERE om.organization_id = ? AND om.user_id = ?
+         LIMIT 1'
     );
     $stmt->execute([$workspaceId, $userId]);
-    if (!$stmt->fetch()) {
+    $row = $stmt->fetch();
+    if (!$row) {
         json_error('Workspace not found', 404);
+    }
+    if (!empty($row['archived_at'])) {
+        json_error('Workspace is archived', 409);
     }
     $db->prepare('UPDATE users SET active_organization_id = ? WHERE id = ?')->execute([$workspaceId, $userId]);
     return get_workspace_for_user($userId);
@@ -404,6 +562,10 @@ function create_workspace_for_user(string $userId, string $email, string $name, 
         $db->prepare('UPDATE users SET active_organization_id = ? WHERE id = ?')->execute([$orgId, $userId]);
     }
 
+    log_workspace_activity($orgId, $userId, 'workspace.created', 'Workspace created', 'workspace', $orgId, [
+        'name' => $name,
+    ]);
+
     return get_workspace_for_user($userId);
 }
 
@@ -451,6 +613,11 @@ function create_workspace_invite(string $workspaceId, string $inviterUserId, str
          VALUES (?, ?, ?, ?, ?, ?, ?)'
     )->execute([$invite['id'], $workspaceId, $email, $invite['token'], $role, $inviterUserId, $invite['expires_at']]);
 
+    log_workspace_activity($workspaceId, $inviterUserId, 'invite.created', 'Invite created for ' . $email, 'invite', $invite['id'], [
+        'email' => $email,
+        'role' => $role,
+    ]);
+
     return $invite;
 }
 
@@ -459,6 +626,13 @@ function revoke_workspace_invite(string $workspaceId, string $inviteId): void {
         'UPDATE organization_invites SET revoked_at = NOW()
          WHERE id = ? AND organization_id = ? AND accepted_at IS NULL AND revoked_at IS NULL'
     )->execute([$inviteId, $workspaceId]);
+    log_workspace_activity($workspaceId, null, 'invite.revoked', 'Invite revoked', 'invite', $inviteId);
+}
+
+function send_workspace_invite_email(string $recipientEmail, string $inviteUrl, string $workspaceName, string $role): bool {
+    $subject = 'You are invited to join ' . $workspaceName;
+    $message = "Hi!\n\nYou have been invited to join the workspace \"" . $workspaceName . "\" as " . $role . ".\n\nOpen this link to accept the invite:\n\n" . $inviteUrl . "\n\nIf you are not signed in yet, sign in first and the invite will be accepted automatically.\n\nMinitoon Games";
+    return send_text_mail($recipientEmail, $subject, $message);
 }
 
 function get_workspace_member(string $workspaceId, string $memberUserId): ?array {
@@ -501,6 +675,9 @@ function update_workspace_member_role(string $actingUserId, string $workspaceId,
     db()->prepare(
         'UPDATE organization_members SET role = ? WHERE organization_id = ? AND user_id = ?'
     )->execute([$newRole, $workspaceId, $memberUserId]);
+    log_workspace_activity($workspaceId, $actingUserId, 'member.role_updated', 'Member role updated', 'user', $memberUserId, [
+        'role' => $newRole,
+    ]);
 }
 
 function remove_workspace_member(string $actingUserId, string $workspaceId, string $memberUserId): void {
@@ -522,6 +699,7 @@ function remove_workspace_member(string $actingUserId, string $workspaceId, stri
     db()->prepare(
         'DELETE FROM organization_members WHERE organization_id = ? AND user_id = ?'
     )->execute([$workspaceId, $memberUserId]);
+    log_workspace_activity($workspaceId, $actingUserId, 'member.removed', 'Member removed from workspace', 'user', $memberUserId);
 }
 
 function transfer_workspace_owner(string $actingUserId, string $workspaceId, string $newOwnerUserId): void {
@@ -545,6 +723,7 @@ function transfer_workspace_owner(string $actingUserId, string $workspaceId, str
         ->execute(['owner', $workspaceId, $newOwnerUserId]);
     $db->prepare('UPDATE organizations SET owner_user_id = ?, updated_at = NOW() WHERE id = ?')
         ->execute([$newOwnerUserId, $workspaceId]);
+    log_workspace_activity($workspaceId, $actingUserId, 'workspace.owner_transferred', 'Workspace ownership transferred', 'user', $newOwnerUserId);
 }
 
 function leave_workspace(string $userId, string $email, string $workspaceId): array {
@@ -559,6 +738,7 @@ function leave_workspace(string $userId, string $email, string $workspaceId): ar
 
     $db->prepare('DELETE FROM organization_members WHERE organization_id = ? AND user_id = ?')
       ->execute([$workspaceId, $userId]);
+    log_workspace_activity($workspaceId, $userId, 'workspace.left', 'Member left workspace', 'user', $userId);
 
     $remaining = list_workspaces_for_user($userId);
     if (count($remaining) === 0) {
@@ -569,6 +749,27 @@ function leave_workspace(string $userId, string $email, string $workspaceId): ar
     $nextWorkspaceId = $remaining[0]['id'];
     $db->prepare('UPDATE users SET active_organization_id = ? WHERE id = ?')->execute([$nextWorkspaceId, $userId]);
     return get_workspace_for_user($userId);
+}
+
+function archive_workspace(string $actingUserId, string $workspaceId): array {
+    require_workspace_role($actingUserId, ['owner']);
+    $db = db();
+    $db->prepare('UPDATE organizations SET archived_at = NOW(), updated_at = NOW() WHERE id = ?')
+      ->execute([$workspaceId]);
+    log_workspace_activity($workspaceId, $actingUserId, 'workspace.archived', 'Workspace archived', 'workspace', $workspaceId);
+
+    $remaining = list_workspaces_for_user($actingUserId);
+    foreach ($remaining as $candidate) {
+        if ($candidate['id'] !== $workspaceId && !$candidate['is_archived']) {
+            $db->prepare('UPDATE users SET active_organization_id = ? WHERE id = ?')->execute([$candidate['id'], $actingUserId]);
+            return get_workspace_for_user($actingUserId);
+        }
+    }
+
+    $emailStmt = $db->prepare('SELECT email FROM users WHERE id = ?');
+    $emailStmt->execute([$actingUserId]);
+    $email = (string) ($emailStmt->fetchColumn() ?: '');
+    return create_workspace_for_user($actingUserId, $email, 'New Workspace', true);
 }
 
 function accept_pending_invites_for_user(string $userId, string $email): void {
@@ -594,6 +795,9 @@ function accept_pending_invites_for_user(string $userId, string $email): void {
         $db->prepare(
             'UPDATE organization_invites SET accepted_by_user_id = ?, accepted_at = NOW() WHERE id = ?'
         )->execute([$userId, $invite['id']]);
+        log_workspace_activity($invite['organization_id'], $userId, 'invite.accepted', 'Invite accepted', 'invite', $invite['id'], [
+            'email' => $email,
+        ]);
     }
 }
 
@@ -623,6 +827,7 @@ function accept_invite_token_for_user(string $userId, string $token): array {
     $db->prepare(
         'UPDATE organization_invites SET accepted_by_user_id = ?, accepted_at = NOW() WHERE id = ?'
     )->execute([$userId, $invite['id']]);
+    log_workspace_activity($invite['organization_id'], $userId, 'invite.accepted', 'Invite accepted via token', 'invite', $invite['id']);
 
     return switch_workspace_for_user($userId, $invite['organization_id']);
 }

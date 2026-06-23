@@ -12,4 +12,5 @@ json_out([
     'workspaces' => list_workspaces_for_user($session['user_id']),
     'members' => list_workspace_members($workspace['id']),
     'invites' => list_workspace_invites($workspace['id']),
+    'activity' => list_workspace_activity($workspace['id']),
 ]);

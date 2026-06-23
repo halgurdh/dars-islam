@@ -1,6 +1,5 @@
 <?php
-require_once __DIR__ . '/../_db.php';
-require_once __DIR__ . '/../_config.php';
+require_once __DIR__ . '/../_helpers.php';
 
 // Raw body must be read before any output
 $payload   = file_get_contents('php://input');
@@ -36,14 +35,18 @@ exit;
 
 // ── Handlers ─────────────────────────────────────────────────────────────────
 
+function subscription_grants_access(string $status): bool {
+    return in_array($status, ['active', 'trialing', 'past_due'], true);
+}
+
 function handle_subscription(PDO $db, array $sub): void {
     $uid        = $sub['metadata']['minitoon_user_id'] ?? ($sub['client_reference_id'] ?? null);
     $orgId      = $sub['metadata']['minitoon_workspace_id'] ?? null;
     $customerId = $sub['customer'] ?? null;
     $subId      = $sub['id'] ?? null;
     $status     = $sub['status'] ?? 'unknown';
-    $isActive   = in_array($status, ['active', 'trialing']);
-    $periodEnd  = $isActive && isset($sub['current_period_end'])
+    $isActive   = subscription_grants_access($status);
+    $periodEnd  = isset($sub['current_period_end'])
         ? date('Y-m-d H:i:s', (int) $sub['current_period_end'])
         : null;
 
@@ -69,6 +72,11 @@ function handle_subscription(PDO $db, array $sub): void {
     if ($orgId) {
         $db->prepare('UPDATE organizations SET plan_key = ?, updated_at = NOW() WHERE id = ?')
             ->execute([$isActive ? 'studio' : 'free', $orgId]);
+        log_workspace_activity($orgId, $uid, 'billing.subscription_synced', 'Subscription synced from Stripe', 'subscription', $subId, [
+            'status' => $status,
+            'current_period_end' => $periodEnd,
+            'cancel_at_period_end' => $sub['cancel_at_period_end'] ?? false,
+        ]);
     }
 
     // Grant 500 coin bonus + Dragon card backs on new subscription
@@ -114,16 +122,7 @@ function handle_cancellation(PDO $db, array $sub): void {
     if ($orgRow && !empty($orgRow['organization_id'])) {
         $db->prepare('UPDATE organizations SET plan_key = ?, updated_at = NOW() WHERE id = ?')
             ->execute(['free', $orgRow['organization_id']]);
-    }
-}
-
-function ensure_profile(string $uid, PDO $db): void {
-    $exists = $db->prepare('SELECT 1 FROM profiles WHERE user_id = ?');
-    $exists->execute([$uid]);
-    if (!$exists->fetch()) {
-        $db->prepare(
-            "INSERT INTO profiles (user_id, owned_card_backs) VALUES (?, JSON_ARRAY('cardBack_blue1'))"
-        )->execute([$uid]);
+        log_workspace_activity($orgRow['organization_id'], $row['user_id'] ?? null, 'billing.subscription_canceled', 'Subscription canceled from Stripe', 'subscription', $subId);
     }
 }
 
@@ -147,11 +146,4 @@ function verify_stripe_signature(string $payload, string $sigHeader, string $sec
     $expected  = hash_hmac('sha256', $signed, $secret);
 
     return hash_equals($expected, $parts['v1']);
-}
-
-function uuid(): string {
-    return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-        mt_rand(0,0xffff),mt_rand(0,0xffff),mt_rand(0,0xffff),
-        mt_rand(0,0x0fff)|0x4000,mt_rand(0,0x3fff)|0x8000,
-        mt_rand(0,0xffff),mt_rand(0,0xffff),mt_rand(0,0xffff));
 }

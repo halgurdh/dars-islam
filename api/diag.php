@@ -1,5 +1,34 @@
 <?php
+header('X-Robots-Tag: noindex, nofollow, noarchive');
+header('X-Content-Type-Options: nosniff');
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Content-Type: application/json; charset=utf-8');
+
+try {
+    require_once __DIR__ . '/_config.php';
+} catch (Throwable $e) {
+    http_response_code(500);
+    echo json_encode(['ok' => false, 'error' => 'Configuration load failed'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+$diagEnabled = defined('DIAG_ENABLED') && DIAG_ENABLED === true;
+$diagKey = defined('DIAG_ACCESS_KEY') ? (string) DIAG_ACCESS_KEY : '';
+$providedKey = (string) ($_GET['key'] ?? '');
+$remoteAddr = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
+$isLocal = in_array($remoteAddr, ['127.0.0.1', '::1'], true);
+
+if (!$diagEnabled && !$isLocal) {
+    http_response_code(404);
+    echo json_encode(['ok' => false, 'error' => 'Not found'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+if ($diagKey !== '' && !hash_equals($diagKey, $providedKey)) {
+    http_response_code(403);
+    echo json_encode(['ok' => false, 'error' => 'Forbidden'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
 
 $result = [
     'ok' => true,
@@ -17,7 +46,6 @@ function diag_step(string $name, bool $ok, array $extra = []): void {
 }
 
 try {
-    require_once __DIR__ . '/_config.php';
     diag_step('load_config', true, [
         'site_url' => defined('SITE_URL') ? SITE_URL : null,
         'from_email' => defined('FROM_EMAIL') ? FROM_EMAIL : null,
@@ -62,7 +90,7 @@ try {
 
 try {
     $tables = [];
-    foreach (['users', 'auth_tokens', 'sessions', 'profiles', 'organizations', 'organization_members', 'workspace_settings', 'organization_invites'] as $table) {
+    foreach (['users', 'auth_tokens', 'sessions', 'profiles', 'organizations', 'organization_members', 'workspace_settings', 'organization_invites', 'organization_activity_logs'] as $table) {
         try {
             db()->query("SELECT 1 FROM {$table} LIMIT 1");
             $tables[$table] = true;
