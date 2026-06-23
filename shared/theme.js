@@ -163,6 +163,11 @@ export function initInstallPrompt(options = {}) {
   const isIOS = () =>
     /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
 
+  const isFirefox = () => /firefox/i.test(navigator.userAgent);
+
+  // Browsers that need manual "Add to Home Screen" instructions (no API)
+  const needsManualInstall = () => isIOS() || isFirefox();
+
   const wasDismissed = () => {
     const t = localStorage.getItem('installDismissedAt');
     return t && Date.now() - Number(t) < 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -184,12 +189,19 @@ export function initInstallPrompt(options = {}) {
       animation:installSlideUp 0.35s ease;
     `;
 
-    const iosSteps = isIOS() ? `
-      <ol style="margin:10px 0 0;padding-left:18px;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7">
-        <li>Tap the <strong style="color:#fff">Share</strong> button <span style="font-size:16px">⎙</span> in Safari</li>
-        <li>Scroll down → tap <strong style="color:#fff">Add to Home Screen</strong></li>
-        <li>Tap <strong style="color:#fff">Add</strong></li>
-      </ol>` : '';
+    const manualSteps = isIOS()
+      ? `<ol style="margin:10px 0 0;padding-left:18px;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7">
+          <li>Tap the <strong style="color:#fff">Share</strong> button <span style="font-size:16px">⎙</span> in Safari</li>
+          <li>Scroll down → tap <strong style="color:#fff">Add to Home Screen</strong></li>
+          <li>Tap <strong style="color:#fff">Add</strong></li>
+        </ol>`
+      : isFirefox()
+      ? `<ol style="margin:10px 0 0;padding-left:18px;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7">
+          <li>Tap the <strong style="color:#fff">menu</strong> button <span style="font-size:16px">⋮</span> in Firefox</li>
+          <li>Tap <strong style="color:#fff">Install</strong> or <strong style="color:#fff">Add to Home Screen</strong></li>
+          <li>Tap <strong style="color:#fff">Add</strong></li>
+        </ol>`
+      : '';
 
     popup.innerHTML = `
       <style>@keyframes installSlideUp{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}</style>
@@ -200,10 +212,10 @@ export function initInstallPrompt(options = {}) {
           <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-top:2px">Play offline · No app store needed</div>
         </div>
       </div>
-      ${iosSteps}
+      ${manualSteps}
       <div style="display:flex;gap:8px;margin-top:14px">
-        ${!isIOS() ? `<button id="install-popup-yes" style="flex:1;padding:10px;border:none;border-radius:8px;background:#ff6b35;color:#fff;font-weight:700;font-size:14px;cursor:pointer">Install now</button>` : ''}
-        <button id="install-popup-no" style="flex:1;padding:10px;border:1px solid rgba(255,255,255,0.15);border-radius:8px;background:transparent;color:rgba(255,255,255,0.6);font-size:13px;cursor:pointer">${isIOS() ? 'Got it' : 'Not now'}</button>
+        ${!needsManualInstall() ? `<button id="install-popup-yes" style="flex:1;padding:10px;border:none;border-radius:8px;background:#ff6b35;color:#fff;font-weight:700;font-size:14px;cursor:pointer">Install now</button>` : ''}
+        <button id="install-popup-no" style="flex:1;padding:10px;border:1px solid rgba(255,255,255,0.15);border-radius:8px;background:transparent;color:rgba(255,255,255,0.6);font-size:13px;cursor:pointer">${needsManualInstall() ? 'Got it' : 'Not now'}</button>
       </div>`;
 
     document.body.appendChild(popup);
@@ -229,7 +241,7 @@ export function initInstallPrompt(options = {}) {
 
   function maybeShow() {
     if (isStandalone() || wasDismissed()) return;
-    if (!deferredPrompt && !isIOS()) return;
+    if (!deferredPrompt && !needsManualInstall()) return;
     createPopup();
   }
 
@@ -245,7 +257,7 @@ export function initInstallPrompt(options = {}) {
         try { await deferredPrompt.userChoice; } finally { deferredPrompt = null; syncBtn(); }
         return;
       }
-      if (isIOS()) createPopup();
+      if (needsManualInstall()) createPopup();
     });
 
     syncBtn();
@@ -261,8 +273,8 @@ export function initInstallPrompt(options = {}) {
 
   window.addEventListener('appinstalled', closePopup);
 
-  // iOS: fire after delay with no event needed
-  if (isIOS() && !isStandalone()) {
+  // iOS / Firefox: no beforeinstallprompt event — fire after delay directly
+  if (needsManualInstall() && !isStandalone()) {
     setTimeout(maybeShow, delayMs);
   }
 }
