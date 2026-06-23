@@ -23,9 +23,33 @@ function json_error(string $msg, int $status = 400): never {
     json_out(['error' => $msg], $status);
 }
 
+function server_error(string $publicMsg, string $logMsg): never {
+    error_log('[minitoon api] ' . $logMsg);
+    json_error($publicMsg, 500);
+}
+
 function body(): array {
     $raw = file_get_contents('php://input');
     return $raw ? (json_decode($raw, true) ?? []) : [];
+}
+
+function send_text_mail(string $to, string $subject, string $message): bool {
+    if (!filter_var(FROM_EMAIL, FILTER_VALIDATE_EMAIL)) {
+        error_log('[minitoon api] Invalid FROM_EMAIL configured: ' . FROM_EMAIL);
+        return false;
+    }
+
+    $headers = implode("\r\n", [
+        'From: ' . FROM_NAME . ' <' . FROM_EMAIL . '>',
+        'Reply-To: ' . FROM_EMAIL,
+        'MIME-Version: 1.0',
+        'Content-Type: text/plain; charset=UTF-8',
+        'X-Mailer: PHP/' . phpversion(),
+    ]);
+
+    // Shared hosts often require a valid envelope sender on the same domain.
+    $extraParams = '-f ' . FROM_EMAIL;
+    return mail($to, $subject, $message, $headers, $extraParams);
 }
 
 // ── Session auth ─────────────────────────────────────────────────────────────
