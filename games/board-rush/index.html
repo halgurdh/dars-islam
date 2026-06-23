@@ -67,10 +67,11 @@
     <script type="module" src="./src/main.ts"></script>
     <script type="module">
       import '@shared/theme.css';
-      import { initTheme, initFullscreen, initInstallPrompt } from '@shared/theme.js';
+      import { initTheme, initFullscreen, initInstallPrompt, initOrientationLock } from '@shared/theme.js';
       initTheme();
       initFullscreen({ targetId: 'game' });
       initInstallPrompt();
+      initOrientationLock('landscape');
     </script>
   </body>
 </html>

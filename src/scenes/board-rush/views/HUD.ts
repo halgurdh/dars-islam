@@ -968,7 +968,7 @@ export class HUD {
     const s = document.createElement('style');
     s.id = 'hud-styles';
     s.textContent = `
-      .hud-root { position:absolute; pointer-events:none; font-family:'Segoe UI',system-ui,sans-serif; color:var(--text-primary);
+      .hud-root { position:absolute; pointer-events:none; z-index:100; font-family:'Segoe UI',system-ui,sans-serif; color:var(--text-primary);
         --hud-scale: 1;
         --hud-gap: clamp(6px, calc(10px * var(--hud-scale)), 12px);
         --hud-sidebar-width: clamp(220px, calc(420px * var(--hud-scale)), 520px);
@@ -998,6 +998,7 @@ export class HUD {
       .actions { display:flex; gap:8px; flex-wrap:wrap; } .actions.col { flex-direction:column; }
       .hud-root button { background:var(--bg-secondary); color:var(--text-primary); border:1px solid var(--border-color); border-radius:5px;
         padding:10px 12px; font-size:var(--hud-button-font); cursor:pointer; min-height:44px;
+        touch-action:manipulation; -webkit-tap-highlight-color:transparent; user-select:none;
         transition:transform 0.1s ease, background 0.1s ease, box-shadow 0.1s ease; }
       @media (hover: hover) and (pointer: fine) {
         .hud-root button:hover:not(:disabled) { background:var(--accent-light); transform:scale(1.06); box-shadow:0 2px 10px rgba(0,0,0,0.15); }

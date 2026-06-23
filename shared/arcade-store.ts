@@ -149,12 +149,12 @@ export const ArcadeStore = {
   },
 
   canWatchAd(): boolean {
-    const cooldownMs = 5 * 60 * 1000; // 5 minutes
+    const cooldownMs = 30 * 60 * 1000; // 30 minutes
     return Date.now() - this.getLastAdTime() >= cooldownMs;
   },
 
   adCooldownRemaining(): number {
-    const cooldownMs = 5 * 60 * 1000;
+    const cooldownMs = 30 * 60 * 1000; // 30 minutes
     return Math.max(0, cooldownMs - (Date.now() - this.getLastAdTime()));
   },
 
