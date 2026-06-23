@@ -28,6 +28,13 @@ export default defineConfig(({ mode }) => {
       port: 5174,
       host: true,
       open: true,
+      proxy: {
+        '/api': {
+          target: 'http://localhost:8000',
+          changeOrigin: true,
+          secure: false,
+        },
+      },
     },
 
     plugins: [

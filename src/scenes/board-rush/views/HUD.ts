@@ -8,8 +8,39 @@ import { playClick } from '@src/sfx';
 import { networkManager } from '@src/net/NetworkManager';
 import { reconstitute } from '@src/net/GameSerializer';
 import type { GameSnap } from '@src/net/protocol';
+import { ArcadeStore } from '../../../../shared/arcade-store';
+import { injectAd } from '../../../../shared/ad-provider';
+import { sync } from '../../../../shared/sync';
 
-type UIMode = 'landing' | 'local' | 'online' | 'net-pick';
+type UIMode = 'landing' | 'local' | 'online' | 'net-pick' | 'shop' | 'ad' | 'auth';
+
+interface CardBackDef {
+  key: string;
+  label: string;
+  price: number;
+  tier: 'free' | 'coins' | 'premium';
+}
+
+const CARD_BACKS: CardBackDef[] = [
+  { key: 'cardBack_blue2', label: 'Classic Blue',  price: 0,   tier: 'free' },
+  { key: 'cardBack_blue1', label: 'Blue I',        price: 100, tier: 'coins' },
+  { key: 'cardBack_blue3', label: 'Blue III',      price: 100, tier: 'coins' },
+  { key: 'cardBack_blue4', label: 'Blue IV',       price: 150, tier: 'coins' },
+  { key: 'cardBack_blue5', label: 'Blue V',        price: 200, tier: 'coins' },
+  { key: 'cardBack_green1', label: 'Forest I',     price: 200, tier: 'coins' },
+  { key: 'cardBack_green2', label: 'Forest II',    price: 200, tier: 'coins' },
+  { key: 'cardBack_green3', label: 'Forest III',   price: 250, tier: 'coins' },
+  { key: 'cardBack_green4', label: 'Forest IV',    price: 300, tier: 'coins' },
+  { key: 'cardBack_green5', label: 'Forest V',     price: 350, tier: 'coins' },
+  { key: 'cardBack_red1',  label: 'Dragon I',      price: 0,   tier: 'premium' },
+  { key: 'cardBack_red2',  label: 'Dragon II',     price: 0,   tier: 'premium' },
+  { key: 'cardBack_red3',  label: 'Dragon III',    price: 0,   tier: 'premium' },
+  { key: 'cardBack_red4',  label: 'Dragon IV',     price: 0,   tier: 'premium' },
+  { key: 'cardBack_red5',  label: 'Dragon V',      price: 0,   tier: 'premium' },
+];
+
+const AD_REWARD_COINS = 50;
+const AD_DURATION_SEC = 30;
 
 export class HUD {
   private root:    HTMLDivElement;
@@ -28,6 +59,10 @@ export class HUD {
   private _lobbyCode          = '';
   private _netPicked          = false;
 
+  // Shop / ad state
+  private _adInterval: ReturnType<typeof setInterval> | null = null;
+  private _shopFrom:   UIMode = 'landing';
+
   constructor(parent: HTMLElement, ctx: GameContext, machine: StateMachine<GameContext>) {
     this.parent  = parent;
     this.ctx     = ctx;
@@ -43,6 +78,18 @@ export class HUD {
     this.injectStyles();
     this.subscribe();
     this.bindLayoutTracking();
+
+    // Init Supabase sync — re-render landing when auth state changes
+    ArcadeStore.registerSyncCallback(() => sync.scheduleSync());
+    sync.init().then(() => {
+      if (this._uiMode === 'landing') this.render();
+    });
+    sync.onAuthChange(() => {
+      if (this._uiMode === 'landing' || this._uiMode === 'auth') {
+        this._uiMode = 'landing';
+        this.render();
+      }
+    });
   }
 
   private subscribe(): void {
@@ -65,6 +112,7 @@ export class HUD {
   destroy(): void {
     this.busUnsubs.forEach((unsub) => unsub());
     this.busUnsubs = [];
+    if (this._adInterval !== null) { clearInterval(this._adInterval); this._adInterval = null; }
     this.resizeObserver?.disconnect();
     this.resizeObserver = null;
     window.removeEventListener('resize', this.windowResizeHandler);
@@ -110,21 +158,50 @@ export class HUD {
     if (this._uiMode === 'local')    { this.renderClassSelect(); return; }
     if (this._uiMode === 'online')   { this.renderOnlineLobby(); return; }
     if (this._uiMode === 'net-pick') { this.renderNetClassPick(); return; }
+    if (this._uiMode === 'shop')     { this.renderShop(); return; }
+    if (this._uiMode === 'ad')       { this.renderAdModal(); return; }
+    if (this._uiMode === 'auth')     { this.renderAuth(); return; }
     this.renderLanding();
   }
 
   // ── Landing ───────────────────────────────────────────────────────────────
 
   private renderLanding(): void {
+    const coins   = ArcadeStore.getCoins();
+    const premium = ArcadeStore.getPremium();
+    const canAd   = ArcadeStore.canWatchAd();
+    const coolMs  = ArcadeStore.adCooldownRemaining();
+    const coolMin = Math.ceil(coolMs / 60000);
+    const adLabel = canAd
+      ? `📺 Watch Ad <span class="ad-reward">+${AD_REWARD_COINS}🪙</span>`
+      : `📺 Ad ready in ${coolMin}m`;
+    const premiumBadge = premium.active ? '<span class="premium-badge">👑 PREMIUM</span>' : '';
+
     this.root.innerHTML = `
       <div class="overlay">
         <div class="panel center">
           <h1>⚔ BOARD RUSH ⚔</h1>
+          ${premiumBadge}
           <p class="sub">A fantasy board game adventure</p>
-          <div class="actions col" style="margin-top:24px; gap:14px">
+
+          <div class="coin-bar">
+            <span class="coin-count">🪙 ${coins}</span>
+            <button id="btnShop" class="btn-icon" title="Card Back Shop">🛒 Shop</button>
+            <button id="btnAd" class="btn-icon ${canAd ? '' : 'btn-cooldown'}" ${canAd ? '' : 'disabled'} title="Watch a short ad for coins">${adLabel}</button>
+          </div>
+          <div class="auth-bar">
+            ${sync.isLoggedIn
+              ? `<span class="auth-email">☁ ${sync.email}</span><button id="btnSignOut" class="btn-auth-sm">Sign out</button>`
+              : `<button id="btnSignIn" class="btn-auth">☁ Sign in to sync across devices</button>`
+            }
+          </div>
+
+          <div class="actions col" style="margin-top:20px; gap:14px">
             <button id="btnLocal"  style="font-size:16px; padding:12px 28px">👥 Local Hotseat</button>
             <button id="btnOnline" style="font-size:16px; padding:12px 28px">🌐 Play Online</button>
           </div>
+
+          ${!premium.active ? `<a class="premium-link" href="/" target="_top">👑 Get Premium — unlock Dragon card backs + 500 coins</a>` : ''}
         </div>
       </div>`;
 
@@ -138,6 +215,232 @@ export class HUD {
     (this.root.querySelector('#btnOnline') as HTMLButtonElement).onclick = () => {
       playClick();
       this._uiMode = 'online';
+      this.render();
+    };
+    (this.root.querySelector('#btnShop') as HTMLButtonElement).onclick = () => {
+      playClick();
+      this._shopFrom = 'landing';
+      this._uiMode   = 'shop';
+      this.render();
+    };
+    const adBtn = this.root.querySelector('#btnAd') as HTMLButtonElement | null;
+    if (adBtn && canAd) {
+      adBtn.onclick = () => {
+        playClick();
+        this._shopFrom = 'landing';
+        this._uiMode   = 'ad';
+        this.render();
+      };
+    }
+
+    (this.root.querySelector('#btnSignIn') as HTMLButtonElement | null)?.addEventListener('click', () => {
+      playClick(); this._uiMode = 'auth'; this.render();
+    });
+    (this.root.querySelector('#btnSignOut') as HTMLButtonElement | null)?.addEventListener('click', async () => {
+      playClick(); await sync.signOut(); this.render();
+    });
+  }
+
+  // ── Auth ──────────────────────────────────────────────────────────────────
+
+  private renderAuth(): void {
+    this.root.innerHTML = `
+      <div class="overlay">
+        <div class="panel center" style="max-width:360px">
+          <h2>☁ Sync Your Progress</h2>
+          <p class="sub">Enter your email — we'll send a magic link.<br>No password needed.</p>
+          <div class="row" style="margin-top:16px">
+            <input id="authEmail" type="email" placeholder="you@example.com"
+              style="width:100%; box-sizing:border-box; font-size:15px" autocomplete="email" />
+          </div>
+          <div id="authMsg" style="min-height:18px; font-size:12px; margin:6px 0; color:var(--accent)"></div>
+          <div class="actions col" style="gap:10px">
+            <button id="authSend" style="font-size:15px; padding:12px">Send Magic Link</button>
+            <button id="authBack" style="opacity:0.7">← Play as Guest</button>
+          </div>
+          <p class="sub" style="margin-top:14px; font-size:11px; opacity:0.6">
+            Signing in syncs coins, card backs, and premium status across all your devices.
+          </p>
+        </div>
+      </div>`;
+
+    const emailEl = this.root.querySelector('#authEmail') as HTMLInputElement;
+    const msgEl   = this.root.querySelector('#authMsg')   as HTMLElement;
+    const sendBtn = this.root.querySelector('#authSend')  as HTMLButtonElement;
+
+    (this.root.querySelector('#authBack') as HTMLButtonElement).onclick = () => {
+      playClick(); this._uiMode = 'landing'; this.render();
+    };
+
+    sendBtn.onclick = async () => {
+      const email = emailEl.value.trim();
+      if (!email) { msgEl.textContent = 'Please enter your email.'; return; }
+      sendBtn.disabled = true;
+      msgEl.textContent = 'Sending…';
+      try {
+        await sync.signIn(email);
+        this.root.innerHTML = `
+          <div class="overlay">
+            <div class="panel center" style="max-width:360px">
+              <h2>✉ Check your email!</h2>
+              <p class="sub">We sent a link to <strong>${email}</strong>.<br>Click it to sign in — you can close this.</p>
+              <div class="actions" style="margin-top:20px; justify-content:center">
+                <button id="authBackDone">← Back to Game</button>
+              </div>
+            </div>
+          </div>`;
+        (this.root.querySelector('#authBackDone') as HTMLButtonElement).onclick = () => {
+          playClick(); this._uiMode = 'landing'; this.render();
+        };
+      } catch {
+        sendBtn.disabled  = false;
+        msgEl.style.color = '#e54040';
+        msgEl.textContent = 'Could not send link — check your email and try again.';
+      }
+    };
+  }
+
+  // ── Shop ──────────────────────────────────────────────────────────────────
+
+  private renderShop(): void {
+    const coins   = ArcadeStore.getCoins();
+    const owned   = ArcadeStore.getOwnedCardBacks();
+    const active  = ArcadeStore.getCardBack();
+    const premium = ArcadeStore.getPremium();
+
+    const cards = CARD_BACKS.map((cb) => {
+      const isOwned   = owned.includes(cb.key);
+      const isActive  = cb.key === active;
+      const isPremLocked = cb.tier === 'premium' && !premium.active && !isOwned;
+      const canAfford = cb.tier === 'coins' && coins >= cb.price && !isOwned;
+      const imgPath   = `assets/cards/${cb.key}.png`;
+
+      let badge = '';
+      let actionBtn = '';
+      if (isActive) {
+        badge = '<span class="shop-badge shop-badge--active">✓ Active</span>';
+      } else if (isOwned) {
+        actionBtn = `<button class="shop-select-btn" data-key="${cb.key}">Select</button>`;
+      } else if (isPremLocked) {
+        badge = '<span class="shop-badge shop-badge--premium">👑 Premium</span>';
+      } else if (cb.tier === 'free') {
+        actionBtn = `<button class="shop-select-btn" data-key="${cb.key}">Select</button>`;
+      } else {
+        actionBtn = `<button class="shop-buy-btn ${canAfford ? '' : 'btn-cooldown'}" data-key="${cb.key}" data-price="${cb.price}" ${canAfford ? '' : 'disabled'}>
+          🪙 ${cb.price}
+        </button>`;
+      }
+
+      return `<div class="shop-card ${isActive ? 'shop-card--active' : ''}">
+        <img class="shop-preview" src="${imgPath}" alt="${cb.label}" />
+        <div class="shop-card-label">${cb.label}</div>
+        ${badge}
+        ${actionBtn}
+      </div>`;
+    }).join('');
+
+    this.root.innerHTML = `
+      <div class="overlay">
+        <div class="panel shop-panel">
+          <div class="shop-header">
+            <h2>🛒 Card Back Shop</h2>
+            <span class="coin-count">🪙 ${coins}</span>
+          </div>
+          <p class="sub" style="margin:2px 0 12px">Buy card backs with coins earned from ads &amp; games</p>
+          <div class="shop-grid">${cards}</div>
+          <div class="actions" style="margin-top:16px; justify-content:center">
+            <button id="shopBack">← Back</button>
+          </div>
+        </div>
+      </div>`;
+
+    (this.root.querySelector('#shopBack') as HTMLButtonElement).onclick = () => {
+      playClick();
+      this._uiMode = this._shopFrom;
+      this.render();
+    };
+
+    this.root.querySelectorAll('.shop-select-btn').forEach((btn) => {
+      (btn as HTMLButtonElement).onclick = () => {
+        playClick();
+        ArcadeStore.setCardBack((btn as HTMLElement).dataset.key!);
+        this.render();
+      };
+    });
+
+    this.root.querySelectorAll('.shop-buy-btn').forEach((btn) => {
+      (btn as HTMLButtonElement).onclick = () => {
+        const key   = (btn as HTMLElement).dataset.key!;
+        const price = parseInt((btn as HTMLElement).dataset.price ?? '0', 10);
+        if (!ArcadeStore.spendCoins(price)) return;
+        playClick();
+        ArcadeStore.unlockCardBack(key);
+        ArcadeStore.setCardBack(key);
+        this.render();
+      };
+    });
+  }
+
+  // ── Rewarded ad modal ─────────────────────────────────────────────────────
+
+  private renderAdModal(): void {
+    const premium = ArcadeStore.getPremium();
+
+    if (premium.active) {
+      // Premium users skip the wait — instant reward
+      ArcadeStore.addCoins(AD_REWARD_COINS);
+      ArcadeStore.setLastAdTime(Date.now());
+      this._uiMode = this._shopFrom;
+      this.render();
+      return;
+    }
+
+    let remaining = AD_DURATION_SEC;
+
+    this.root.innerHTML = `
+      <div class="overlay">
+        <div class="panel center ad-panel">
+          <div id="adContainer" class="ad-screen"></div>
+          <div class="ad-info">
+            <div class="ad-timer-wrap">
+              <div class="ad-timer" id="adTimer">${remaining}</div>
+              <div class="ad-timer-label">seconds</div>
+            </div>
+            <p>Watch to earn <strong>🪙 ${AD_REWARD_COINS} coins</strong></p>
+            <div class="ad-progress-bar"><div class="ad-progress-fill" id="adFill" style="width:0%"></div></div>
+          </div>
+          <button id="adSkip" disabled style="margin-top:16px; opacity:0.4">Skip (${remaining}s)</button>
+        </div>
+      </div>`;
+
+    const adContainer = this.root.querySelector('#adContainer') as HTMLElement;
+    if (adContainer) injectAd(adContainer);
+
+    const timerEl = this.root.querySelector('#adTimer') as HTMLElement;
+    const fillEl  = this.root.querySelector('#adFill')  as HTMLElement;
+    const skipBtn = this.root.querySelector('#adSkip')  as HTMLButtonElement;
+
+    this._adInterval = setInterval(() => {
+      remaining--;
+      const pct = ((AD_DURATION_SEC - remaining) / AD_DURATION_SEC) * 100;
+      if (timerEl) timerEl.textContent = String(remaining);
+      if (fillEl)  fillEl.style.width  = `${pct}%`;
+      if (skipBtn) skipBtn.textContent  = remaining > 0 ? `Skip (${remaining}s)` : '✓ Claim 🪙 ' + AD_REWARD_COINS;
+
+      if (remaining <= 0) {
+        clearInterval(this._adInterval!);
+        this._adInterval = null;
+        if (skipBtn) { skipBtn.disabled = false; skipBtn.style.opacity = '1'; }
+      }
+    }, 1000);
+
+    skipBtn.onclick = () => {
+      if (remaining > 0) return;
+      if (this._adInterval !== null) { clearInterval(this._adInterval); this._adInterval = null; }
+      playClick();
+      ArcadeStore.addCoins(AD_REWARD_COINS);
+      ArcadeStore.setLastAdTime(Date.now());
+      this._uiMode = this._shopFrom;
       this.render();
     };
   }
@@ -428,9 +731,19 @@ export class HUD {
       ? `<span class="dim" style="font-size:12px"> · waiting for ${Access.id(cur).name}…</span>`
       : '';
 
+    const coins   = ArcadeStore.getCoins();
+    const premium = ArcadeStore.getPremium();
+    const canAd   = ArcadeStore.canWatchAd();
+    const premBadge = premium.active ? ' <span class="premium-badge-sm">👑</span>' : '';
+
     this.root.innerHTML = `
       <div class="sidebar">
         <div class="round">Round ${ctx.round} — ${Access.id(cur).name}'s turn${turnLabel}</div>
+        <div class="sidebar-econ">
+          <span class="coin-count-sm">🪙 ${coins}${premBadge}</span>
+          <button id="sideShop" class="btn-icon-sm" title="Card Back Shop">🛒</button>
+          <button id="sideAd" class="btn-icon-sm ${canAd ? '' : 'btn-cooldown'}" ${canAd ? '' : 'disabled'} title="${canAd ? 'Watch Ad +' + AD_REWARD_COINS + ' coins' : 'Ad on cooldown'}">📺</button>
+        </div>
         <div class="players">${playerCards}</div>
         <div class="square"><b>${sq.label}</b><br><span class="dim">${sq.description}</span></div>
         <div class="actions">
@@ -468,6 +781,24 @@ export class HUD {
         ((b as HTMLButtonElement).onclick = () => { playClick(); this._sendAction('buy', (b as HTMLElement).dataset.buy); }));
       (this.root.querySelector('#leave') as HTMLButtonElement | null)
         ?.addEventListener('click', () => { playClick(); this._sendAction('leave'); });
+    }
+
+    (this.root.querySelector('#sideShop') as HTMLButtonElement | null)
+      ?.addEventListener('click', () => {
+        playClick();
+        this._shopFrom = 'landing';
+        this._uiMode   = 'shop';
+        this.render();
+      });
+
+    const sideAdBtn = this.root.querySelector('#sideAd') as HTMLButtonElement | null;
+    if (sideAdBtn && ArcadeStore.canWatchAd()) {
+      sideAdBtn.addEventListener('click', () => {
+        playClick();
+        this._shopFrom = 'landing';
+        this._uiMode   = 'ad';
+        this.render();
+      });
     }
   }
 
@@ -577,44 +908,60 @@ export class HUD {
   private syncLayout(): void {
     const target = this.parent.querySelector('canvas') ?? this.parent;
     const parentRect = this.parent.getBoundingClientRect();
-    const targetRect = target.getBoundingClientRect();
-    const width = Math.round(targetRect.width || parentRect.width);
-    const height = Math.round(targetRect.height || parentRect.height);
-    const viewportScale = window.visualViewport?.scale ?? 1;
-    const effectiveWidth = width * viewportScale;
-    const effectiveHeight = height * viewportScale;
-    const shortEdge = Math.min(effectiveWidth, effectiveHeight);
-    const left = Math.round(targetRect.left - parentRect.left);
-    const top = Math.round(targetRect.top - parentRect.top);
-    const scale = Math.max(0.55, Math.min(1.35, Math.min(width / 1280, height / 720)));
-    const aspect = height > 0 ? width / height : 16 / 9;
-    const layout =
-      effectiveWidth <= 420 || effectiveHeight <= 340 ? 'xs' :
-      effectiveWidth <= 720 || effectiveHeight <= 560 ? 'sm' :
-      effectiveWidth <= 980 ? 'md' : 'lg';
-    const aspectMode =
-      aspect >= 1.7 ? 'wide' :
-      aspect >= 1.15 ? 'landscape' :
-      aspect > 0.85 ? 'square' : 'portrait';
-    const deviceMode =
-      shortEdge <= 430 ? 'phone' :
-      shortEdge <= 820 ? 'tablet' : 'desktop';
+    const targetRect  = target.getBoundingClientRect();
+    const canvasW = Math.round(targetRect.width  || parentRect.width);
+    const canvasH = Math.round(targetRect.height || parentRect.height);
+    const vvScale = window.visualViewport?.scale ?? 1;
 
-    this.root.style.left = '0px';
-    this.root.style.top = '0px';
-    this.root.style.width = '1280px';
-    this.root.style.height = '720px';
-    this.root.style.transformOrigin = 'top left';
-    this.root.style.transform = `translate(${left}px, ${top}px) scale(${scale})`;
-    this.root.style.setProperty('--hud-scale', scale.toFixed(3));
-    this.root.style.setProperty('--hud-aspect', aspect.toFixed(3));
-    this.root.style.setProperty('--hud-short-edge', `${shortEdge}px`);
-    this.root.style.setProperty('--hud-effective-width', `${Math.round(effectiveWidth)}px`);
-    this.root.style.setProperty('--hud-effective-height', `${Math.round(effectiveHeight)}px`);
-    this.root.dataset.layout = layout;
-    this.root.dataset.orientation = width >= height ? 'landscape' : 'portrait';
-    this.root.dataset.aspectMode = aspectMode;
-    this.root.dataset.device = deviceMode;
+    // True device viewport (unscaled)
+    const vw = window.visualViewport?.width  ?? window.innerWidth;
+    const vh = window.visualViewport?.height ?? window.innerHeight;
+    const shortEdge   = Math.min(vw, vh);
+    const deviceMode  = shortEdge <= 430 ? 'phone' : shortEdge <= 820 ? 'tablet' : 'desktop';
+    const aspect      = vh > 0 ? vw / vh : 16 / 9;
+    const aspectMode  = aspect >= 1.7 ? 'wide' : aspect >= 1.15 ? 'landscape' : aspect > 0.85 ? 'square' : 'portrait';
+    const isPortraitPhone = deviceMode === 'phone' && (aspectMode === 'portrait' || aspectMode === 'square');
+
+    const effW   = canvasW * vvScale;
+    const effH   = canvasH * vvScale;
+    const layout = effW <= 420 || effH <= 340 ? 'xs' : effW <= 720 || effH <= 560 ? 'sm' : effW <= 980 ? 'md' : 'lg';
+
+    this.root.dataset.layout      = layout;
+    this.root.dataset.orientation = vw >= vh ? 'landscape' : 'portrait';
+    this.root.dataset.aspectMode  = aspectMode;
+    this.root.dataset.device      = deviceMode;
+    this.root.style.setProperty('--hud-short-edge',        `${Math.round(shortEdge)}px`);
+    this.root.style.setProperty('--hud-effective-width',   `${Math.round(effW)}px`);
+    this.root.style.setProperty('--hud-effective-height',  `${Math.round(effH)}px`);
+
+    if (isPortraitPhone) {
+      // Full-screen fixed overlay — no canvas-relative transform needed.
+      // Avoids the overflow problem when canvas is letterboxed to e.g. 390×219
+      // inside a 390×844 viewport.
+      this.root.style.position        = 'fixed';
+      this.root.style.left            = '0';
+      this.root.style.top             = '0';
+      this.root.style.width           = `${Math.round(vw)}px`;
+      this.root.style.height          = `${Math.round(vh)}px`;
+      this.root.style.transform       = 'none';
+      this.root.style.transformOrigin = 'unset';
+      this.root.style.setProperty('--hud-scale', '1');
+      this.root.style.setProperty('--hud-aspect', aspect.toFixed(3));
+    } else {
+      // Scaled 1280×720 overlay anchored to the canvas rect
+      const canvasLeft = Math.round(targetRect.left - parentRect.left);
+      const canvasTop  = Math.round(targetRect.top  - parentRect.top);
+      const scale      = Math.max(0.42, Math.min(1.35, Math.min(canvasW / 1280, canvasH / 720)));
+      this.root.style.position        = 'absolute';
+      this.root.style.left            = '0px';
+      this.root.style.top             = '0px';
+      this.root.style.width           = '1280px';
+      this.root.style.height          = '720px';
+      this.root.style.transformOrigin = 'top left';
+      this.root.style.transform       = `translate(${canvasLeft}px,${canvasTop}px) scale(${scale})`;
+      this.root.style.setProperty('--hud-scale', scale.toFixed(3));
+      this.root.style.setProperty('--hud-aspect', (canvasH > 0 ? canvasW / canvasH : 16 / 9).toFixed(3));
+    }
   }
 
   // ── Styles ────────────────────────────────────────────────────────────────
@@ -922,6 +1269,68 @@ export class HUD {
         .csuit { font-size:15px; }
       }
 
+      /* ── Auth bar ─────────────────────────────────────────────────────────── */
+      .auth-bar { display:flex; align-items:center; justify-content:center; gap:8px; margin:4px 0 2px;
+        font-size:var(--hud-text-sm); }
+      .auth-email { color:var(--text-secondary); opacity:0.8; max-width:200px;
+        overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+      .btn-auth { font-size:12px; padding:5px 10px; min-height:30px; opacity:0.75;
+        background:transparent !important; border-color:var(--border-color) !important; }
+      .btn-auth:hover { opacity:1 !important; }
+      .btn-auth-sm { font-size:11px; padding:4px 8px; min-height:26px; opacity:0.6; }
+
+      /* ── Economy / Shop / Ad styles ───────────────────────────────────────── */
+      .coin-bar { display:flex; align-items:center; gap:8px; justify-content:center; flex-wrap:wrap;
+        background:var(--surface-muted); border-radius:8px; padding:8px 12px; margin:10px 0 4px; }
+      .coin-count { font-size:clamp(15px, 1.6vw, 18px); font-weight:700; color:var(--accent); }
+      .btn-icon { font-size:var(--hud-button-font); padding:6px 10px; min-height:36px; }
+      .btn-cooldown { opacity:0.5; }
+      .ad-reward { color:var(--accent); font-weight:700; }
+      .premium-badge { display:inline-block; background:linear-gradient(135deg,#b8860b,#ffd700);
+        color:#1a1200; font-size:13px; font-weight:bold; padding:3px 10px; border-radius:20px; margin:4px 0 8px; }
+      .premium-link { display:block; margin-top:12px; font-size:12px; color:var(--accent); opacity:0.8;
+        text-decoration:none; transition:opacity 0.15s; }
+      .premium-link:hover { opacity:1; text-decoration:underline; }
+
+      /* Sidebar economy strip */
+      .sidebar-econ { display:flex; align-items:center; gap:6px; }
+      .coin-count-sm { flex:1; font-size:var(--hud-text-sm); font-weight:700; color:var(--accent); }
+      .btn-icon-sm { font-size:13px; padding:4px 7px; min-height:30px; line-height:1; }
+      .premium-badge-sm { font-size:11px; }
+
+      /* Shop */
+      .shop-panel { max-width:min(96%, 820px) !important; width:min(96%, 820px) !important; }
+      .shop-header { display:flex; align-items:center; gap:12px; justify-content:space-between; }
+      .shop-header h2 { margin:0; }
+      .shop-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(110px, 1fr)); gap:10px; margin-top:8px;
+        max-height:min(55vh, 400px); overflow-y:auto; padding:4px 2px; }
+      .shop-card { display:flex; flex-direction:column; align-items:center; gap:5px;
+        background:var(--surface-muted); border:2px solid var(--border-color); border-radius:8px;
+        padding:10px 6px 8px; transition:border-color 0.15s; }
+      .shop-card--active { border-color:var(--accent); }
+      .shop-preview { width:56px; height:72px; object-fit:contain; border-radius:4px;
+        box-shadow:0 2px 6px rgba(0,0,0,0.25); }
+      .shop-card-label { font-size:11px; font-weight:600; text-align:center; color:var(--text-primary); }
+      .shop-badge { font-size:10px; padding:2px 6px; border-radius:10px; font-weight:600; }
+      .shop-badge--active { background:rgba(255,107,53,0.2); color:var(--accent); }
+      .shop-badge--premium { background:linear-gradient(135deg,#b8860b,#ffd700); color:#1a1200; }
+      .shop-select-btn { font-size:11px; padding:4px 10px; min-height:28px; width:100%; }
+      .shop-buy-btn { font-size:11px; padding:4px 10px; min-height:28px; width:100%;
+        background:linear-gradient(135deg,var(--accent-light),var(--accent)) !important;
+        color:#fff !important; font-weight:700; }
+
+      /* Rewarded ad */
+      .ad-panel { max-width:360px !important; }
+      .ad-screen { background:#111; border-radius:8px; overflow:hidden;
+        display:flex; align-items:center; justify-content:center;
+        margin-bottom:14px; border:1px solid #333; min-height:120px; }
+      .ad-info { display:flex; flex-direction:column; align-items:center; gap:6px; }
+      .ad-timer-wrap { display:flex; flex-direction:column; align-items:center; }
+      .ad-timer { font-size:clamp(32px, 5vw, 48px); font-weight:900; color:var(--accent); line-height:1; }
+      .ad-timer-label { font-size:11px; opacity:0.6; }
+      .ad-progress-bar { width:240px; height:6px; background:var(--surface-muted); border-radius:3px; overflow:hidden; }
+      .ad-progress-fill { height:100%; background:var(--accent); border-radius:3px; transition:width 0.9s linear; }
+
       /* Keep landscape-ish phone ratios docked right even when generic mobile media rules match later. */
       .hud-root[data-aspect-mode="landscape"][data-layout="sm"] .sidebar,
       .hud-root[data-aspect-mode="landscape"][data-layout="xs"] .sidebar,
@@ -1040,42 +1449,89 @@ export class HUD {
         min-height:0;
       }
 
+      /* ── Portrait phone: fixed full-viewport layout ─────────────────────────
+         The HUD root is position:fixed covering 100vw × 100dvh.
+         Elements use real px / dvh — no transform scaling involved.       */
       .hud-root[data-device="phone"][data-aspect-mode="portrait"],
       .hud-root[data-device="phone"][data-aspect-mode="square"] {
         --hud-sidebar-width: 100%;
         --hud-hand-width: 100%;
-        --hud-card-width: 40px;
-        --hud-card-height: 54px;
+        --hud-card-width: 44px;
+        --hud-card-height: 58px;
+        --hud-button-font: 14px;
+        --hud-text-sm: 11px;
+        --hud-text-md: 13px;
+        --hud-text-lg: 16px;
+        --hud-gap: 5px;
+        --hud-panel-width: min(94vw, 480px);
       }
 
       .hud-root[data-device="phone"][data-aspect-mode="portrait"] .sidebar,
       .hud-root[data-device="phone"][data-aspect-mode="square"] .sidebar {
-        left:var(--safe-left, 0px);
-        right:var(--safe-right, 0px);
-        top:0;
-        width:auto;
-        height:auto;
-        max-height:40%;
-        padding:8px 8px 10px;
-        border-left:none;
-        border-bottom:1px solid var(--border-color);
+        position: absolute;
+        left: 0; right: 0; top: 0;
+        width: 100% !important;
+        height: auto;
+        max-height: 38dvh;
+        padding: 10px 14px 10px;
+        border-left: none;
+        border-bottom: 1px solid var(--border-color);
+        overflow-y: auto;
       }
 
       .hud-root[data-device="phone"][data-aspect-mode="portrait"] .handbar,
       .hud-root[data-device="phone"][data-aspect-mode="square"] .handbar {
-        left:var(--safe-left, 0px);
-        width:calc(100% - var(--safe-left, 0px) - var(--safe-right, 0px));
-        min-height:58px;
-        padding:6px 8px calc(6px + var(--safe-bottom, 0px));
-        gap:4px;
+        position: absolute;
+        left: 0; right: 0; bottom: 0;
+        width: 100% !important;
+        min-height: 64px;
+        padding: 8px 14px calc(8px + env(safe-area-inset-bottom, 0px));
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .hud-root[data-device="phone"][data-aspect-mode="portrait"] .handbar::-webkit-scrollbar,
+      .hud-root[data-device="phone"][data-aspect-mode="square"]  .handbar::-webkit-scrollbar {
+        display: none;
+      }
+
+      .hud-root[data-device="phone"][data-aspect-mode="portrait"] .card,
+      .hud-root[data-device="phone"][data-aspect-mode="square"] .card {
+        flex: 0 0 auto;
+      }
+
+      .hud-root[data-device="phone"][data-aspect-mode="portrait"] .overlay,
+      .hud-root[data-device="phone"][data-aspect-mode="square"] .overlay {
+        align-items: flex-end;
+        padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
       }
 
       .hud-root[data-device="phone"][data-aspect-mode="portrait"] .panel,
       .hud-root[data-device="phone"][data-aspect-mode="square"] .panel {
-        width:100%;
-        max-width:100%;
-        border-radius:14px;
-        padding:16px 14px;
+        width: min(96vw, 480px) !important;
+        max-width: min(96vw, 480px) !important;
+        border-radius: 16px;
+        padding: 18px 16px;
+        max-height: 80dvh;
+      }
+
+      .hud-root[data-device="phone"][data-aspect-mode="portrait"] .classGrid,
+      .hud-root[data-device="phone"][data-aspect-mode="square"] .classGrid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .hud-root[data-device="phone"][data-aspect-mode="portrait"] .hud-root button,
+      .hud-root[data-device="phone"][data-aspect-mode="square"] .hud-root button {
+        min-height: 44px;
+      }
+
+      .hud-root[data-device="phone"][data-aspect-mode="portrait"] .shop-grid,
+      .hud-root[data-device="phone"][data-aspect-mode="square"] .shop-grid {
+        grid-template-columns: repeat(auto-fill, minmax(90px,1fr));
+        max-height: 55dvh;
       }
 
       .hud-root[data-device="phone"][data-aspect-mode="landscape"],

@@ -8,12 +8,19 @@ import { CLASS_DEFS, HeroClass } from '@src/game/data/classes';
 export function assetManifest(): { key: string; path: string }[] {
   const list: { key: string; path: string }[] = [];
 
-  // Card faces (52) + a back
+  // Card faces (52)
   for (const card of fullDeck()) {
     const file = cardAsset(card);
     list.push({ key: file.replace('.png', ''), path: `assets/cards/${file}` });
   }
-  list.push({ key: 'cardBack', path: 'assets/cards/cardBack_blue2.png' });
+
+  // All card back variants — blue (1-5), green (1-5), red (1-5)
+  for (const color of ['blue', 'green', 'red']) {
+    for (let n = 1; n <= 5; n++) {
+      const key = `cardBack_${color}${n}`;
+      list.push({ key, path: `assets/cards/${key}.png` });
+    }
+  }
 
   // Dice (white + red, faces 1-6)
   for (let f = 1; f <= 6; f++) {

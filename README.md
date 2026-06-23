@@ -161,4 +161,18 @@ CI build
 
 A GitHub Actions workflow (`.github/workflows/electron-build-windows.yml`) will run on pushes to `main` and produce a `dist/` artifact with Windows build outputs.
 
+# Adsense link
+```
+const PROVIDER: Provider = 'adsense';        // line 1
+const ADSENSE_PUB  = 'ca-pub-XXXXXXXX';      // line 2
+const ADSENSE_SLOT = 'XXXXXXXXXX';           // line 3
+
+```
+# STRIPE
+
+```
+Create a product + €20/month recurring price → copy prod_XXXX as STRIPE_PRODUCT_ID
+Add webhook → point to https://minitoon.games/api/stripe/webhook.php
+Listen for: customer.subscription.created, customer.subscription.updated, customer.subscription.deleted
+Copy the webhook signing secret → set as STRIPE_WEBHOOK_SECRET in api/_config.php
 ```

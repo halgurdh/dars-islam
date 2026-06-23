@@ -1,0 +1,10 @@
+# Block direct access to private files
+<FilesMatch "^_">
+    Require all denied
+</FilesMatch>
+
+# Ensure PHP is processed
+AddHandler application/x-httpd-php .php
+
+# No directory listing
+Options -Indexes

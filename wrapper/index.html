@@ -63,11 +63,28 @@
           </div>
           <span class="hero-feature__icon">🌍</span>
           <div>
-            <strong>GLOBAL REACH</strong>
-            <span>Loved by millions around the world.</span>
+            <strong>Multiple Device Sync</strong>
+            <span>Play your games on any device around the world and pick up right where you left off.</span>
           </div>
         </div>
       </div>
+    </section>
+
+    <!-- Premium / Battle Pass Banner -->
+    <section id="premiumBanner" class="premium-banner">
+      <div class="premium-banner__inner">
+        <div class="premium-banner__left">
+          <span class="premium-crown">👑</span>
+          <div class="premium-banner__copy">
+            <strong>Minitoon Premium</strong>
+            <span>5 exclusive Dragon card backs · 500 bonus coins · Instant ad rewards</span>
+          </div>
+        </div>
+        <button id="premiumBtn" class="premium-cta">Get Premium — €4.99/mo</button>
+      </div>
+      <p id="premiumActivatedMsg" style="display:none; text-align:center; color:#ffd700; font-weight:700; margin:8px 0 0">
+        ✓ Premium activated! Dragon card backs + 500 coins added. Enjoy!
+      </p>
     </section>
 
     <!-- Game Grid -->
@@ -100,6 +117,12 @@
       </div>
     </main>
 
+    <!-- Sponsor Ad Banner (hidden for premium users) -->
+    <div id="adBanner" class="ad-banner" style="display:none">
+      <button id="adBannerClose" class="ad-banner__close" aria-label="Close ad">✕</button>
+      <div id="adBannerContent" class="ad-banner__content"></div>
+    </div>
+
     <!-- Footer Banner -->
     <footer class="hub-footer">
       <p class="hub-footer__play">PLAY MORE. SMILE MORE.</p>
@@ -111,7 +134,124 @@
     <script type="module">
       import '@shared/theme.css';
       import { initTheme } from '@shared/theme.js';
+      import { ArcadeStore } from '@shared/arcade-store';
+      import { sync } from '@shared/sync';
+      import { api, getSessionToken } from '@shared/api';
+      import { BRAND_ADS } from '@shared/ad-provider';
       initTheme();
+
+      // Init sync / auth (detects ?mt_session= from magic link, restores existing session)
+      await sync.init();
+
+      // Reflect premium status in the banner
+      function updateBanner() {
+        const prem = ArcadeStore.getPremium();
+        const banner = document.getElementById('premiumBanner');
+        if (!banner) return;
+        if (prem.active) {
+          const until = prem.until ? new Date(prem.until).toLocaleDateString() : '—';
+          banner.innerHTML = `
+            <div class="premium-banner__inner premium-banner__inner--active">
+              <span class="premium-crown">👑</span>
+              <div>
+                <strong>You have Premium!</strong>
+                <span>Dragon card backs unlocked · Expires ${until}</span>
+              </div>
+              <span class="premium-coins">🪙 ${ArcadeStore.getCoins()} coins</span>
+            </div>`;
+        }
+      }
+      updateBanner();
+
+      // Ad banner — rotate brands, hide for premium users
+      const AD_ROTATE_MS = 30_000;
+      let _adIndex = 0;
+      let _adTimer = null;
+
+      function showAdBanner() {
+        if (ArcadeStore.getPremium().active) return; // premium = no ads
+        if (BRAND_ADS.length === 0) return;
+        const dismissedAt = localStorage.getItem('adBannerDismissedAt');
+        if (dismissedAt && Date.now() - Number(dismissedAt) < 45 * 60 * 1000) return;
+
+        const banner = document.getElementById('adBanner');
+        const content = document.getElementById('adBannerContent');
+        if (!banner || !content) return;
+
+        const brand = BRAND_ADS[_adIndex % BRAND_ADS.length];
+        _adIndex++;
+        const utm = `${brand.url}?utm_source=minitoon&utm_medium=banner&utm_campaign=wrapper`;
+        const host = new URL(brand.url).hostname;
+
+        content.innerHTML = `
+          <span class="ad-banner__label">SPONSORED</span>
+          <a href="${utm}" target="_blank" rel="noopener noreferrer" class="ad-banner__link">
+            <strong>${brand.name}</strong>
+            <span>${brand.tagline}</span>
+            <span class="ad-banner__cta">Visit ${host} →</span>
+          </a>`;
+
+        banner.style.display = 'flex';
+
+        clearTimeout(_adTimer);
+        _adTimer = setTimeout(showAdBanner, AD_ROTATE_MS);
+      }
+
+      document.getElementById('adBannerClose')?.addEventListener('click', () => {
+        document.getElementById('adBanner').style.display = 'none';
+        localStorage.setItem('adBannerDismissedAt', String(Date.now()));
+        clearTimeout(_adTimer);
+        // Re-show after 45–75 min only if still not premium
+        if (!ArcadeStore.getPremium().active) {
+          const delay = (45 + Math.random() * 30) * 60 * 1000;
+          _adTimer = setTimeout(showAdBanner, delay);
+        }
+      });
+
+      sync.onAuthChange(() => {
+        updateBanner();
+        if (ArcadeStore.getPremium().active) {
+          // Premium active — kill any pending ad timer and hide banner immediately
+          clearTimeout(_adTimer);
+          _adTimer = null;
+          document.getElementById('adBanner').style.display = 'none';
+        } else {
+          showAdBanner();
+        }
+      });
+
+      // First appearance: random 8–20 seconds after page load
+      setTimeout(showAdBanner, (8 + Math.random() * 12) * 1000);
+
+      // Stripe checkout — calls PHP API to get a server-signed checkout URL
+      document.getElementById('premiumBtn')?.addEventListener('click', async () => {
+        if (!sync.isLoggedIn) {
+          alert('Please sign in first to get Premium.\n\nOpen any game and tap "Sign in to sync across devices".');
+          return;
+        }
+        const btn = document.getElementById('premiumBtn');
+        if (btn) btn.textContent = 'Loading…';
+        try {
+          const { url } = await api.post('/stripe/create-checkout.php');
+          if (!url) throw new Error('No checkout URL returned');
+          window.location.href = url;
+        } catch (err) {
+          console.error(err);
+          if (btn) btn.textContent = 'Get Premium — €4.99/mo';
+          alert('Could not start checkout. Please try again.');
+        }
+      });
+
+      // Handle Stripe success redirect (?premium=success)
+      if (new URLSearchParams(window.location.search).get('premium') === 'success') {
+        window.history.replaceState({}, '', window.location.pathname);
+        // Pull latest profile from server — premium_until is now set by the Stripe webhook
+        if (getSessionToken()) {
+          await sync.pullProfile();
+          updateBanner();
+        }
+        document.getElementById('premiumActivatedMsg')?.style.setProperty('display', 'block');
+      }
     </script>
   </body>
 </html>
