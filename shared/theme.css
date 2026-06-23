@@ -1,0 +1,134 @@
+/* ── Shared Theme System ── */
+/* This file provides CSS variables and base light/dark mode support */
+/* for the wrapper hub and all games. Import this in your HTML head. */
+
+:root {
+  /* Dark mode (default) */
+  --bg-primary: #0c0f0a;
+  --bg-secondary: #1a1a2e;
+  --text-primary: #e8e8e8;
+  --text-secondary: #999;
+  --text-tertiary: #777;
+  --text-muted: #444;
+  --border-color: rgba(255, 255, 255, 0.06);
+  --border-color-hover: rgba(255, 0, 85, 0.3);
+  --accent: #ff6b35;
+  --accent-light: #ff6b8a;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="light"] {
+  --bg-primary: #f5f5f5;
+  --bg-secondary: #ffffff;
+  --text-primary: #1a1a1a;
+  --text-secondary: #666;
+  --text-tertiary: #888;
+  --text-muted: #bbb;
+  --border-color: rgba(0, 0, 0, 0.08);
+  --border-color-hover: rgba(255, 0, 85, 0.2);
+  --accent: #ff6b35;
+  --accent-light: #ff4466;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+/* ── Base Styles ── */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* ── Theme Toggle Button (Shared) ── */
+.theme-toggle {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid var(--text-primary);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.theme-toggle:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.1);
+}
+
+.theme-toggle:active {
+  transform: scale(0.95);
+}
+
+.theme-icon {
+  width: 24px;
+  height: 24px;
+  stroke-width: 2.5;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.theme-icon--dark {
+  opacity: 1;
+}
+
+[data-theme="light"] .theme-icon--dark {
+  opacity: 0;
+}
+
+[data-theme="light"] .theme-icon--light {
+  opacity: 1;
+}
+
+/* ── Game Exit Button ── */
+.game-exit {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 9999;
+  background: rgba(255, 107, 53, 0.9);
+  border: 2px solid var(--accent);
+  color: #fff;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.game-exit:hover {
+  background: rgba(255, 107, 53, 1);
+  transform: scale(1.05);
+}
+
+.game-exit:active {
+  transform: scale(0.98);
+}

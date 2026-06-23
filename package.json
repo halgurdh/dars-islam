@@ -12,7 +12,7 @@
     "electron:dev": "node scripts/build.mjs && electron .",
     "electron:build": "node scripts/build.mjs && electron-builder --win --x64",
     "deploy:sftp": "node scripts/deploy-sftp.mjs",
-    "deploy": "node scripts/deploy.mjs"
+    "deploy": "node scripts/build.mjs && node scripts/deploy-sftp.mjs"
   },
   "workspaces": [
     "games/*"
