@@ -130,6 +130,28 @@ npx tsx tests/logic.test.ts        # 817 logic assertions + 60 sim games
 npx tsx tests/integration.test.ts  # HUD-driven full playthrough
 ```
 
+### Multiplayer server
+
+Board Rush now uses a central WebSocket room server instead of PeerJS/WebRTC. That is a better fit for turn-based multiplayer across restrictive networks and scales more naturally across many concurrent rooms and many games.
+
+For local development, `npm run dev` starts the room server automatically on:
+
+```bash
+ws://localhost:8787
+```
+
+For production, point the browser build at your deployed room service from the repo-root `.env.local`:
+
+```bash
+VITE_MULTIPLAYER_URL=wss://ws.minitoon.games
+```
+
+You can also run the server directly:
+
+```bash
+node scripts/multiplayer-server.mjs
+```
+
 ### Deploy
 
 ```bash

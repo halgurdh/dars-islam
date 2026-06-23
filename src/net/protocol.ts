@@ -9,14 +9,29 @@ export interface RoomMember {
   cls?:    HeroClass;
 }
 
-export type NetMsg =
-  | { type: 'hello';            name: string }
-  | { type: 'roster';           members: RoomMember[] }
+export type RoomEvent =
   | { type: 'class-pick:start' }
-  | { type: 'class:picked';     cls: HeroClass }
   | { type: 'game:start' }
-  | { type: 'snapshot';         snap: GameSnap }
-  | { type: 'action';           name: string; payload?: unknown };
+  | { type: 'snapshot'; snap: GameSnap }
+  | { type: 'action'; name: string; payload?: unknown };
+
+export type EventTarget = 'all' | 'host' | 'guests';
+
+export type ClientNetMsg =
+  | { type: 'create_room'; game: string; name: string }
+  | { type: 'join_room'; game: string; roomCode: string; name: string }
+  | { type: 'leave_room' }
+  | { type: 'member_update'; patch: Partial<Pick<RoomMember, 'name' | 'cls'>> }
+  | { type: 'room_event'; target: EventTarget; event: RoomEvent };
+
+export type ServerNetMsg =
+  | { type: 'welcome'; clientId: string }
+  | { type: 'room_created'; roomCode: string; members: RoomMember[] }
+  | { type: 'room_joined'; roomCode: string; members: RoomMember[] }
+  | { type: 'roster'; members: RoomMember[] }
+  | { type: 'room_event'; from: string; event: RoomEvent }
+  | { type: 'room_closed'; reason: string }
+  | { type: 'error'; code: string; message: string };
 
 export interface SnapPlayer {
   name:                  string;

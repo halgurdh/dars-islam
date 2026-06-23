@@ -509,7 +509,7 @@ export class HUD {
             <button id="joinRoom">🔗 Join</button>
           </div>
         </div>
-        <div id="netErr" style="color:#e54040; font-size:12px; margin-top:8px; min-height:16px"></div>
+        <div id="netErr" style="color:#e54040; font-size:12px; margin-top:8px; min-height:16px">${nm.lastError || ''}</div>
         <div class="actions" style="margin-top:16px">
           <button id="backBtn">← Back</button>
         </div>
