@@ -5,28 +5,20 @@ import type { HeroClass } from '../game/data/classes';
 type Role = 'offline' | 'host' | 'guest';
 
 const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-const JOIN_TIMEOUT_MS  = 30000; // 30 s — ICE over TURN can be slow on mobile/NAT
+const JOIN_TIMEOUT_MS  = 15000; // 15 s — STUN-only ICE is fast; TURN adds ~5 s if configured
 const RECONNECT_DELAYS = [1000, 2000, 5000, 10000]; // ms between reconnect attempts
 
 type JoinStage = 'boot' | 'peer-open' | 'connecting' | 'connected';
 
 function peerOptions() {
+  // Keep to ≤ 4 servers — Firefox warns and slows ICE gathering above 5
   const iceServers: Array<{ urls: string | string[]; username?: string; credential?: string }> = [
-    // STUN — direct connection when both peers can punch through NAT
-    { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
-    // Free public TURN relay — required for symmetric NAT / mobile / Firefox
-    {
-      urls: [
-        'turn:openrelay.metered.ca:80',
-        'turn:openrelay.metered.ca:443',
-        'turns:openrelay.metered.ca:443',
-      ],
-      username:   'openrelayproject',
-      credential: 'openrelayproject',
-    },
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' },
   ];
 
-  // Optional: override with your own TURN server (no rate limits)
+  // Production TURN — set these in .env.local for cross-NAT / mobile play
+  // Recommended: sign up at metered.ca (free 0.5 GB/mo) or run coturn on a VPS
   const turnUrl        = import.meta.env.VITE_TURN_URL        as string | undefined;
   const turnUsername   = import.meta.env.VITE_TURN_USERNAME   as string | undefined;
   const turnCredential = import.meta.env.VITE_TURN_CREDENTIAL as string | undefined;
