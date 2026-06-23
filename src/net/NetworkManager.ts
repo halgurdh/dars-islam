@@ -63,7 +63,6 @@ class NetworkManager {
   private _sentGameStart = false;
   private _joinTimer: ReturnType<typeof setTimeout> | null = null;
   private _resolveJoin: (() => void) | null = null;
-  private _rejectJoin: ((err: Error) => void) | null = null;
   private _awaitingJoin = false;
   private _hasTrackedPresence = false;
 
@@ -199,11 +198,9 @@ class NetworkManager {
     await new Promise<void>((resolve, reject) => {
       this._awaitingJoin = true;
       this._resolveJoin = resolve;
-      this._rejectJoin = reject;
       this._joinTimer = setTimeout(() => {
         if (!this._awaitingJoin) return;
         this._awaitingJoin = false;
-        this._rejectJoin = null;
         this._resolveJoin = null;
         this.destroy();
         reject(toError(`Room ${roomCode} was not found — double-check the code and make sure the host is online.`));
@@ -287,7 +284,6 @@ class NetworkManager {
       this._joinTimer = null;
     }
     this._resolveJoin = null;
-    this._rejectJoin = null;
   }
 
   private async _sendEvent(event: RoomEvent): Promise<void> {

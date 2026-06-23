@@ -254,7 +254,11 @@ export class HUD {
       playClick(); this._uiMode = 'auth'; this.render();
     });
     (this.root.querySelector('#btnWorkspace') as HTMLButtonElement | null)?.addEventListener('click', () => {
-      playClick(); this._uiMode = 'workspace'; this.render();
+      playClick();
+      this._uiMode = 'workspace';
+      void sync.refreshWorkspace().then(() => this.render()).catch(() => this.render());
+      void sync.refreshWorkspaceBilling();
+      this.render();
     });
     (this.root.querySelector('#btnSignOut') as HTMLButtonElement | null)?.addEventListener('click', async () => {
       playClick(); await sync.signOut(); this.render();
@@ -329,12 +333,26 @@ export class HUD {
     }
 
     const canEdit = workspace.role === 'owner' || workspace.role === 'admin';
+    const isOwner = workspace.role === 'owner';
+    const billing = sync.workspaceBilling;
     const memberOptions = sync.workspaces.map((item) =>
       `<option value="${this.escapeAttr(item.id)}" ${item.id === workspace.id ? 'selected' : ''}>${this.escapeHtml(item.settings.brand_name)} (${this.escapeHtml(item.role)})</option>`,
     ).join('');
     const membersHtml = sync.workspaceMembers.length
       ? sync.workspaceMembers.map((member) =>
-        `<div class="pcard"><div class="pname">${this.escapeHtml(member.email)}</div><div class="pstat dim">${this.escapeHtml(member.role)} · ${this.escapeHtml(member.account_type)}</div></div>`,
+        `<div class="pcard">
+          <div class="pname">${this.escapeHtml(member.email)}</div>
+          <div class="pstat dim">${this.escapeHtml(member.role)} · ${this.escapeHtml(member.account_type)}</div>
+          ${canEdit && member.role !== 'owner'
+            ? `<div class="actions" style="margin-top:6px; justify-content:flex-start">
+                <select class="ws-member-role" data-user="${this.escapeAttr(member.user_id)}" style="width:120px">
+                  <option value="member" ${member.role === 'member' ? 'selected' : ''}>Member</option>
+                  <option value="admin" ${member.role === 'admin' ? 'selected' : ''}>Admin</option>
+                </select>
+                <button class="btn-auth-sm ws-member-remove" data-user="${this.escapeAttr(member.user_id)}">Remove</button>
+                ${isOwner ? `<button class="btn-auth-sm ws-member-transfer" data-user="${this.escapeAttr(member.user_id)}">Make Owner</button>` : ''}
+              </div>`
+            : ''}</div>`,
       ).join('')
       : '<div class="dim">No members yet.</div>';
     const invitesHtml = sync.workspaceInvites.length
@@ -352,6 +370,20 @@ export class HUD {
           <h2>Workspace</h2>
           <p class="sub">${this.escapeHtml(workspace.settings.brand_name)} · ${this.escapeHtml(workspace.account_type)} · ${this.escapeHtml(workspace.plan_key)}</p>
           <p class="sub">Members: ${workspace.usage.members}/${workspace.limits.members} · Games: ${workspace.limits.games} · Rooms: ${workspace.limits.private_rooms} · Role: ${this.escapeHtml(workspace.role)}</p>
+          <div class="square" style="margin-top:10px">
+            <b>Subscription / Seats</b><br>
+            <span class="dim">Plan: ${this.escapeHtml(billing?.plan_key ?? workspace.plan_key)} · Seats: ${billing?.seats_used ?? workspace.usage.members}/${billing?.seat_limit ?? workspace.limits.members}</span>
+            ${workspace.plan_key !== 'studio'
+              ? `<div class="actions" style="margin-top:10px; justify-content:flex-start"><button id="wsUpgrade">Upgrade to Studio</button></div>`
+              : `<div class="actions" style="margin-top:10px; justify-content:flex-start"><button id="wsRefreshBilling">Refresh Billing</button><button id="wsPortal">Manage Subscription</button></div>`}
+          </div>
+          <div class="square" style="margin-top:10px">
+            <b>Create Workspace</b><br>
+            <div class="row" style="gap:8px; margin-top:10px">
+              <input id="wsCreateName" placeholder="New workspace name" style="flex:1" />
+              <button id="wsCreateBtn">Create</button>
+            </div>
+          </div>
           <div class="row" style="margin-top:12px">
             <label style="width:100%">Active workspace
               <select id="wsSwitcher">${memberOptions}</select>
@@ -395,6 +427,7 @@ export class HUD {
           <div class="players">${invitesHtml}</div>
           <div class="actions col" style="gap:10px">
             ${canEdit ? '<button id="wsSave" style="font-size:15px; padding:12px">Save Workspace</button>' : ''}
+            <button id="wsLeave">Leave Workspace</button>
             <button id="wsBack" style="opacity:0.7">← Back</button>
           </div>
         </div>
@@ -410,6 +443,7 @@ export class HUD {
       try {
         await sync.switchWorkspace(value);
         this.applyWorkspaceBranding();
+        await sync.refreshWorkspaceBilling();
         msgEl.textContent = '';
         this.render();
       } catch (error) {
@@ -432,6 +466,59 @@ export class HUD {
       } catch (error) {
         msgEl.style.color = '#e54040';
         msgEl.textContent = error instanceof Error ? error.message : 'Could not save workspace.';
+      }
+    });
+    (this.root.querySelector('#wsUpgrade') as HTMLButtonElement | null)?.addEventListener('click', async () => {
+      playClick();
+      msgEl.style.color = 'var(--accent)';
+      msgEl.textContent = 'Opening checkout…';
+      try {
+        const url = await sync.startWorkspaceUpgrade();
+        window.location.href = url;
+      } catch (error) {
+        msgEl.style.color = '#e54040';
+        msgEl.textContent = error instanceof Error ? error.message : 'Could not open checkout.';
+      }
+    });
+    (this.root.querySelector('#wsRefreshBilling') as HTMLButtonElement | null)?.addEventListener('click', async () => {
+      playClick();
+      msgEl.style.color = 'var(--accent)';
+      msgEl.textContent = 'Refreshing billing…';
+      try {
+        await sync.refreshWorkspaceBilling();
+        msgEl.textContent = 'Billing refreshed.';
+        this.render();
+      } catch (error) {
+        msgEl.style.color = '#e54040';
+        msgEl.textContent = error instanceof Error ? error.message : 'Could not refresh billing.';
+      }
+    });
+    (this.root.querySelector('#wsPortal') as HTMLButtonElement | null)?.addEventListener('click', async () => {
+      playClick();
+      msgEl.style.color = 'var(--accent)';
+      msgEl.textContent = 'Opening billing portal…';
+      try {
+        const url = await sync.openWorkspaceBillingPortal();
+        window.location.href = url;
+      } catch (error) {
+        msgEl.style.color = '#e54040';
+        msgEl.textContent = error instanceof Error ? error.message : 'Could not open billing portal.';
+      }
+    });
+    (this.root.querySelector('#wsCreateBtn') as HTMLButtonElement | null)?.addEventListener('click', async () => {
+      playClick();
+      const name = (this.root.querySelector('#wsCreateName') as HTMLInputElement).value.trim();
+      msgEl.style.color = 'var(--accent)';
+      msgEl.textContent = 'Creating workspace…';
+      try {
+        await sync.createWorkspace(name);
+        await sync.refreshWorkspace();
+        this.applyWorkspaceBranding();
+        msgEl.textContent = 'Workspace created.';
+        this.render();
+      } catch (error) {
+        msgEl.style.color = '#e54040';
+        msgEl.textContent = error instanceof Error ? error.message : 'Could not create workspace.';
       }
     });
     (this.root.querySelector('#wsInviteBtn') as HTMLButtonElement | null)?.addEventListener('click', async () => {
@@ -465,6 +552,71 @@ export class HUD {
           msgEl.textContent = error instanceof Error ? error.message : 'Could not revoke invite.';
         }
       });
+    });
+    this.root.querySelectorAll('.ws-member-role').forEach((select) => {
+      (select as HTMLSelectElement).addEventListener('change', async () => {
+        const userId = (select as HTMLElement).dataset.user ?? '';
+        const role = (select as HTMLSelectElement).value as 'admin' | 'member';
+        if (!userId) return;
+        msgEl.style.color = 'var(--accent)';
+        msgEl.textContent = 'Updating role…';
+        try {
+          await sync.updateWorkspaceMemberRole(userId, role);
+          msgEl.textContent = 'Role updated.';
+          this.render();
+        } catch (error) {
+          msgEl.style.color = '#e54040';
+          msgEl.textContent = error instanceof Error ? error.message : 'Could not update role.';
+        }
+      });
+    });
+    this.root.querySelectorAll('.ws-member-remove').forEach((button) => {
+      (button as HTMLButtonElement).addEventListener('click', async () => {
+        const userId = (button as HTMLElement).dataset.user ?? '';
+        if (!userId) return;
+        playClick();
+        msgEl.style.color = 'var(--accent)';
+        msgEl.textContent = 'Removing member…';
+        try {
+          await sync.removeWorkspaceMember(userId);
+          msgEl.textContent = 'Member removed.';
+          this.render();
+        } catch (error) {
+          msgEl.style.color = '#e54040';
+          msgEl.textContent = error instanceof Error ? error.message : 'Could not remove member.';
+        }
+      });
+    });
+    this.root.querySelectorAll('.ws-member-transfer').forEach((button) => {
+      (button as HTMLButtonElement).addEventListener('click', async () => {
+        const userId = (button as HTMLElement).dataset.user ?? '';
+        if (!userId) return;
+        playClick();
+        msgEl.style.color = 'var(--accent)';
+        msgEl.textContent = 'Transferring ownership…';
+        try {
+          await sync.transferWorkspaceOwner(userId);
+          msgEl.textContent = 'Ownership transferred.';
+          this.render();
+        } catch (error) {
+          msgEl.style.color = '#e54040';
+          msgEl.textContent = error instanceof Error ? error.message : 'Could not transfer ownership.';
+        }
+      });
+    });
+    (this.root.querySelector('#wsLeave') as HTMLButtonElement).addEventListener('click', async () => {
+      playClick();
+      msgEl.style.color = 'var(--accent)';
+      msgEl.textContent = 'Leaving workspace…';
+      try {
+        await sync.leaveWorkspace(workspace.id);
+        this.applyWorkspaceBranding();
+        msgEl.textContent = 'Left workspace.';
+        this.render();
+      } catch (error) {
+        msgEl.style.color = '#e54040';
+        msgEl.textContent = error instanceof Error ? error.message : 'Could not leave workspace.';
+      }
     });
   }
 
