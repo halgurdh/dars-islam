@@ -46,13 +46,14 @@ Environment
 
 - Repo-wide Vite variables belong in the repo-root `.env.local`.
 - `games/board-rush` now reads env from the repo root during build.
-- For the shared multiplayer room service, set `VITE_MULTIPLAYER_URL` in the repo root for production builds.
+- `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` are used for both sync and multiplayer.
+- Do not put a Supabase secret/service-role key in any `VITE_*` variable, because Vite exposes those values to the browser.
 
 Multiplayer
 
-- `Board Rush` now targets a central WebSocket room service instead of browser-to-browser WebRTC.
-- Run the local service with `node scripts/multiplayer-server.mjs`, or just use `npm run dev` which now starts it automatically on `ws://localhost:8787`.
-- The room server uses per-game room namespaces so it can host many simultaneous rooms across multiple games.
+- `Board Rush` now uses Supabase Realtime for room presence and event broadcast, so it works with static/SFTP-only hosting.
+- No custom Node multiplayer server is required in production.
+- The current room model is namespaced by game, which lets the same Supabase project host many simultaneous rooms across multiple games.
 
 Preview the production build locally:
 
