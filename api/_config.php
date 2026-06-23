@@ -11,7 +11,7 @@ define('FROM_EMAIL',  'info@minitoon.games');   // must be on your domain
 define('FROM_NAME',   'Minitoon Games');
 
 // ─── Stripe (Developers → API keys) ─────────────────────────────────────────
-define('STRIPE_SECRET_KEY',      'pk_live_51OwZ0D02Zuzqs62U9VV2nW32hqyZ53wCqaujXIO3fuXPHon7YcqCEuAQSUwC5RsW5qHsl0Yli2GMiP4Qg5lNf124009ytO2Z3N');
+define('STRIPE_SECRET_KEY',      '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');
 define('STRIPE_WEBHOOK_SECRET',  'whsec_ZU0vKsQVdI1gynwWWdwqQGkpZViESg8J');
 define('STRIPE_PRODUCT_ID',      'prod_Uks6ff0VdrPGhz');  // product — active price looked up at checkout
 
