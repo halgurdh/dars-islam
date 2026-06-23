@@ -20,8 +20,10 @@ export function playDice(): void {
   clone.play().catch(() => { /* autoplay blocked — silently ignore */ });
 }
 
+const splashUrl = new URL('../shared/splash.mp3', import.meta.url).href;
+
 export function playSplash(): void {
-  const audio = new Audio('assets/splash.mp3');
+  const audio = new Audio(splashUrl);
   audio.volume = 0.7;
   audio.muted = true;
   audio.play().then(() => { audio.muted = false; }).catch(() => {});

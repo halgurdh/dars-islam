@@ -8,7 +8,8 @@
     "dev": "node scripts/dev.mjs",
     "build": "node scripts/build.mjs",
     "preview": "vite preview --outDir dist",
-    "clean": "node -e \"const fs=require('fs');['dist','dist-pwa','games/*/dist'].forEach(d=>fs.rmSync(d,{recursive:true,force:true}))\""
+    "clean": "node -e \"const fs=require('fs');['dist','dist-pwa','games/*/dist'].forEach(d=>fs.rmSync(d,{recursive:true,force:true}))\"",
+    "deploy": "node scripts/deploy.mjs"
   },
   "workspaces": [
     "games/*"

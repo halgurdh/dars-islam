@@ -1,6 +1,9 @@
 import Phaser from 'phaser';
 import { assetManifest } from '../views/assets';
 
+const splashLogoUrl = new URL('../../../../shared/splash.png', import.meta.url).href;
+const splashAudioUrl = new URL('../../../../shared/splash.mp3', import.meta.url).href;
+
 export class BootScene extends Phaser.Scene {
   constructor() {
     super('Boot');
@@ -25,9 +28,9 @@ export class BootScene extends Phaser.Scene {
     for (const { key, path } of assetManifest()) {
       this.load.image(key, path);
     }
-    this.load.image('splash-logo', 'assets/splash.png');
+    this.load.image('splash-logo', splashLogoUrl);
     // Preload splash audio so it's available on the Splash scene
-    this.load.audio('splash', 'assets/splash.mp3');
+    this.load.audio('splash', splashAudioUrl);
   }
 
   create(): void {

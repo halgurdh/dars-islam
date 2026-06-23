@@ -130,6 +130,24 @@ npx tsx tests/logic.test.ts        # 817 logic assertions + 60 sim games
 npx tsx tests/integration.test.ts  # HUD-driven full playthrough
 ```
 
+### Deploy
+
+```bash
+export DEPLOY_HOST=minitoon.games
+export DEPLOY_USER=youruser
+export DEPLOY_PATH=/var/www/minitoon.games
+export SSH_PORT=22
+npm run deploy
+```
+
+The deploy script builds the project and syncs `dist/` to the remote host using `rsync` if available, with `scp` as a fallback.
+
+Optional dry run:
+
+```bash
+npm run deploy -- --dry
+```
+
 ### Windows `.exe`
 
 ```bash
