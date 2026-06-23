@@ -9,24 +9,35 @@
  * The toggle will automatically persist theme preference to localStorage.
  */
 
-(function initTheme() {
+export function initTheme() {
   const html = document.documentElement;
-  const themeToggle = document.getElementById('theme-toggle');
 
-  if (!themeToggle) {
-    console.warn('theme-toggle button not found in DOM');
-    return;
-  }
+  const applyTheme = (theme) => {
+    html.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  };
 
-  // Load saved theme or default to 'dark'
   const savedTheme = localStorage.getItem('theme') || 'dark';
-  html.setAttribute('data-theme', savedTheme);
+  applyTheme(savedTheme);
 
-  // Toggle theme on click
-  themeToggle.addEventListener('click', () => {
-    const currentTheme = html.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    html.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-  });
-})();
+  const attachToggle = () => {
+    const themeToggle = document.getElementById('theme-toggle');
+    if (!themeToggle) {
+      console.warn('theme-toggle button not found in DOM');
+      return;
+    }
+
+    themeToggle.addEventListener('click', () => {
+      const currentTheme = html.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      applyTheme(newTheme);
+    });
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', attachToggle);
+  } else {
+    attachToggle();
+  }
+}
+

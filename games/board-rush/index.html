@@ -11,8 +11,6 @@
     <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
     <link rel="manifest" href="manifest.json" />
     <title>Board Rush</title>
-    <!-- Shared theme CSS -->
-    <link rel="stylesheet" href="../../shared/theme.css" />
     <style>
       html, body {
         background: var(--bg-primary);
@@ -47,7 +45,10 @@
     </button>
     <div id="game"></div>
     <script type="module" src="./src/main.ts"></script>
-    <!-- Shared theme toggle -->
-    <script src="../../shared/theme.js"></script>
+    <script type="module">
+      import '@shared/theme.css';
+      import { initTheme } from '@shared/theme.js';
+      initTheme();
+    </script>
   </body>
 </html>

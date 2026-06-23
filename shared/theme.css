@@ -17,6 +17,10 @@
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.4);
+  --surface: rgba(255, 255, 255, 0.08);
+  --surface-strong: rgba(255, 255, 255, 0.14);
+  --surface-muted: rgba(255, 255, 255, 0.04);
+  --surface-overlay: rgba(0, 0, 0, 0.6);
 }
 
 [data-theme="light"] {
@@ -33,6 +37,10 @@
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
   --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12);
+  --surface: rgba(0, 0, 0, 0.04);
+  --surface-strong: rgba(0, 0, 0, 0.08);
+  --surface-muted: rgba(0, 0, 0, 0.03);
+  --surface-overlay: rgba(0, 0, 0, 0.35);
 }
 
 /* ── Base Styles ── */
@@ -87,12 +95,20 @@ body {
   width: 24px;
   height: 24px;
   stroke-width: 2.5;
+  stroke: currentColor;
+  fill: none;
   opacity: 0;
   transition: opacity 0.3s ease;
+  display: block;
+  pointer-events: none;
 }
 
 .theme-icon--dark {
   opacity: 1;
+}
+
+.theme-icon--light {
+  opacity: 0;
 }
 
 [data-theme="light"] .theme-icon--dark {

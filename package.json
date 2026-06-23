@@ -18,18 +18,14 @@
     "games/*"
   ],
   "dependencies": {
-    "phaser": "^3.80.1"
+    "phaser": "^3.80.1",
+    "ssh2-sftp-client": "^9.0.0"
   },
   "devDependencies": {
     "typescript": "^5.4.5",
     "vite": "^5.2.11",
     "vite-plugin-pwa": "^1.3.0"
-  }
-  ,
-  "dependencies": {
-    "ssh2-sftp-client": "^9.0.0"
-  }
-  ,
+  },
   "build": {
     "appId": "com.minitoon.boardrush",
     "productName": "Minitoon Board Rush",

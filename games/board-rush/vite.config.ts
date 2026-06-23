@@ -14,6 +14,7 @@ export default defineConfig(({ mode }) => {
       alias: {
         '@src':    path.resolve(__dirname, '../../src'),
         '@scenes': path.resolve(__dirname, '../../src/scenes'),
+        '@shared': path.resolve(__dirname, '../../shared'),
       },
     },
 
