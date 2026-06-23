@@ -178,7 +178,7 @@ export class UIManager {
     });
   }
 
-  showEndOverlay(title: string, subtitle: string, tint: number): void {
+  showEndOverlay(title: string, subtitle: string, tint: number, onRestart?: () => void): void {
     const shade = this.scene.add.rectangle(0, 0, SCENE_WIDTH, SCENE_HEIGHT, 0x03060d, 0.74)
       .setOrigin(0)
       .setDepth(1600)
@@ -187,19 +187,60 @@ export class UIManager {
     card.fillStyle(0x091321, 0.95).fillRoundedRect(320, 188, 640, 260, 34);
     card.lineStyle(4, tint, 0.9).strokeRoundedRect(320, 188, 640, 260, 34);
     card.alpha = 0;
-    const titleText = this.scene.add.text(640, 274, title, {
+    const titleText = this.scene.add.text(640, 266, title, {
       fontFamily: 'Segoe UI',
       fontSize: '54px',
       fontStyle: 'bold',
       color: '#f7fbff',
     }).setOrigin(0.5).setDepth(1602).setAlpha(0);
-    const subText = this.scene.add.text(640, 352, subtitle, {
+    const subText = this.scene.add.text(640, 336, subtitle, {
       fontFamily: 'Segoe UI',
       fontSize: '24px',
       color: '#d2e6ff',
       align: 'center',
     }).setOrigin(0.5).setDepth(1602).setAlpha(0);
-    this.scene.tweens.add({ targets: [shade, card, titleText, subText], alpha: 1, duration: 260 });
+
+    const btnGroup: Phaser.GameObjects.GameObject[] = [shade, card, titleText, subText];
+
+    if (onRestart) {
+      const btnX = 640;
+      const btnY = 408;
+      const btnW = 260;
+      const btnH = 50;
+      const btnBg = this.scene.add.graphics().setDepth(1602).setAlpha(0);
+      btnBg.fillStyle(0x2ca9ff, 1).fillRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 18);
+      btnBg.lineStyle(3, 0x8fd4ff, 0.95).strokeRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 18);
+      const btnText = this.scene.add.text(btnX, btnY, 'RESTART BATTLE', {
+        fontFamily: 'Segoe UI',
+        fontSize: '22px',
+        fontStyle: 'bold',
+        color: '#ffffff',
+      }).setOrigin(0.5).setDepth(1603).setAlpha(0);
+
+      const hitZone = this.scene.add.zone(btnX, btnY, btnW, btnH).setDepth(1604) as Phaser.GameObjects.Zone & { alpha: number };
+      hitZone.alpha = 0;
+      hitZone.setInteractive({ useHandCursor: true });
+      hitZone.on('pointerover', () => {
+        btnBg.clear()
+          .fillStyle(0x48b8ff, 1).fillRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 18)
+          .lineStyle(3, 0xb8e2ff, 1).strokeRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 18);
+        btnText.setColor('#e8f4ff');
+      });
+      hitZone.on('pointerout', () => {
+        btnBg.clear()
+          .fillStyle(0x2ca9ff, 1).fillRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 18)
+          .lineStyle(3, 0x8fd4ff, 0.95).strokeRoundedRect(btnX - btnW / 2, btnY - btnH / 2, btnW, btnH, 18);
+        btnText.setColor('#ffffff');
+      });
+      hitZone.on('pointerdown', () => {
+        this.scene.tweens.killTweensOf([shade, card, titleText, subText, btnBg, btnText, hitZone]);
+        onRestart();
+      });
+
+      btnGroup.push(btnBg, btnText, hitZone);
+    }
+
+    this.scene.tweens.add({ targets: btnGroup, alpha: 1, duration: 260 });
   }
 
   private renderChipCards(hand: ChipDefinition[], selected: number[], cursor: number): void {

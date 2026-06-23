@@ -488,9 +488,9 @@ export class BattleScene extends Phaser.Scene {
     this.enemyLoop?.destroy();
     this.ui.updateState(this.battleState);
     if (nextState === 'VICTORY') {
-      this.ui.showEndOverlay('VICTORY', 'Enemy deleted.\nRefresh to run another battle.', 0x8af7bb);
+      this.ui.showEndOverlay('VICTORY', 'Enemy deleted.', 0x8af7bb, () => this.scene.restart());
     } else {
-      this.ui.showEndOverlay('GAME OVER', 'Your operator has been forced offline.\nRefresh to retry.', 0xff89ad);
+      this.ui.showEndOverlay('GAME OVER', 'Your operator has been forced offline.', 0xff89ad, () => this.scene.restart());
     }
   }
 }
