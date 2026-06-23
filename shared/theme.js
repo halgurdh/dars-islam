@@ -149,10 +149,9 @@ export function initFullscreen(options = {}) {
 }
 
 export function initInstallPrompt(options = {}) {
-  const { buttonId = 'install-toggle' } = options;
+  const { buttonId = 'install-toggle', delayMs = 8000 } = options;
 
   const button = document.getElementById(buttonId);
-  if (!button) return;
 
   let deferredPrompt = null;
 
@@ -164,41 +163,107 @@ export function initInstallPrompt(options = {}) {
   const isIOS = () =>
     /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
 
-  const updateVisibility = () => {
-    // Show on iOS (manual instructions) or when browser prompt is available
-    button.hidden = isStandalone() || (!deferredPrompt && !isIOS());
+  const wasDismissed = () => {
+    const t = localStorage.getItem('installDismissedAt');
+    return t && Date.now() - Number(t) < 7 * 24 * 60 * 60 * 1000; // 7 days
   };
 
+  // ── Popup ────────────────────────────────────────────────────────────────────
+  function createPopup() {
+    if (document.getElementById('install-popup')) return;
+
+    const popup = document.createElement('div');
+    popup.id = 'install-popup';
+    popup.style.cssText = `
+      position:fixed; bottom:80px; left:50%; transform:translateX(-50%);
+      z-index:9999; width:min(340px,90vw);
+      background:#1a1a2e; border:1px solid rgba(255,255,255,0.12);
+      border-radius:16px; padding:20px 20px 16px;
+      box-shadow:0 8px 40px rgba(0,0,0,0.6);
+      font-family:'Segoe UI',system-ui,sans-serif; color:#fff;
+      animation:installSlideUp 0.35s ease;
+    `;
+
+    const iosSteps = isIOS() ? `
+      <ol style="margin:10px 0 0;padding-left:18px;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7">
+        <li>Tap the <strong style="color:#fff">Share</strong> button <span style="font-size:16px">⎙</span> in Safari</li>
+        <li>Scroll down → tap <strong style="color:#fff">Add to Home Screen</strong></li>
+        <li>Tap <strong style="color:#fff">Add</strong></li>
+      </ol>` : '';
+
+    popup.innerHTML = `
+      <style>@keyframes installSlideUp{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}</style>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <span style="font-size:28px">📲</span>
+        <div>
+          <div style="font-weight:700;font-size:15px">Install Board Rush</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.55);margin-top:2px">Play offline · No app store needed</div>
+        </div>
+      </div>
+      ${iosSteps}
+      <div style="display:flex;gap:8px;margin-top:14px">
+        ${!isIOS() ? `<button id="install-popup-yes" style="flex:1;padding:10px;border:none;border-radius:8px;background:#ff6b35;color:#fff;font-weight:700;font-size:14px;cursor:pointer">Install now</button>` : ''}
+        <button id="install-popup-no" style="flex:1;padding:10px;border:1px solid rgba(255,255,255,0.15);border-radius:8px;background:transparent;color:rgba(255,255,255,0.6);font-size:13px;cursor:pointer">${isIOS() ? 'Got it' : 'Not now'}</button>
+      </div>`;
+
+    document.body.appendChild(popup);
+
+    document.getElementById('install-popup-yes')?.addEventListener('click', async () => {
+      closePopup();
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        try { await deferredPrompt.userChoice; } finally { deferredPrompt = null; }
+      }
+    });
+
+    document.getElementById('install-popup-no')?.addEventListener('click', () => {
+      closePopup();
+      localStorage.setItem('installDismissedAt', String(Date.now()));
+    });
+  }
+
+  function closePopup() {
+    document.getElementById('install-popup')?.remove();
+    if (button) button.hidden = true;
+  }
+
+  function maybeShow() {
+    if (isStandalone() || wasDismissed()) return;
+    if (!deferredPrompt && !isIOS()) return;
+    createPopup();
+  }
+
+  // ── Corner button (fallback / re-trigger) ────────────────────────────────────
+  if (button) {
+    const syncBtn = () => {
+      button.hidden = isStandalone() || (!deferredPrompt && !isIOS()) || wasDismissed();
+    };
+
+    button.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        try { await deferredPrompt.userChoice; } finally { deferredPrompt = null; syncBtn(); }
+        return;
+      }
+      if (isIOS()) createPopup();
+    });
+
+    syncBtn();
+  }
+
+  // ── Events ───────────────────────────────────────────────────────────────────
   window.addEventListener('beforeinstallprompt', (event) => {
     event.preventDefault();
     deferredPrompt = event;
-    updateVisibility();
+    if (button) button.hidden = isStandalone() || wasDismissed();
+    setTimeout(maybeShow, delayMs);
   });
 
-  window.addEventListener('appinstalled', () => {
-    deferredPrompt = null;
-    updateVisibility();
-  });
+  window.addEventListener('appinstalled', closePopup);
 
-  button.addEventListener('click', async () => {
-    if (deferredPrompt) {
-      // Chrome / Android / Edge — native prompt
-      deferredPrompt.prompt();
-      try {
-        await deferredPrompt.userChoice;
-      } finally {
-        deferredPrompt = null;
-        updateVisibility();
-      }
-      return;
-    }
-
-    if (isIOS()) {
-      // iOS Safari — browser has no API; show manual instructions
-      alert('To install:\n\n1. Tap the Share button (□↑) at the bottom of Safari\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add"');
-    }
-  });
-
-  updateVisibility();
+  // iOS: fire after delay with no event needed
+  if (isIOS() && !isStandalone()) {
+    setTimeout(maybeShow, delayMs);
+  }
 }
 
