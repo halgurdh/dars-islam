@@ -90,7 +90,7 @@ try {
 
 try {
     $tables = [];
-    foreach (['users', 'auth_tokens', 'sessions', 'profiles', 'organizations', 'organization_members', 'workspace_settings', 'organization_invites', 'organization_activity_logs'] as $table) {
+    foreach (['users', 'auth_tokens', 'sessions', 'profiles', 'stripe_subscriptions'] as $table) {
         try {
             db()->query("SELECT 1 FROM {$table} LIMIT 1");
             $tables[$table] = true;

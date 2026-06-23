@@ -21,7 +21,7 @@ $db = db();
 switch ($type) {
     case 'customer.subscription.created':
     case 'customer.subscription.updated':
-        handle_subscription($db, $obj);
+        handle_subscription($db, $obj, $type);
         break;
 
     case 'customer.subscription.deleted':
@@ -39,9 +39,8 @@ function subscription_grants_access(string $status): bool {
     return in_array($status, ['active', 'trialing', 'past_due'], true);
 }
 
-function handle_subscription(PDO $db, array $sub): void {
+function handle_subscription(PDO $db, array $sub, string $eventType): void {
     $uid        = $sub['metadata']['minitoon_user_id'] ?? ($sub['client_reference_id'] ?? null);
-    $orgId      = $sub['metadata']['minitoon_workspace_id'] ?? null;
     $customerId = $sub['customer'] ?? null;
     $subId      = $sub['id'] ?? null;
     $status     = $sub['status'] ?? 'unknown';
@@ -55,32 +54,22 @@ function handle_subscription(PDO $db, array $sub): void {
     // Upsert subscription record
     $db->prepare("
         INSERT INTO stripe_subscriptions
-            (id, user_id, organization_id, stripe_customer_id, stripe_subscription_id, status, current_period_end)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+            (id, user_id, stripe_customer_id, stripe_subscription_id, status, current_period_end)
+        VALUES (?, ?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE
-            organization_id = VALUES(organization_id),
             status = VALUES(status),
             current_period_end = VALUES(current_period_end),
             updated_at = NOW()
-    ")->execute([uuid(), $uid, $orgId, $customerId, $subId, $status, $periodEnd]);
+    ")->execute([uuid(), $uid, $customerId, $subId, $status, $periodEnd]);
 
     // Update premium_until on profile
-    ensure_profile($uid, $db);
+    ensure_profile($uid);
     $db->prepare(
         'UPDATE profiles SET premium_until = ?, updated_at = NOW() WHERE user_id = ?'
     )->execute([$periodEnd, $uid]);
-    if ($orgId) {
-        $db->prepare('UPDATE organizations SET plan_key = ?, updated_at = NOW() WHERE id = ?')
-            ->execute([$isActive ? 'studio' : 'free', $orgId]);
-        log_workspace_activity($orgId, $uid, 'billing.subscription_synced', 'Subscription synced from Stripe', 'subscription', $subId, [
-            'status' => $status,
-            'current_period_end' => $periodEnd,
-            'cancel_at_period_end' => $sub['cancel_at_period_end'] ?? false,
-        ]);
-    }
 
     // Grant 500 coin bonus + Dragon card backs on new subscription
-    if ($isActive && ($sub['_type'] ?? $GLOBALS['type']) === 'customer.subscription.created') {
+    if ($isActive && $eventType === 'customer.subscription.created') {
         $db->prepare(
             'UPDATE profiles SET coins = coins + 500, updated_at = NOW() WHERE user_id = ?'
         )->execute([$uid]);
@@ -109,20 +98,12 @@ function handle_cancellation(PDO $db, array $sub): void {
 
     // Get user_id and clear premium
     $stmt = $db->prepare('SELECT user_id FROM stripe_subscriptions WHERE stripe_subscription_id = ?');
-    $orgStmt = $db->prepare('SELECT organization_id FROM stripe_subscriptions WHERE stripe_subscription_id = ?');
     $stmt->execute([$subId]);
-    $orgStmt->execute([$subId]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
-    $orgRow = $orgStmt->fetch(PDO::FETCH_ASSOC);
     if ($row) {
         $db->prepare(
             'UPDATE profiles SET premium_until = NULL, updated_at = NOW() WHERE user_id = ?'
         )->execute([$row['user_id']]);
-    }
-    if ($orgRow && !empty($orgRow['organization_id'])) {
-        $db->prepare('UPDATE organizations SET plan_key = ?, updated_at = NOW() WHERE id = ?')
-            ->execute(['free', $orgRow['organization_id']]);
-        log_workspace_activity($orgRow['organization_id'], $row['user_id'] ?? null, 'billing.subscription_canceled', 'Subscription canceled from Stripe', 'subscription', $subId);
     }
 }
 

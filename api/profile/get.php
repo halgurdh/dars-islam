@@ -5,15 +5,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') json_error('Method not allowed', 405);
 
 $session = require_session();
 $profile = get_profile($session['user_id']);
-$workspace = ensure_workspace_for_user($session['user_id'], $session['email']);
-$workspaces = list_workspaces_for_user($session['user_id']);
 
 json_out([
     'user_id'          => $session['user_id'],
     'email'            => $session['email'],
     'account_type'     => $session['account_type'] ?? classify_account_type($session['email']),
-    'workspace'        => $workspace,
-    'workspaces'       => $workspaces,
     'coins'            => (int) $profile['coins'],
     'active_card_back' => $profile['active_card_back'],
     'owned_card_backs' => $profile['owned_card_backs'],

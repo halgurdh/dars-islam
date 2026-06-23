@@ -184,7 +184,7 @@ const ADSENSE_SLOT = 'XXXXXXXXXX';           // line 3
 # STRIPE
 
 ```
-Create a product + €20/month recurring price → copy prod_XXXX as STRIPE_PRODUCT_ID
+Create a recurring premium product → copy prod_XXXX as STRIPE_PRODUCT_ID
 Add webhook → point to https://minitoon.games/api/stripe/webhook.php
 Listen for: customer.subscription.created, customer.subscription.updated, customer.subscription.deleted
 Copy the webhook signing secret → set as STRIPE_WEBHOOK_SECRET in api/_config.php

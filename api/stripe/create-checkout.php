@@ -6,7 +6,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') json_error('Method not allowed', 405)
 $session = require_session();
 $uid     = $session['user_id'];
 $email   = $session['email'];
-$workspace = ensure_workspace_for_user($uid, $email);
 $db      = db();
 
 // Look up or create a Stripe customer for this user
@@ -45,7 +44,6 @@ $checkoutResponse = stripe_post('/v1/checkout/sessions', [
     'success_url'                  => SITE_URL . '/?premium=success',
     'cancel_url'                   => SITE_URL . '/',
     'subscription_data[metadata][minitoon_user_id]' => $uid,
-    'subscription_data[metadata][minitoon_workspace_id]' => $workspace['id'],
 ]);
 
 if (isset($checkoutResponse['error'])) {

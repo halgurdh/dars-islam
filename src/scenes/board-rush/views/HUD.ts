@@ -12,7 +12,7 @@ import { ArcadeStore } from '../../../../shared/arcade-store';
 import { injectAd } from '../../../../shared/ad-provider';
 import { sync } from '../../../../shared/sync';
 
-type UIMode = 'landing' | 'local' | 'online' | 'net-pick' | 'shop' | 'ad' | 'auth' | 'workspace';
+type UIMode = 'landing' | 'local' | 'online' | 'net-pick' | 'shop' | 'ad' | 'auth';
 
 interface CardBackDef {
   key: string;
@@ -88,11 +88,9 @@ export class HUD {
     // Init Supabase sync — re-render landing when auth state changes
     ArcadeStore.registerSyncCallback(() => sync.scheduleSync());
     sync.init().then(() => {
-      this.applyWorkspaceBranding();
       if (this._uiMode === 'landing') this.render();
     });
     sync.onAuthChange(() => {
-      this.applyWorkspaceBranding();
       if (this._uiMode === 'landing' || this._uiMode === 'auth') {
         this._uiMode = 'landing';
         this.render();
@@ -156,7 +154,6 @@ export class HUD {
   // ── Router ────────────────────────────────────────────────────────────────
 
   render(): void {
-    this.applyWorkspaceBranding();
     const phase = this.machine.currentName as string | null;
 
     // Active game phase: render game HUD (host-driven)
@@ -172,7 +169,6 @@ export class HUD {
     if (this._uiMode === 'shop')     { this.renderShop(); return; }
     if (this._uiMode === 'ad')       { this.renderAdModal(); return; }
     if (this._uiMode === 'auth')     { this.renderAuth(); return; }
-    if (this._uiMode === 'workspace'){ this.renderWorkspaceSettings(); return; }
     this.renderLanding();
   }
 
@@ -181,10 +177,6 @@ export class HUD {
   private renderLanding(): void {
     const coins   = ArcadeStore.getCoins();
     const premium = ArcadeStore.getPremium();
-    const workspace = sync.workspace;
-    const workspaceLine = workspace
-      ? `<div class="workspace-chip">${this.escapeHtml(workspace.settings.brand_name)} · ${sync.accountType === 'commercial' ? 'commercial' : 'personal'} · ${this.escapeHtml(workspace.plan_key)}</div>`
-      : '';
     const canAd   = ArcadeStore.canWatchAd();
     const coolMs  = ArcadeStore.adCooldownRemaining();
     const coolMin = Math.ceil(coolMs / 60000);
@@ -198,7 +190,6 @@ export class HUD {
         <div class="panel center">
           <h1>⚔ BOARD RUSH ⚔</h1>
           ${premiumBadge}
-          ${workspaceLine}
           <p class="sub">A fantasy board game adventure</p>
 
           <div class="coin-bar">
@@ -208,7 +199,7 @@ export class HUD {
           </div>
           <div class="auth-bar">
             ${sync.isLoggedIn
-              ? `<span class="auth-email">☁ ${sync.email}</span><button id="btnWorkspace" class="btn-auth-sm">Studio</button><button id="btnSignOut" class="btn-auth-sm">Sign out</button>`
+              ? `<span class="auth-email">☁ ${sync.email}</span><button id="btnSignOut" class="btn-auth-sm">Sign out</button>`
               : `<button id="btnSignIn" class="btn-auth">☁ Sign in to sync across devices</button>`
             }
           </div>
@@ -252,13 +243,6 @@ export class HUD {
 
     (this.root.querySelector('#btnSignIn') as HTMLButtonElement | null)?.addEventListener('click', () => {
       playClick(); this._uiMode = 'auth'; this.render();
-    });
-    (this.root.querySelector('#btnWorkspace') as HTMLButtonElement | null)?.addEventListener('click', () => {
-      playClick();
-      this._uiMode = 'workspace';
-      void sync.refreshWorkspace().then(() => this.render()).catch(() => this.render());
-      void sync.refreshWorkspaceBilling();
-      this.render();
     });
     (this.root.querySelector('#btnSignOut') as HTMLButtonElement | null)?.addEventListener('click', async () => {
       playClick(); await sync.signOut(); this.render();
@@ -322,332 +306,6 @@ export class HUD {
         msgEl.textContent = 'Could not send link — check your email and try again.';
       }
     };
-  }
-
-  private renderWorkspaceSettings(): void {
-    const workspace = sync.workspace;
-    if (!workspace) {
-      this._uiMode = 'landing';
-      this.render();
-      return;
-    }
-
-    const canEdit = workspace.role === 'owner' || workspace.role === 'admin';
-    const isOwner = workspace.role === 'owner';
-    const billing = sync.workspaceBilling;
-    const billingStatus = billing?.subscription_status ?? 'none';
-    const billingPeriodEnd = billing?.current_period_end ? this.formatWorkspaceTimestamp(billing.current_period_end) : null;
-    const memberOptions = sync.workspaces.map((item) =>
-      `<option value="${this.escapeAttr(item.id)}" ${item.id === workspace.id ? 'selected' : ''} ${item.is_archived && item.id !== workspace.id ? 'disabled' : ''}>${this.escapeHtml(item.settings.brand_name)} (${this.escapeHtml(item.role)}${item.is_archived ? ' · archived' : ''})</option>`,
-    ).join('');
-    const membersHtml = sync.workspaceMembers.length
-      ? sync.workspaceMembers.map((member) =>
-        `<div class="pcard">
-          <div class="pname">${this.escapeHtml(member.email)}</div>
-          <div class="pstat dim">${this.escapeHtml(member.role)} · ${this.escapeHtml(member.account_type)}</div>
-          ${canEdit && member.role !== 'owner'
-            ? `<div class="actions" style="margin-top:6px; justify-content:flex-start">
-                <select class="ws-member-role" data-user="${this.escapeAttr(member.user_id)}" style="width:120px">
-                  <option value="member" ${member.role === 'member' ? 'selected' : ''}>Member</option>
-                  <option value="admin" ${member.role === 'admin' ? 'selected' : ''}>Admin</option>
-                </select>
-                <button class="btn-auth-sm ws-member-remove" data-user="${this.escapeAttr(member.user_id)}">Remove</button>
-                ${isOwner ? `<button class="btn-auth-sm ws-member-transfer" data-user="${this.escapeAttr(member.user_id)}">Make Owner</button>` : ''}
-              </div>`
-            : ''}</div>`,
-      ).join('')
-      : '<div class="dim">No members yet.</div>';
-    const invitesHtml = sync.workspaceInvites.length
-      ? sync.workspaceInvites.map((invite) =>
-        `<div class="pcard">
-          <div class="pname">${this.escapeHtml(invite.email)}</div>
-          <div class="pstat dim">${this.escapeHtml(invite.role)} · expires ${this.escapeHtml(invite.expires_at)}</div>
-          ${canEdit ? `<button class="btn-auth-sm ws-revoke" data-invite="${this.escapeAttr(invite.id)}">Revoke</button>` : ''}
-        </div>`,
-      ).join('')
-      : '<div class="dim">No pending invites.</div>';
-    const activityHtml = sync.workspaceActivity.length
-      ? sync.workspaceActivity.map((entry) =>
-        `<div class="pcard">
-          <div class="pname">${this.escapeHtml(entry.message)}</div>
-          <div class="pstat dim">${this.escapeHtml(entry.actor_email ?? 'System')} · ${this.escapeHtml(this.formatWorkspaceTimestamp(entry.created_at))}</div>
-        </div>`,
-      ).join('')
-      : '<div class="dim">No recent activity yet.</div>';
-    this.root.innerHTML = `
-      <div class="overlay">
-        <div class="panel" style="max-width:560px">
-          <h2>Workspace</h2>
-          <p class="sub">${this.escapeHtml(workspace.settings.brand_name)} · ${this.escapeHtml(workspace.account_type)} · ${this.escapeHtml(workspace.plan_key)}</p>
-          <p class="sub">Members: ${workspace.usage.members}/${workspace.limits.members} · Games: ${workspace.limits.games} · Rooms: ${workspace.limits.private_rooms} · Role: ${this.escapeHtml(workspace.role)}</p>
-          <div class="square" style="margin-top:10px">
-            <b>Subscription / Seats</b><br>
-            <span class="dim">Plan: ${this.escapeHtml(billing?.plan_key ?? workspace.plan_key)} · Seats: ${billing?.seats_used ?? workspace.usage.members}/${billing?.seat_limit ?? workspace.limits.members}</span><br>
-            <span class="dim">Stripe: ${this.escapeHtml(billingStatus)}${billingPeriodEnd ? ` · renews/ends ${this.escapeHtml(billingPeriodEnd)}` : ''}</span>
-            <div class="actions" style="margin-top:10px; justify-content:flex-start">
-              ${workspace.plan_key !== 'studio' ? '<button id="wsUpgrade">Upgrade to Studio</button>' : ''}
-              <button id="wsRefreshBilling">Refresh Billing</button>
-              ${billing?.can_manage_subscription ? '<button id="wsPortal">Manage Subscription</button>' : ''}
-            </div>
-          </div>
-          <div class="square" style="margin-top:10px">
-            <b>Create Workspace</b><br>
-            <div class="row" style="gap:8px; margin-top:10px">
-              <input id="wsCreateName" placeholder="New workspace name" style="flex:1" />
-              <button id="wsCreateBtn">Create</button>
-            </div>
-          </div>
-          <div class="row" style="margin-top:12px">
-            <label style="width:100%">Active workspace
-              <select id="wsSwitcher">${memberOptions}</select>
-            </label>
-          </div>
-          <div class="row" style="margin-top:12px">
-            <label style="width:100%">Brand name
-              <input id="wsBrandName" value="${this.escapeAttr(workspace.settings.brand_name)}" ${canEdit ? '' : 'disabled'} maxlength="120" />
-            </label>
-          </div>
-          <div class="row" style="margin-top:10px">
-            <label style="width:100%">Tagline
-              <input id="wsTagline" value="${this.escapeAttr(workspace.settings.brand_tagline ?? '')}" ${canEdit ? '' : 'disabled'} maxlength="160" />
-            </label>
-          </div>
-          <div class="row" style="margin-top:10px">
-            <label style="width:100%">Accent color
-              <input id="wsAccent" value="${this.escapeAttr(workspace.settings.accent_color)}" ${canEdit ? '' : 'disabled'} maxlength="7" />
-            </label>
-          </div>
-          <div class="row" style="margin-top:10px">
-            <label style="width:100%">Logo URL
-              <input id="wsLogo" value="${this.escapeAttr(workspace.settings.logo_url ?? '')}" ${canEdit ? '' : 'disabled'} maxlength="255" />
-            </label>
-          </div>
-          <div id="wsMsg" style="min-height:18px; font-size:12px; margin:8px 0; color:var(--accent)"></div>
-          <div class="players" style="margin-top:10px">${membersHtml}</div>
-          <h3 style="margin:14px 0 6px">Invites</h3>
-          ${canEdit ? `
-            <div class="row" style="gap:8px; margin-bottom:10px">
-              <input id="wsInviteEmail" placeholder="person@example.com" style="flex:1" />
-              <select id="wsInviteRole" style="width:120px">
-                <option value="member">Member</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
-            <div class="actions" style="justify-content:flex-start; margin-bottom:10px">
-              <button id="wsInviteBtn">Create Invite</button>
-            </div>
-          ` : ''}
-          <div class="players">${invitesHtml}</div>
-          <h3 style="margin:14px 0 6px">Activity</h3>
-          <div class="players">${activityHtml}</div>
-          <div class="actions col" style="gap:10px">
-            ${canEdit ? '<button id="wsSave" style="font-size:15px; padding:12px">Save Workspace</button>' : ''}
-            ${isOwner ? '<button id="wsArchive" class="btn-auth-sm">Archive Workspace</button>' : ''}
-            <button id="wsLeave">Leave Workspace</button>
-            <button id="wsBack" style="opacity:0.7">← Back</button>
-          </div>
-        </div>
-      </div>`;
-
-    const msgEl = this.root.querySelector('#wsMsg') as HTMLElement;
-    (this.root.querySelector('#wsBack') as HTMLButtonElement).onclick = () => {
-      playClick(); this._uiMode = 'landing'; this.render();
-    };
-    (this.root.querySelector('#wsSwitcher') as HTMLSelectElement).addEventListener('change', async (event) => {
-      const value = (event.target as HTMLSelectElement).value;
-      msgEl.textContent = 'Switching…';
-      try {
-        await sync.switchWorkspace(value);
-        this.applyWorkspaceBranding();
-        await sync.refreshWorkspaceBilling();
-        msgEl.textContent = '';
-        this.render();
-      } catch (error) {
-        msgEl.style.color = '#e54040';
-        msgEl.textContent = error instanceof Error ? error.message : 'Could not switch workspace.';
-      }
-    });
-    (this.root.querySelector('#wsSave') as HTMLButtonElement | null)?.addEventListener('click', async () => {
-      playClick();
-      const brand_name = (this.root.querySelector('#wsBrandName') as HTMLInputElement).value.trim();
-      const brand_tagline = (this.root.querySelector('#wsTagline') as HTMLInputElement).value.trim();
-      const accent_color = (this.root.querySelector('#wsAccent') as HTMLInputElement).value.trim();
-      const logo_url = (this.root.querySelector('#wsLogo') as HTMLInputElement).value.trim();
-      msgEl.textContent = 'Saving…';
-      try {
-        await sync.saveWorkspaceSettings({ brand_name, brand_tagline, accent_color, logo_url });
-        this.applyWorkspaceBranding();
-        msgEl.textContent = 'Saved.';
-        this.render();
-      } catch (error) {
-        msgEl.style.color = '#e54040';
-        msgEl.textContent = error instanceof Error ? error.message : 'Could not save workspace.';
-      }
-    });
-    (this.root.querySelector('#wsUpgrade') as HTMLButtonElement | null)?.addEventListener('click', async () => {
-      playClick();
-      msgEl.style.color = 'var(--accent)';
-      msgEl.textContent = 'Opening checkout…';
-      try {
-        const url = await sync.startWorkspaceUpgrade();
-        window.location.href = url;
-      } catch (error) {
-        msgEl.style.color = '#e54040';
-        msgEl.textContent = error instanceof Error ? error.message : 'Could not open checkout.';
-      }
-    });
-    (this.root.querySelector('#wsRefreshBilling') as HTMLButtonElement | null)?.addEventListener('click', async () => {
-      playClick();
-      msgEl.style.color = 'var(--accent)';
-      msgEl.textContent = 'Refreshing billing…';
-      try {
-        await sync.refreshWorkspaceBilling();
-        msgEl.textContent = 'Billing refreshed.';
-        this.render();
-      } catch (error) {
-        msgEl.style.color = '#e54040';
-        msgEl.textContent = error instanceof Error ? error.message : 'Could not refresh billing.';
-      }
-    });
-    (this.root.querySelector('#wsPortal') as HTMLButtonElement | null)?.addEventListener('click', async () => {
-      playClick();
-      msgEl.style.color = 'var(--accent)';
-      msgEl.textContent = 'Opening billing portal…';
-      try {
-        const url = await sync.openWorkspaceBillingPortal();
-        window.location.href = url;
-      } catch (error) {
-        msgEl.style.color = '#e54040';
-        msgEl.textContent = error instanceof Error ? error.message : 'Could not open billing portal.';
-      }
-    });
-    (this.root.querySelector('#wsArchive') as HTMLButtonElement | null)?.addEventListener('click', async () => {
-      playClick();
-      msgEl.style.color = 'var(--accent)';
-      msgEl.textContent = 'Archiving workspace…';
-      try {
-        await sync.archiveWorkspace();
-        this.applyWorkspaceBranding();
-        msgEl.textContent = 'Workspace archived.';
-        this.render();
-      } catch (error) {
-        msgEl.style.color = '#e54040';
-        msgEl.textContent = error instanceof Error ? error.message : 'Could not archive workspace.';
-      }
-    });
-    (this.root.querySelector('#wsCreateBtn') as HTMLButtonElement | null)?.addEventListener('click', async () => {
-      playClick();
-      const name = (this.root.querySelector('#wsCreateName') as HTMLInputElement).value.trim();
-      msgEl.style.color = 'var(--accent)';
-      msgEl.textContent = 'Creating workspace…';
-      try {
-        await sync.createWorkspace(name);
-        await sync.refreshWorkspace();
-        this.applyWorkspaceBranding();
-        msgEl.textContent = 'Workspace created.';
-        this.render();
-      } catch (error) {
-        msgEl.style.color = '#e54040';
-        msgEl.textContent = error instanceof Error ? error.message : 'Could not create workspace.';
-      }
-    });
-    (this.root.querySelector('#wsInviteBtn') as HTMLButtonElement | null)?.addEventListener('click', async () => {
-      playClick();
-      const email = (this.root.querySelector('#wsInviteEmail') as HTMLInputElement).value.trim();
-      const role = (this.root.querySelector('#wsInviteRole') as HTMLSelectElement).value as 'admin' | 'member';
-      msgEl.style.color = 'var(--accent)';
-      msgEl.textContent = 'Creating invite…';
-      try {
-        const result = await sync.inviteToWorkspace(email, role);
-        msgEl.textContent = `Invite ready: ${result.invite_url}`;
-        this.render();
-      } catch (error) {
-        msgEl.style.color = '#e54040';
-        msgEl.textContent = error instanceof Error ? error.message : 'Could not create invite.';
-      }
-    });
-    this.root.querySelectorAll('.ws-revoke').forEach((button) => {
-      (button as HTMLButtonElement).addEventListener('click', async () => {
-        const inviteId = (button as HTMLElement).dataset.invite ?? '';
-        if (!inviteId) return;
-        playClick();
-        msgEl.style.color = 'var(--accent)';
-        msgEl.textContent = 'Revoking invite…';
-        try {
-          await sync.revokeWorkspaceInvite(inviteId);
-          msgEl.textContent = 'Invite revoked.';
-          this.render();
-        } catch (error) {
-          msgEl.style.color = '#e54040';
-          msgEl.textContent = error instanceof Error ? error.message : 'Could not revoke invite.';
-        }
-      });
-    });
-    this.root.querySelectorAll('.ws-member-role').forEach((select) => {
-      (select as HTMLSelectElement).addEventListener('change', async () => {
-        const userId = (select as HTMLElement).dataset.user ?? '';
-        const role = (select as HTMLSelectElement).value as 'admin' | 'member';
-        if (!userId) return;
-        msgEl.style.color = 'var(--accent)';
-        msgEl.textContent = 'Updating role…';
-        try {
-          await sync.updateWorkspaceMemberRole(userId, role);
-          msgEl.textContent = 'Role updated.';
-          this.render();
-        } catch (error) {
-          msgEl.style.color = '#e54040';
-          msgEl.textContent = error instanceof Error ? error.message : 'Could not update role.';
-        }
-      });
-    });
-    this.root.querySelectorAll('.ws-member-remove').forEach((button) => {
-      (button as HTMLButtonElement).addEventListener('click', async () => {
-        const userId = (button as HTMLElement).dataset.user ?? '';
-        if (!userId) return;
-        playClick();
-        msgEl.style.color = 'var(--accent)';
-        msgEl.textContent = 'Removing member…';
-        try {
-          await sync.removeWorkspaceMember(userId);
-          msgEl.textContent = 'Member removed.';
-          this.render();
-        } catch (error) {
-          msgEl.style.color = '#e54040';
-          msgEl.textContent = error instanceof Error ? error.message : 'Could not remove member.';
-        }
-      });
-    });
-    this.root.querySelectorAll('.ws-member-transfer').forEach((button) => {
-      (button as HTMLButtonElement).addEventListener('click', async () => {
-        const userId = (button as HTMLElement).dataset.user ?? '';
-        if (!userId) return;
-        playClick();
-        msgEl.style.color = 'var(--accent)';
-        msgEl.textContent = 'Transferring ownership…';
-        try {
-          await sync.transferWorkspaceOwner(userId);
-          msgEl.textContent = 'Ownership transferred.';
-          this.render();
-        } catch (error) {
-          msgEl.style.color = '#e54040';
-          msgEl.textContent = error instanceof Error ? error.message : 'Could not transfer ownership.';
-        }
-      });
-    });
-    (this.root.querySelector('#wsLeave') as HTMLButtonElement).addEventListener('click', async () => {
-      playClick();
-      msgEl.style.color = 'var(--accent)';
-      msgEl.textContent = 'Leaving workspace…';
-      try {
-        await sync.leaveWorkspace(workspace.id);
-        this.applyWorkspaceBranding();
-        msgEl.textContent = 'Left workspace.';
-        this.render();
-      } catch (error) {
-        msgEl.style.color = '#e54040';
-        msgEl.textContent = error instanceof Error ? error.message : 'Could not leave workspace.';
-      }
-    });
   }
 
   // ── Shop ──────────────────────────────────────────────────────────────────
@@ -1214,26 +872,6 @@ export class HUD {
     }
   }
 
-  private applyWorkspaceBranding(): void {
-    const accent = sync.workspace?.settings.accent_color;
-    if (!accent || !/^#[0-9a-fA-F]{6}$/.test(accent)) {
-      this.root.style.removeProperty('--accent');
-      this.root.style.removeProperty('--accent-light');
-      return;
-    }
-
-    const brighten = (hex: string, factor: number): string => {
-      const r = parseInt(hex.slice(1, 3), 16);
-      const g = parseInt(hex.slice(3, 5), 16);
-      const b = parseInt(hex.slice(5, 7), 16);
-      const mix = (value: number) => Math.min(255, Math.round(value + (255 - value) * factor));
-      return `#${[mix(r), mix(g), mix(b)].map((v) => v.toString(16).padStart(2, '0')).join('')}`;
-    };
-
-    this.root.style.setProperty('--accent', accent);
-    this.root.style.setProperty('--accent-light', brighten(accent, 0.25));
-  }
-
   private escapeHtml(value: string): string {
     return value
       .replace(/&/g, '&amp;')
@@ -1245,18 +883,6 @@ export class HUD {
     return this.escapeHtml(value)
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
-  }
-
-  private formatWorkspaceTimestamp(value: string): string {
-    const parsed = new Date(value.replace(' ', 'T'));
-    if (Number.isNaN(parsed.getTime())) return value;
-    return new Intl.DateTimeFormat(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(parsed);
   }
 
   private combatPanel(myTurn: boolean): string {
@@ -1729,9 +1355,6 @@ export class HUD {
         font-size:var(--hud-text-sm); }
       .auth-email { color:var(--text-secondary); opacity:0.8; max-width:200px;
         overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-      .workspace-chip { display:inline-block; margin:4px 0 6px; padding:4px 10px; border-radius:999px;
-        background:rgba(255,255,255,0.06); border:1px solid var(--border-color); color:var(--text-secondary);
-        font-size:11px; letter-spacing:0.2px; }
       .btn-auth { font-size:12px; padding:5px 10px; min-height:30px; opacity:0.75;
         background:transparent !important; border-color:var(--border-color) !important; }
       .btn-auth:hover { opacity:1 !important; }

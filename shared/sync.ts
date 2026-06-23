@@ -14,217 +14,90 @@ import { ArcadeStore } from './arcade-store';
 type AuthListener = (loggedIn: boolean, email: string | null) => void;
 export type AccountType = 'consumer' | 'commercial';
 
-export interface WorkspaceSettings {
-  brand_name: string;
-  brand_tagline: string | null;
-  accent_color: string;
-  logo_url: string | null;
-}
-
-export interface WorkspaceSummary {
-  id: string;
-  name: string;
-  slug: string;
-  plan_key: string;
-  account_type: AccountType;
-  email_domain: string | null;
-  is_personal: boolean;
-  is_archived: boolean;
-  archived_at: string | null;
-  role: string;
-  member_count: number;
-  limits: {
-    members: number;
-    games: number;
-    private_rooms: number;
-  };
-  usage: {
-    members: number;
-  };
-  settings: WorkspaceSettings;
-}
-
-export interface WorkspaceMember {
+interface ServerProfile {
   user_id: string;
   email: string;
   account_type: AccountType;
-  role: string;
-  created_at: string;
-}
-
-export interface WorkspaceInvite {
-  id: string;
-  email: string;
-  role: string;
-  token: string;
-  expires_at: string;
-  created_at: string;
-}
-
-export interface WorkspaceBillingSummary {
-  plan_key: string;
-  seats_used: number;
-  seat_limit: number;
-  games_limit: number;
-  private_rooms_limit: number;
-  upgrade_label: string;
-  can_manage_subscription: boolean;
-  subscription_status: string;
-  current_period_end: string | null;
-  has_customer: boolean;
-  has_subscription: boolean;
-}
-
-export interface WorkspaceActivity {
-  id: string;
-  action_key: string;
-  target_type: string | null;
-  target_id: string | null;
-  message: string;
-  metadata: Record<string, unknown> | null;
-  created_at: string;
-  actor_email: string | null;
-}
-
-interface ServerProfile {
-  user_id:          string;
-  email:            string;
-  account_type:     AccountType;
-  workspace:        WorkspaceSummary;
-  workspaces:       WorkspaceSummary[];
-  coins:            number;
+  coins: number;
   active_card_back: string;
   owned_card_backs: string[];
-  premium_until:    string | null;
-  premium_active:   boolean;
-  wins:             number;
-  losses:           number;
-  games_played:     number;
-  best_streak:      number;
-  current_streak:   number;
+  premium_until: string | null;
+  premium_active: boolean;
+  wins: number;
+  losses: number;
+  games_played: number;
+  best_streak: number;
+  current_streak: number;
 }
 
 class SyncManager {
-  private _userId:    string | null = null;
-  private _email:     string | null = null;
+  private _userId: string | null = null;
+  private _email: string | null = null;
   private _accountType: AccountType = 'consumer';
-  private _workspace: WorkspaceSummary | null = null;
-  private _workspaces: WorkspaceSummary[] = [];
-  private _members: WorkspaceMember[] = [];
-  private _invites: WorkspaceInvite[] = [];
-  private _billing: WorkspaceBillingSummary | null = null;
-  private _activity: WorkspaceActivity[] = [];
-  private _timer:     ReturnType<typeof setTimeout> | null = null;
+  private _timer: ReturnType<typeof setTimeout> | null = null;
   private _listeners: Set<AuthListener> = new Set();
-  private _ready      = false;
+  private _ready = false;
 
-  get userId()    { return this._userId; }
-  get email()     { return this._email; }
-  get accountType(){ return this._accountType; }
-  get workspace() { return this._workspace; }
-  get workspaceId(){ return this._workspace?.id ?? null; }
-  get workspaces(){ return this._workspaces; }
-  get workspaceMembers(){ return this._members; }
-  get workspaceInvites(){ return this._invites; }
-  get workspaceBilling(){ return this._billing; }
-  get workspaceActivity(){ return this._activity; }
-  get isLoggedIn(){ return !!this._userId; }
-  get isReady()   { return this._ready; }
+  get userId() { return this._userId; }
+  get email() { return this._email; }
+  get accountType() { return this._accountType; }
+  get isLoggedIn() { return !!this._userId; }
+  get isReady() { return this._ready; }
 
-  /**
-   * Call once on app start.
-   * Detects magic-link return (?mt_session=TOKEN) and restores existing sessions.
-   */
   async init(): Promise<void> {
-    // Detect magic-link redirect: ?mt_session=TOKEN
     const params = new URLSearchParams(window.location.search);
     const incoming = params.get('mt_session');
-    const incomingInvite = params.get('mt_invite');
     if (incoming) {
       setSessionToken(incoming);
       params.delete('mt_session');
-    }
-    if (incomingInvite) {
-      localStorage.setItem('minitoon:pending-invite', incomingInvite);
-      params.delete('mt_invite');
-    }
-    if (incoming || incomingInvite) {
       const newUrl = [window.location.pathname, params.toString()].filter(Boolean).join('?');
       window.history.replaceState({}, '', newUrl);
     }
 
-    // Restore existing session
     if (getSessionToken()) {
       try {
         await this.pullProfile();
-        await this.acceptPendingInvite();
       } catch {
-        // Token may be expired — clear it
         clearSessionToken();
-        this._userId = null;
-        this._email  = null;
-        this._accountType = 'consumer';
-        this._workspace = null;
-        this._workspaces = [];
-        this._members = [];
-        this._invites = [];
-        this._billing = null;
-        this._activity = [];
+        this.resetSessionState();
       }
     }
 
     this._ready = true;
   }
 
-  /** POST email → server sends magic link. */
   async signIn(email: string): Promise<void> {
     await api.post('/auth/request-link.php', { email });
   }
 
-  /** Clear local session and notify listeners. */
   async signOut(): Promise<void> {
     try { await api.post('/auth/logout.php'); } catch { /* ignore */ }
     clearSessionToken();
-    this._userId = null;
-    this._email  = null;
-    this._accountType = 'consumer';
-    this._workspace = null;
-    this._workspaces = [];
-    this._members = [];
-    this._invites = [];
-    this._billing = null;
-    this._activity = [];
+    this.resetSessionState();
     this._notify(false, null);
   }
 
-  /** Pull server profile into localStorage (server wins for premium + coins). */
   async pullProfile(): Promise<void> {
     const profile = await api.get<ServerProfile>('/profile/get.php');
 
     this._userId = profile.user_id;
-    this._email  = profile.email;
+    this._email = profile.email;
     this._accountType = profile.account_type;
-    this._workspace = profile.workspace;
-    this._workspaces = profile.workspaces ?? [profile.workspace];
 
-    // Merge card backs (union: never lose locally unlocked ones)
-    const localOwned  = ArcadeStore.getOwnedCardBacks();
+    const localOwned = ArcadeStore.getOwnedCardBacks();
     const serverOwned = profile.owned_card_backs ?? ['cardBack_blue1'];
-    const merged      = [...new Set([...localOwned, ...serverOwned])];
-
-    // Coins: take the higher value
+    const merged = [...new Set([...localOwned, ...serverOwned])];
     const finalCoins = Math.max(ArcadeStore.getCoins(), profile.coins);
 
     ArcadeStore.setCoins(finalCoins);
-    ArcadeStore.set('ownedCardBacks',  merged);
+    ArcadeStore.set('ownedCardBacks', merged);
     ArcadeStore.setCardBack(profile.active_card_back ?? ArcadeStore.getCardBack());
-    ArcadeStore.set('wins',            profile.wins           ?? 0);
-    ArcadeStore.set('losses',          profile.losses         ?? 0);
-    ArcadeStore.set('gamesPlayed',     profile.games_played   ?? 0);
-    ArcadeStore.set('bestStreak',      profile.best_streak    ?? 0);
-    ArcadeStore.set('currentStreak',   profile.current_streak ?? 0);
+    ArcadeStore.set('wins', profile.wins ?? 0);
+    ArcadeStore.set('losses', profile.losses ?? 0);
+    ArcadeStore.set('gamesPlayed', profile.games_played ?? 0);
+    ArcadeStore.set('bestStreak', profile.best_streak ?? 0);
+    ArcadeStore.set('currentStreak', profile.current_streak ?? 0);
 
-    // Premium: always from server — cannot be faked client-side
     if (profile.premium_active && profile.premium_until) {
       ArcadeStore.set('premium', { until: new Date(profile.premium_until).getTime() });
     } else {
@@ -233,226 +106,34 @@ class SyncManager {
 
     this._notify(true, this._email);
 
-    // Push back any local advantages (e.g. coins earned as guest)
     if (finalCoins > profile.coins || merged.length > serverOwned.length) {
       void this.pushProfile();
     }
   }
 
-  async saveWorkspaceSettings(input: Partial<WorkspaceSettings>): Promise<WorkspaceSummary> {
-    const result = await api.post<{ ok: true; workspace: WorkspaceSummary }>('/workspace/update.php', input);
-    this._workspace = result.workspace;
-    this._workspaces = this._workspaces.map((workspace) =>
-      workspace.id === result.workspace.id ? result.workspace : workspace,
-    );
-    return result.workspace;
-  }
-
-  async refreshWorkspace(): Promise<void> {
-    if (!getSessionToken()) return;
-    const result = await api.get<{
-      workspace: WorkspaceSummary;
-      workspaces: WorkspaceSummary[];
-      members: WorkspaceMember[];
-      invites: WorkspaceInvite[];
-      activity: WorkspaceActivity[];
-    }>('/workspace/get.php');
-    this._workspace = result.workspace;
-    this._workspaces = result.workspaces;
-    this._members = result.members;
-    this._invites = result.invites;
-    this._activity = result.activity;
-    const billing = await api.get<{ billing: WorkspaceBillingSummary }>('/workspace/billing.php');
-    this._billing = billing.billing;
-  }
-
-  async createWorkspace(name: string): Promise<void> {
-    const result = await api.post<{
-      ok: true;
-      workspace: WorkspaceSummary;
-      workspaces: WorkspaceSummary[];
-      members: WorkspaceMember[];
-      invites: WorkspaceInvite[];
-      activity: WorkspaceActivity[];
-    }>('/workspace/create.php', { name });
-    this._workspace = result.workspace;
-    this._workspaces = result.workspaces;
-    this._members = result.members;
-    this._invites = result.invites;
-    this._activity = result.activity;
-    await this.refreshWorkspaceBilling();
-  }
-
-  async switchWorkspace(workspaceId: string): Promise<void> {
-    const result = await api.post<{
-      ok: true;
-      workspace: WorkspaceSummary;
-      workspaces: WorkspaceSummary[];
-      members: WorkspaceMember[];
-      invites: WorkspaceInvite[];
-      activity: WorkspaceActivity[];
-    }>('/workspace/switch.php', { workspace_id: workspaceId });
-    this._workspace = result.workspace;
-    this._workspaces = result.workspaces;
-    this._members = result.members;
-    this._invites = result.invites;
-    this._activity = result.activity;
-    const billing = await api.get<{ billing: WorkspaceBillingSummary }>('/workspace/billing.php');
-    this._billing = billing.billing;
-  }
-
-  async inviteToWorkspace(email: string, role: 'admin' | 'member' = 'member'): Promise<{ invite_url: string }> {
-    const result = await api.post<{
-      ok: true;
-      invite_url: string;
-      mail_sent: boolean;
-      members: WorkspaceMember[];
-      invites: WorkspaceInvite[];
-      activity: WorkspaceActivity[];
-    }>('/workspace/invite.php', { email, role });
-    this._members = result.members;
-    this._invites = result.invites;
-    this._activity = result.activity;
-    return { invite_url: result.invite_url };
-  }
-
-  async revokeWorkspaceInvite(inviteId: string): Promise<void> {
-    const result = await api.post<{ ok: true; invites: WorkspaceInvite[]; activity: WorkspaceActivity[] }>('/workspace/revoke-invite.php', { invite_id: inviteId });
-    this._invites = result.invites;
-    this._activity = result.activity;
-  }
-
-  async updateWorkspaceMemberRole(userId: string, role: 'admin' | 'member'): Promise<void> {
-    const result = await api.post<{ ok: true; members: WorkspaceMember[]; activity: WorkspaceActivity[] }>('/workspace/members.php', {
-      user_id: userId,
-      role,
-    });
-    this._members = result.members;
-    this._activity = result.activity;
-    const billing = await api.get<{ billing: WorkspaceBillingSummary }>('/workspace/billing.php');
-    this._billing = billing.billing;
-  }
-
-  async removeWorkspaceMember(userId: string): Promise<void> {
-    const result = await api.post<{ ok: true; members: WorkspaceMember[]; activity: WorkspaceActivity[] }>('/workspace/remove-member.php', {
-      user_id: userId,
-    });
-    this._members = result.members;
-    this._activity = result.activity;
-    const billing = await api.get<{ billing: WorkspaceBillingSummary }>('/workspace/billing.php');
-    this._billing = billing.billing;
-  }
-
-  async transferWorkspaceOwner(userId: string): Promise<void> {
-    const result = await api.post<{
-      ok: true;
-      workspace: WorkspaceSummary;
-      members: WorkspaceMember[];
-      activity: WorkspaceActivity[];
-    }>('/workspace/transfer-owner.php', { user_id: userId });
-    this._workspace = result.workspace;
-    this._members = result.members;
-    this._activity = result.activity;
-    await this.refreshWorkspace();
-  }
-
-  async leaveWorkspace(workspaceId: string): Promise<void> {
-    const result = await api.post<{
-      ok: true;
-      workspace: WorkspaceSummary;
-      workspaces: WorkspaceSummary[];
-      members: WorkspaceMember[];
-      invites: WorkspaceInvite[];
-      activity: WorkspaceActivity[];
-    }>('/workspace/leave.php', { workspace_id: workspaceId });
-    this._workspace = result.workspace;
-    this._workspaces = result.workspaces;
-    this._members = result.members;
-    this._invites = result.invites;
-    this._activity = result.activity;
-    await this.refreshWorkspaceBilling();
-  }
-
-  async archiveWorkspace(): Promise<void> {
-    const result = await api.post<{
-      ok: true;
-      workspace: WorkspaceSummary;
-      workspaces: WorkspaceSummary[];
-      members: WorkspaceMember[];
-      invites: WorkspaceInvite[];
-      activity: WorkspaceActivity[];
-    }>('/workspace/archive.php');
-    this._workspace = result.workspace;
-    this._workspaces = result.workspaces;
-    this._members = result.members;
-    this._invites = result.invites;
-    this._activity = result.activity;
-    await this.refreshWorkspaceBilling();
-  }
-
-  async refreshWorkspaceBilling(): Promise<void> {
-    if (!getSessionToken()) return;
-    const billing = await api.get<{ billing: WorkspaceBillingSummary }>('/workspace/billing.php');
-    this._billing = billing.billing;
-  }
-
-  async startWorkspaceUpgrade(): Promise<string> {
-    const result = await api.post<{ url: string }>('/stripe/create-checkout.php');
-    return result.url;
-  }
-
-  async openWorkspaceBillingPortal(): Promise<string> {
-    const result = await api.post<{ url: string }>('/stripe/create-portal.php');
-    return result.url;
-  }
-
-  async acceptPendingInvite(): Promise<void> {
-    const token = localStorage.getItem('minitoon:pending-invite');
-    if (!token || !getSessionToken()) return;
-    try {
-      const result = await api.post<{
-        ok: true;
-        workspace: WorkspaceSummary;
-        workspaces: WorkspaceSummary[];
-        members: WorkspaceMember[];
-        invites: WorkspaceInvite[];
-        activity: WorkspaceActivity[];
-      }>('/workspace/accept-invite.php', { token });
-      this._workspace = result.workspace;
-      this._workspaces = result.workspaces;
-      this._members = result.members;
-      this._invites = result.invites;
-      this._activity = result.activity;
-      localStorage.removeItem('minitoon:pending-invite');
-      await this.refreshWorkspaceBilling();
-    } catch {
-      // Keep token if acceptance fails, so the user can retry after reauth or deployment fixes.
-    }
-  }
-
-  /** Debounced — triggers after any local write. Pushes after 2 s of silence. */
   scheduleSync(): void {
     if (!getSessionToken()) return;
     if (this._timer !== null) clearTimeout(this._timer);
-    this._timer = setTimeout(() => { this._timer = null; void this.pushProfile(); }, 2000);
+    this._timer = setTimeout(() => {
+      this._timer = null;
+      void this.pushProfile();
+    }, 2000);
   }
 
-  /** Push current localStorage state to server. */
   async pushProfile(): Promise<void> {
     if (!getSessionToken()) return;
     await api.post('/profile/update.php', {
-      coins:           ArcadeStore.getCoins(),
-      active_card_back:ArcadeStore.getCardBack(),
-      owned_card_backs:ArcadeStore.getOwnedCardBacks(),
-      wins:            (ArcadeStore.get('wins')          as number) ?? 0,
-      losses:          (ArcadeStore.get('losses')        as number) ?? 0,
-      games_played:    (ArcadeStore.get('gamesPlayed')   as number) ?? 0,
-      best_streak:     (ArcadeStore.get('bestStreak')    as number) ?? 0,
-      current_streak:  (ArcadeStore.get('currentStreak') as number) ?? 0,
+      coins: ArcadeStore.getCoins(),
+      active_card_back: ArcadeStore.getCardBack(),
+      owned_card_backs: ArcadeStore.getOwnedCardBacks(),
+      wins: (ArcadeStore.get('wins') as number) ?? 0,
+      losses: (ArcadeStore.get('losses') as number) ?? 0,
+      games_played: (ArcadeStore.get('gamesPlayed') as number) ?? 0,
+      best_streak: (ArcadeStore.get('bestStreak') as number) ?? 0,
+      current_streak: (ArcadeStore.get('currentStreak') as number) ?? 0,
     }).catch(() => { /* network error — will retry next write */ });
   }
 
-  /** Verify premium directly with the server (authoritative). */
   async checkPremium(): Promise<boolean> {
     if (!getSessionToken()) return ArcadeStore.getPremium().active;
     try {
@@ -473,8 +154,14 @@ class SyncManager {
     return () => this._listeners.delete(cb);
   }
 
+  private resetSessionState(): void {
+    this._userId = null;
+    this._email = null;
+    this._accountType = 'consumer';
+  }
+
   private _notify(loggedIn: boolean, email: string | null): void {
-    this._listeners.forEach(cb => cb(loggedIn, email));
+    this._listeners.forEach((cb) => cb(loggedIn, email));
   }
 }
 
