@@ -191,3 +191,22 @@ body {
     max-width: calc(100vw - var(--safe-left) - var(--safe-right) - 5.5rem);
   }
 }
+
+@media (max-width: 900px) and (max-height: 500px) {
+  :root {
+    --control-offset: 0.5rem;
+    --control-size: 38px;
+  }
+
+  .theme-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .game-exit {
+    min-height: 38px;
+    padding: 0.4rem 0.7rem;
+    font-size: 0.78rem;
+    gap: 0.25rem;
+  }
+}

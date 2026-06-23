@@ -21,6 +21,7 @@ export class HUD {
   private resizeObserver: ResizeObserver | null = null;
   private rafId: number | null = null;
   private windowResizeHandler: () => void;
+  private visualViewportHandler: (() => void) | null = null;
 
   // Multiplayer state
   private _uiMode:    UIMode  = 'landing';
@@ -67,6 +68,11 @@ export class HUD {
     this.resizeObserver?.disconnect();
     this.resizeObserver = null;
     window.removeEventListener('resize', this.windowResizeHandler);
+    if (this.visualViewportHandler) {
+      window.visualViewport?.removeEventListener('resize', this.visualViewportHandler);
+      window.visualViewport?.removeEventListener('scroll', this.visualViewportHandler);
+      this.visualViewportHandler = null;
+    }
     if (this.rafId !== null) {
       window.cancelAnimationFrame(this.rafId);
       this.rafId = null;
@@ -553,6 +559,11 @@ export class HUD {
     };
 
     window.addEventListener('resize', this.windowResizeHandler);
+    if (window.visualViewport) {
+      this.visualViewportHandler = () => syncSoon();
+      window.visualViewport.addEventListener('resize', this.visualViewportHandler);
+      window.visualViewport.addEventListener('scroll', this.visualViewportHandler);
+    }
     if ('ResizeObserver' in window) {
       this.resizeObserver = new ResizeObserver(() => syncSoon());
       this.resizeObserver.observe(this.parent);
@@ -569,18 +580,25 @@ export class HUD {
     const targetRect = target.getBoundingClientRect();
     const width = Math.round(targetRect.width || parentRect.width);
     const height = Math.round(targetRect.height || parentRect.height);
+    const viewportScale = window.visualViewport?.scale ?? 1;
+    const effectiveWidth = width * viewportScale;
+    const effectiveHeight = height * viewportScale;
+    const shortEdge = Math.min(effectiveWidth, effectiveHeight);
     const left = Math.round(targetRect.left - parentRect.left);
     const top = Math.round(targetRect.top - parentRect.top);
     const scale = Math.max(0.55, Math.min(1.35, Math.min(width / 1280, height / 720)));
     const aspect = height > 0 ? width / height : 16 / 9;
     const layout =
-      width <= 420 || height <= 340 ? 'xs' :
-      width <= 720 || height <= 560 ? 'sm' :
-      width <= 980 ? 'md' : 'lg';
+      effectiveWidth <= 420 || effectiveHeight <= 340 ? 'xs' :
+      effectiveWidth <= 720 || effectiveHeight <= 560 ? 'sm' :
+      effectiveWidth <= 980 ? 'md' : 'lg';
     const aspectMode =
       aspect >= 1.7 ? 'wide' :
       aspect >= 1.15 ? 'landscape' :
       aspect > 0.85 ? 'square' : 'portrait';
+    const deviceMode =
+      shortEdge <= 430 ? 'phone' :
+      shortEdge <= 820 ? 'tablet' : 'desktop';
 
     this.root.style.left = '0px';
     this.root.style.top = '0px';
@@ -590,9 +608,13 @@ export class HUD {
     this.root.style.transform = `translate(${left}px, ${top}px) scale(${scale})`;
     this.root.style.setProperty('--hud-scale', scale.toFixed(3));
     this.root.style.setProperty('--hud-aspect', aspect.toFixed(3));
+    this.root.style.setProperty('--hud-short-edge', `${shortEdge}px`);
+    this.root.style.setProperty('--hud-effective-width', `${Math.round(effectiveWidth)}px`);
+    this.root.style.setProperty('--hud-effective-height', `${Math.round(effectiveHeight)}px`);
     this.root.dataset.layout = layout;
     this.root.dataset.orientation = width >= height ? 'landscape' : 'portrait';
     this.root.dataset.aspectMode = aspectMode;
+    this.root.dataset.device = deviceMode;
   }
 
   // ── Styles ────────────────────────────────────────────────────────────────
@@ -962,6 +984,148 @@ export class HUD {
       .hud-root[data-aspect-mode="wide"][data-layout="sm"] .csuit,
       .hud-root[data-aspect-mode="wide"][data-layout="xs"] .csuit {
         font-size:12px;
+      }
+
+      /* Final device-specific overrides for real phones. */
+      .hud-root[data-device="phone"] {
+        --hud-gap: clamp(4px, calc(6px * var(--hud-scale)), 8px);
+        --hud-text-sm: clamp(9px, calc(10px * var(--hud-scale)), 11px);
+        --hud-text-md: clamp(10px, calc(11px * var(--hud-scale)), 12px);
+        --hud-text-lg: clamp(12px, calc(14px * var(--hud-scale)), 16px);
+      }
+
+      .hud-root[data-device="phone"] .sidebar,
+      .hud-root[data-device="phone"] .log,
+      .hud-root[data-device="phone"] .panel {
+        scrollbar-width: thin;
+      }
+
+      .hud-root[data-device="phone"] .handbar {
+        display:flex;
+        flex-wrap:nowrap;
+        align-items:center;
+        align-content:center;
+        justify-content:flex-start;
+        overflow-x:auto;
+        overflow-y:hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width:none;
+        scroll-snap-type:x proximity;
+      }
+
+      .hud-root[data-device="phone"] .handbar::-webkit-scrollbar {
+        display:none;
+      }
+
+      .hud-root[data-device="phone"] .handlabel {
+        flex:0 0 auto;
+        position:sticky;
+        left:0;
+        z-index:2;
+        padding-right:6px;
+        background:linear-gradient(90deg, var(--surface) 72%, transparent);
+      }
+
+      .hud-root[data-device="phone"] .card {
+        flex:0 0 auto;
+        scroll-snap-align:start;
+      }
+
+      .hud-root[data-device="phone"] .dim {
+        flex:0 0 auto;
+      }
+
+      .hud-root[data-device="phone"] .players,
+      .hud-root[data-device="phone"] .log {
+        min-height:0;
+      }
+
+      .hud-root[data-device="phone"][data-aspect-mode="portrait"],
+      .hud-root[data-device="phone"][data-aspect-mode="square"] {
+        --hud-sidebar-width: 100%;
+        --hud-hand-width: 100%;
+        --hud-card-width: 40px;
+        --hud-card-height: 54px;
+      }
+
+      .hud-root[data-device="phone"][data-aspect-mode="portrait"] .sidebar,
+      .hud-root[data-device="phone"][data-aspect-mode="square"] .sidebar {
+        left:var(--safe-left, 0px);
+        right:var(--safe-right, 0px);
+        top:0;
+        width:auto;
+        height:auto;
+        max-height:40%;
+        padding:8px 8px 10px;
+        border-left:none;
+        border-bottom:1px solid var(--border-color);
+      }
+
+      .hud-root[data-device="phone"][data-aspect-mode="portrait"] .handbar,
+      .hud-root[data-device="phone"][data-aspect-mode="square"] .handbar {
+        left:var(--safe-left, 0px);
+        width:calc(100% - var(--safe-left, 0px) - var(--safe-right, 0px));
+        min-height:58px;
+        padding:6px 8px calc(6px + var(--safe-bottom, 0px));
+        gap:4px;
+      }
+
+      .hud-root[data-device="phone"][data-aspect-mode="portrait"] .panel,
+      .hud-root[data-device="phone"][data-aspect-mode="square"] .panel {
+        width:100%;
+        max-width:100%;
+        border-radius:14px;
+        padding:16px 14px;
+      }
+
+      .hud-root[data-device="phone"][data-aspect-mode="landscape"],
+      .hud-root[data-device="phone"][data-aspect-mode="wide"] {
+        --hud-sidebar-width: clamp(250px, calc(390px * var(--hud-scale)), 360px);
+        --hud-hand-width: calc(100% - var(--hud-sidebar-width));
+        --hud-card-width: clamp(28px, calc(34px * var(--hud-scale)), 38px);
+        --hud-card-height: clamp(38px, calc(44px * var(--hud-scale)), 48px);
+      }
+
+      .hud-root[data-device="phone"][data-aspect-mode="landscape"] .sidebar,
+      .hud-root[data-device="phone"][data-aspect-mode="wide"] .sidebar {
+        width:var(--hud-sidebar-width);
+        height:100%;
+        max-height:none;
+        left:auto;
+        right:var(--safe-right, 0px);
+        top:0;
+        padding:8px 8px 10px;
+        border-left:1px solid var(--border-color);
+        border-bottom:none;
+      }
+
+      .hud-root[data-device="phone"][data-aspect-mode="landscape"] .handbar,
+      .hud-root[data-device="phone"][data-aspect-mode="wide"] .handbar {
+        left:var(--safe-left, 0px);
+        width:calc(100% - var(--hud-sidebar-width) - var(--safe-left, 0px) - var(--safe-right, 0px));
+        min-height:46px;
+        padding:5px 6px calc(5px + var(--safe-bottom, 0px));
+        gap:3px;
+      }
+
+      .hud-root[data-device="phone"][data-aspect-mode="landscape"] .handlabel,
+      .hud-root[data-device="phone"][data-aspect-mode="wide"] .handlabel {
+        font-size:9px;
+      }
+
+      .hud-root[data-device="phone"][data-aspect-mode="landscape"] .card,
+      .hud-root[data-device="phone"][data-aspect-mode="wide"] .card {
+        border-width:1.5px;
+      }
+
+      .hud-root[data-device="phone"][data-aspect-mode="landscape"] .crank,
+      .hud-root[data-device="phone"][data-aspect-mode="wide"] .crank {
+        font-size:10px;
+      }
+
+      .hud-root[data-device="phone"][data-aspect-mode="landscape"] .csuit,
+      .hud-root[data-device="phone"][data-aspect-mode="wide"] .csuit {
+        font-size:11px;
       }
     `;
     document.head.appendChild(s);
