@@ -31,7 +31,32 @@ export interface WorkspaceSummary {
   is_personal: boolean;
   role: string;
   member_count: number;
+  limits: {
+    members: number;
+    games: number;
+    private_rooms: number;
+  };
+  usage: {
+    members: number;
+  };
   settings: WorkspaceSettings;
+}
+
+export interface WorkspaceMember {
+  user_id: string;
+  email: string;
+  account_type: AccountType;
+  role: string;
+  created_at: string;
+}
+
+export interface WorkspaceInvite {
+  id: string;
+  email: string;
+  role: string;
+  token: string;
+  expires_at: string;
+  created_at: string;
 }
 
 interface ServerProfile {
@@ -39,6 +64,7 @@ interface ServerProfile {
   email:            string;
   account_type:     AccountType;
   workspace:        WorkspaceSummary;
+  workspaces:       WorkspaceSummary[];
   coins:            number;
   active_card_back: string;
   owned_card_backs: string[];
@@ -56,6 +82,9 @@ class SyncManager {
   private _email:     string | null = null;
   private _accountType: AccountType = 'consumer';
   private _workspace: WorkspaceSummary | null = null;
+  private _workspaces: WorkspaceSummary[] = [];
+  private _members: WorkspaceMember[] = [];
+  private _invites: WorkspaceInvite[] = [];
   private _timer:     ReturnType<typeof setTimeout> | null = null;
   private _listeners: Set<AuthListener> = new Set();
   private _ready      = false;
@@ -65,6 +94,9 @@ class SyncManager {
   get accountType(){ return this._accountType; }
   get workspace() { return this._workspace; }
   get workspaceId(){ return this._workspace?.id ?? null; }
+  get workspaces(){ return this._workspaces; }
+  get workspaceMembers(){ return this._members; }
+  get workspaceInvites(){ return this._invites; }
   get isLoggedIn(){ return !!this._userId; }
   get isReady()   { return this._ready; }
 
@@ -76,9 +108,16 @@ class SyncManager {
     // Detect magic-link redirect: ?mt_session=TOKEN
     const params = new URLSearchParams(window.location.search);
     const incoming = params.get('mt_session');
+    const incomingInvite = params.get('mt_invite');
     if (incoming) {
       setSessionToken(incoming);
       params.delete('mt_session');
+    }
+    if (incomingInvite) {
+      localStorage.setItem('minitoon:pending-invite', incomingInvite);
+      params.delete('mt_invite');
+    }
+    if (incoming || incomingInvite) {
       const newUrl = [window.location.pathname, params.toString()].filter(Boolean).join('?');
       window.history.replaceState({}, '', newUrl);
     }
@@ -87,6 +126,7 @@ class SyncManager {
     if (getSessionToken()) {
       try {
         await this.pullProfile();
+        await this.acceptPendingInvite();
       } catch {
         // Token may be expired — clear it
         clearSessionToken();
@@ -94,6 +134,9 @@ class SyncManager {
         this._email  = null;
         this._accountType = 'consumer';
         this._workspace = null;
+        this._workspaces = [];
+        this._members = [];
+        this._invites = [];
       }
     }
 
@@ -113,6 +156,9 @@ class SyncManager {
     this._email  = null;
     this._accountType = 'consumer';
     this._workspace = null;
+    this._workspaces = [];
+    this._members = [];
+    this._invites = [];
     this._notify(false, null);
   }
 
@@ -124,6 +170,7 @@ class SyncManager {
     this._email  = profile.email;
     this._accountType = profile.account_type;
     this._workspace = profile.workspace;
+    this._workspaces = profile.workspaces ?? [profile.workspace];
 
     // Merge card backs (union: never lose locally unlocked ones)
     const localOwned  = ArcadeStore.getOwnedCardBacks();
@@ -161,6 +208,72 @@ class SyncManager {
     const result = await api.post<{ ok: true; workspace: WorkspaceSummary }>('/workspace/update.php', input);
     this._workspace = result.workspace;
     return result.workspace;
+  }
+
+  async refreshWorkspace(): Promise<void> {
+    if (!getSessionToken()) return;
+    const result = await api.get<{
+      workspace: WorkspaceSummary;
+      workspaces: WorkspaceSummary[];
+      members: WorkspaceMember[];
+      invites: WorkspaceInvite[];
+    }>('/workspace/get.php');
+    this._workspace = result.workspace;
+    this._workspaces = result.workspaces;
+    this._members = result.members;
+    this._invites = result.invites;
+  }
+
+  async switchWorkspace(workspaceId: string): Promise<void> {
+    const result = await api.post<{
+      ok: true;
+      workspace: WorkspaceSummary;
+      workspaces: WorkspaceSummary[];
+      members: WorkspaceMember[];
+      invites: WorkspaceInvite[];
+    }>('/workspace/switch.php', { workspace_id: workspaceId });
+    this._workspace = result.workspace;
+    this._workspaces = result.workspaces;
+    this._members = result.members;
+    this._invites = result.invites;
+  }
+
+  async inviteToWorkspace(email: string, role: 'admin' | 'member' = 'member'): Promise<{ invite_url: string }> {
+    const result = await api.post<{
+      ok: true;
+      invite_url: string;
+      members: WorkspaceMember[];
+      invites: WorkspaceInvite[];
+    }>('/workspace/invite.php', { email, role });
+    this._members = result.members;
+    this._invites = result.invites;
+    return { invite_url: result.invite_url };
+  }
+
+  async revokeWorkspaceInvite(inviteId: string): Promise<void> {
+    const result = await api.post<{ ok: true; invites: WorkspaceInvite[] }>('/workspace/revoke-invite.php', { invite_id: inviteId });
+    this._invites = result.invites;
+  }
+
+  async acceptPendingInvite(): Promise<void> {
+    const token = localStorage.getItem('minitoon:pending-invite');
+    if (!token || !getSessionToken()) return;
+    try {
+      const result = await api.post<{
+        ok: true;
+        workspace: WorkspaceSummary;
+        workspaces: WorkspaceSummary[];
+        members: WorkspaceMember[];
+        invites: WorkspaceInvite[];
+      }>('/workspace/accept-invite.php', { token });
+      this._workspace = result.workspace;
+      this._workspaces = result.workspaces;
+      this._members = result.members;
+      this._invites = result.invites;
+      localStorage.removeItem('minitoon:pending-invite');
+    } catch {
+      // Keep token if acceptance fails, so the user can retry after reauth or deployment fixes.
+    }
   }
 
   /** Debounced — triggers after any local write. Pushes after 2 s of silence. */

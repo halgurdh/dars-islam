@@ -48,6 +48,23 @@ CREATE TABLE IF NOT EXISTS workspace_settings (
   FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS organization_invites (
+  id              CHAR(36)     NOT NULL PRIMARY KEY,
+  organization_id CHAR(36)     NOT NULL,
+  email           VARCHAR(255) NOT NULL,
+  token           CHAR(64)     NOT NULL UNIQUE,
+  role            VARCHAR(16)  NOT NULL DEFAULT 'member',
+  invited_by_user_id CHAR(36)  NOT NULL,
+  accepted_by_user_id CHAR(36) NULL,
+  accepted_at     DATETIME     NULL,
+  expires_at      DATETIME     NOT NULL,
+  revoked_at      DATETIME     NULL,
+  created_at      DATETIME     NOT NULL DEFAULT NOW(),
+  FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+  FOREIGN KEY (invited_by_user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (accepted_by_user_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- ── Magic-link tokens (1-hour expiry, single use) ────────────────────────────
 CREATE TABLE IF NOT EXISTS auth_tokens (
   token      CHAR(64)   NOT NULL PRIMARY KEY,
@@ -108,3 +125,5 @@ CREATE INDEX idx_stripe_org         ON stripe_subscriptions (organization_id);
 CREATE INDEX idx_users_active_org   ON users (active_organization_id);
 CREATE INDEX idx_org_owner          ON organizations (owner_user_id);
 CREATE INDEX idx_org_members_user   ON organization_members (user_id);
+CREATE INDEX idx_org_invites_org    ON organization_invites (organization_id);
+CREATE INDEX idx_org_invites_email  ON organization_invites (email);

@@ -329,12 +329,34 @@ export class HUD {
     }
 
     const canEdit = workspace.role === 'owner' || workspace.role === 'admin';
+    const memberOptions = sync.workspaces.map((item) =>
+      `<option value="${this.escapeAttr(item.id)}" ${item.id === workspace.id ? 'selected' : ''}>${this.escapeHtml(item.settings.brand_name)} (${this.escapeHtml(item.role)})</option>`,
+    ).join('');
+    const membersHtml = sync.workspaceMembers.length
+      ? sync.workspaceMembers.map((member) =>
+        `<div class="pcard"><div class="pname">${this.escapeHtml(member.email)}</div><div class="pstat dim">${this.escapeHtml(member.role)} · ${this.escapeHtml(member.account_type)}</div></div>`,
+      ).join('')
+      : '<div class="dim">No members yet.</div>';
+    const invitesHtml = sync.workspaceInvites.length
+      ? sync.workspaceInvites.map((invite) =>
+        `<div class="pcard">
+          <div class="pname">${this.escapeHtml(invite.email)}</div>
+          <div class="pstat dim">${this.escapeHtml(invite.role)} · expires ${this.escapeHtml(invite.expires_at)}</div>
+          ${canEdit ? `<button class="btn-auth-sm ws-revoke" data-invite="${this.escapeAttr(invite.id)}">Revoke</button>` : ''}
+        </div>`,
+      ).join('')
+      : '<div class="dim">No pending invites.</div>';
     this.root.innerHTML = `
       <div class="overlay">
-        <div class="panel center" style="max-width:420px">
+        <div class="panel" style="max-width:560px">
           <h2>Workspace</h2>
           <p class="sub">${this.escapeHtml(workspace.settings.brand_name)} · ${this.escapeHtml(workspace.account_type)} · ${this.escapeHtml(workspace.plan_key)}</p>
-          <p class="sub">Members: ${workspace.member_count} · Role: ${this.escapeHtml(workspace.role)}</p>
+          <p class="sub">Members: ${workspace.usage.members}/${workspace.limits.members} · Games: ${workspace.limits.games} · Rooms: ${workspace.limits.private_rooms} · Role: ${this.escapeHtml(workspace.role)}</p>
+          <div class="row" style="margin-top:12px">
+            <label style="width:100%">Active workspace
+              <select id="wsSwitcher">${memberOptions}</select>
+            </label>
+          </div>
           <div class="row" style="margin-top:12px">
             <label style="width:100%">Brand name
               <input id="wsBrandName" value="${this.escapeAttr(workspace.settings.brand_name)}" ${canEdit ? '' : 'disabled'} maxlength="120" />
@@ -356,6 +378,21 @@ export class HUD {
             </label>
           </div>
           <div id="wsMsg" style="min-height:18px; font-size:12px; margin:8px 0; color:var(--accent)"></div>
+          <div class="players" style="margin-top:10px">${membersHtml}</div>
+          <h3 style="margin:14px 0 6px">Invites</h3>
+          ${canEdit ? `
+            <div class="row" style="gap:8px; margin-bottom:10px">
+              <input id="wsInviteEmail" placeholder="person@example.com" style="flex:1" />
+              <select id="wsInviteRole" style="width:120px">
+                <option value="member">Member</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+            <div class="actions" style="justify-content:flex-start; margin-bottom:10px">
+              <button id="wsInviteBtn">Create Invite</button>
+            </div>
+          ` : ''}
+          <div class="players">${invitesHtml}</div>
           <div class="actions col" style="gap:10px">
             ${canEdit ? '<button id="wsSave" style="font-size:15px; padding:12px">Save Workspace</button>' : ''}
             <button id="wsBack" style="opacity:0.7">← Back</button>
@@ -367,6 +404,19 @@ export class HUD {
     (this.root.querySelector('#wsBack') as HTMLButtonElement).onclick = () => {
       playClick(); this._uiMode = 'landing'; this.render();
     };
+    (this.root.querySelector('#wsSwitcher') as HTMLSelectElement).addEventListener('change', async (event) => {
+      const value = (event.target as HTMLSelectElement).value;
+      msgEl.textContent = 'Switching…';
+      try {
+        await sync.switchWorkspace(value);
+        this.applyWorkspaceBranding();
+        msgEl.textContent = '';
+        this.render();
+      } catch (error) {
+        msgEl.style.color = '#e54040';
+        msgEl.textContent = error instanceof Error ? error.message : 'Could not switch workspace.';
+      }
+    });
     (this.root.querySelector('#wsSave') as HTMLButtonElement | null)?.addEventListener('click', async () => {
       playClick();
       const brand_name = (this.root.querySelector('#wsBrandName') as HTMLInputElement).value.trim();
@@ -383,6 +433,38 @@ export class HUD {
         msgEl.style.color = '#e54040';
         msgEl.textContent = error instanceof Error ? error.message : 'Could not save workspace.';
       }
+    });
+    (this.root.querySelector('#wsInviteBtn') as HTMLButtonElement | null)?.addEventListener('click', async () => {
+      playClick();
+      const email = (this.root.querySelector('#wsInviteEmail') as HTMLInputElement).value.trim();
+      const role = (this.root.querySelector('#wsInviteRole') as HTMLSelectElement).value as 'admin' | 'member';
+      msgEl.style.color = 'var(--accent)';
+      msgEl.textContent = 'Creating invite…';
+      try {
+        const result = await sync.inviteToWorkspace(email, role);
+        msgEl.textContent = `Invite ready: ${result.invite_url}`;
+        this.render();
+      } catch (error) {
+        msgEl.style.color = '#e54040';
+        msgEl.textContent = error instanceof Error ? error.message : 'Could not create invite.';
+      }
+    });
+    this.root.querySelectorAll('.ws-revoke').forEach((button) => {
+      (button as HTMLButtonElement).addEventListener('click', async () => {
+        const inviteId = (button as HTMLElement).dataset.invite ?? '';
+        if (!inviteId) return;
+        playClick();
+        msgEl.style.color = 'var(--accent)';
+        msgEl.textContent = 'Revoking invite…';
+        try {
+          await sync.revokeWorkspaceInvite(inviteId);
+          msgEl.textContent = 'Invite revoked.';
+          this.render();
+        } catch (error) {
+          msgEl.style.color = '#e54040';
+          msgEl.textContent = error instanceof Error ? error.message : 'Could not revoke invite.';
+        }
+      });
     });
   }
 
