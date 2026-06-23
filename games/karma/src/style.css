@@ -489,8 +489,30 @@
   box-shadow: 0 0 0 3px #00ff88, var(--shadow-card-hover);
 }
 .hand-card.same-rank-hint img {
-  box-shadow: 0 0 0 2px rgba(0,255,136,.45), var(--shadow-card);
+  box-shadow: 0 0 0 2px #00ff88, 0 0 14px rgba(0,255,136,.45), var(--shadow-card);
+  animation: hint-pulse .9s ease-in-out infinite alternate;
 }
+@keyframes hint-pulse {
+  from { box-shadow: 0 0 0 2px #00ff88, 0 0 8px rgba(0,255,136,.3), var(--shadow-card); }
+  to   { box-shadow: 0 0 0 3px #00ff88, 0 0 22px rgba(0,255,136,.65), var(--shadow-card); }
+}
+.combo-play-btn {
+  display: none;
+  width: 100%;
+  background: linear-gradient(135deg, #00c06e, #00a05a);
+  color: #001a0d;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 6px 0;
+  transition: background .15s, transform .1s, box-shadow .15s;
+  box-shadow: 0 0 12px rgba(0,192,110,.35);
+}
+.combo-play-btn:hover  { background: linear-gradient(135deg, #00e082, #00c06e); transform: scale(1.02); }
+.combo-play-btn:active { transform: scale(.97); }
 .hand-card.invalid-dim { opacity: .4; pointer-events: none; }
 
 /* Face-up cards in hand (when playing from faceup) */

@@ -1,6 +1,61 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
+import fs from 'fs';
+
+function mergeSharedAssets(gameDir: string) {
+  let outDir = path.resolve(gameDir, 'dist');
+  const sharedDir = path.resolve(gameDir, '../../shared');
+
+  return {
+    name: 'merge-shared-assets',
+    configureServer(server: { middlewares: { use: (handler: (req: { url?: string }, res: { setHeader: (name: string, value: string) => void; end: (body?: string | Buffer) => void }, next: () => void) => void) => void } }) {
+      server.middlewares.use((req, res, next) => {
+        const url = req.url?.split('?')[0] ?? '';
+        if (!url.startsWith('/assets/') || url.startsWith('/assets/icons/')) {
+          next();
+          return;
+        }
+
+        const relPath = url.replace(/^\/assets\//, '');
+        const fullPath = path.join(sharedDir, relPath);
+        if (!fs.existsSync(fullPath)) {
+          next();
+          return;
+        }
+
+        const ext = path.extname(fullPath).toLowerCase();
+        const contentType =
+          ext === '.png' ? 'image/png' :
+          ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' :
+          ext === '.webp' ? 'image/webp' :
+          ext === '.mp3' ? 'audio/mpeg' :
+          ext === '.json' ? 'application/json' :
+          'application/octet-stream';
+
+        res.setHeader('Content-Type', contentType);
+        res.end(fs.readFileSync(fullPath));
+      });
+    },
+    configResolved(config: { build: { outDir: string } }) {
+      outDir = path.resolve(gameDir, config.build.outDir);
+    },
+    closeBundle() {
+      if (!fs.existsSync(sharedDir)) return;
+      const skipExts = new Set(['.ts', '.js', '.css', '.md']);
+      const destAssets = path.join(outDir, 'assets');
+      for (const item of fs.readdirSync(sharedDir)) {
+        const srcPath = path.join(sharedDir, item);
+        if (fs.statSync(srcPath).isDirectory()) {
+          fs.cpSync(srcPath, path.join(destAssets, item), { recursive: true, force: true });
+        } else if (!skipExts.has(path.extname(item).toLowerCase())) {
+          if (!fs.existsSync(destAssets)) fs.mkdirSync(destAssets, { recursive: true });
+          fs.copyFileSync(srcPath, path.join(destAssets, item));
+        }
+      }
+    },
+  };
+}
 
 const GAME_BASE = '/games/board-rush/';
 
@@ -40,6 +95,7 @@ export default defineConfig(({ mode }) => {
     },
 
     plugins: [
+      mergeSharedAssets(__dirname),
       VitePWA({
         registerType: 'autoUpdate',
         manifest: {

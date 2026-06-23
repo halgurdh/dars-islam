@@ -678,6 +678,7 @@ function _buildGameTable() {
         <div class="game-info">
           <div class="status-text" id="status-text">—</div>
           <div class="under7-banner" id="under7-banner">⬇️ Onder 7!</div>
+          <button class="combo-play-btn" id="combo-play-btn">▶ Play 1 card</button>
           <button class="take-pile-btn" id="take-pile-btn">Take pile</button>
           <div class="game-log" id="game-log"></div>
         </div>
@@ -697,6 +698,10 @@ function _buildGameTable() {
     }
     if (game.currentPlayer !== viewerIndex || game.phase !== GamePhase.Play) return;
     handleResult(game.takePile());
+  });
+
+  doc('combo-play-btn').addEventListener('click', () => {
+    attemptPlaySelected();
   });
 }
 
@@ -782,9 +787,15 @@ function renderCenter(players: PlayerView[]) {
     if (isTurn) {
       if (source === 'hand') {
         const validGroups = getValidGroups(me.hand, game.pile, game.under7);
-        statusEl.textContent = validGroups.length > 0
-          ? 'Your turn — drag a card to the pile'
-          : 'No valid card — take the pile!';
+        if (validGroups.length === 0) {
+          statusEl.textContent = 'No valid card — take the pile!';
+        } else if (selectedIds.size > 1) {
+          statusEl.textContent = `${selectedIds.size} cards selected — hit "Play ${selectedIds.size} cards"`;
+        } else if (selectedIds.size === 1) {
+          statusEl.textContent = 'Click same-rank cards to add to combo, or hit Play';
+        } else {
+          statusEl.textContent = 'Your turn — click a card to select, then Play';
+        }
       } else if (source === 'faceup') {
         statusEl.textContent = 'Click a face-up table card to play it';
       } else if (source === 'facedown') {
@@ -801,6 +812,17 @@ function renderCenter(players: PlayerView[]) {
   if (takePileBtn) {
     const hasNoPlay = isTurn && source !== 'done' && source !== 'facedown' && !game.hasValidPlay(viewerIndex);
     takePileBtn.className = 'take-pile-btn' + (hasNoPlay ? ' visible' : '');
+  }
+
+  const comboBtn = document.getElementById('combo-play-btn') as HTMLButtonElement | null;
+  if (comboBtn) {
+    const n = selectedIds.size;
+    if (n > 0 && isTurn && source === 'hand') {
+      comboBtn.textContent = n === 1 ? '▶ Play 1 card' : `▶ Play ${n} cards`;
+      comboBtn.style.display = 'block';
+    } else {
+      comboBtn.style.display = 'none';
+    }
   }
 
   const logEl = document.getElementById('game-log');
@@ -974,9 +996,15 @@ function renderGuestGame() {
     if (isTurn) {
       if (me.hand.length > 0) {
         const vg = getValidGroups(me.hand, snap.pile, snap.under7);
-        statusEl.textContent = vg.length > 0
-          ? 'Your turn — drag a card'
-          : 'No valid card — take the pile!';
+        if (vg.length === 0) {
+          statusEl.textContent = 'No valid card — take the pile!';
+        } else if (selectedIds.size > 1) {
+          statusEl.textContent = `${selectedIds.size} cards selected — hit "Play ${selectedIds.size} cards"`;
+        } else if (selectedIds.size === 1) {
+          statusEl.textContent = 'Click same-rank cards to add to combo, or hit Play';
+        } else {
+          statusEl.textContent = 'Your turn — click a card to select, then Play';
+        }
       } else if (me.faceUp.some(c => c !== null)) {
         statusEl.textContent = 'Click a face-up table card';
       } else if (me.faceDownCount > 0) {
@@ -986,6 +1014,17 @@ function renderGuestGame() {
       }
     } else {
       statusEl.textContent = `${snap.players[snap.currentPlayer]?.name ?? '?'} is taking their turn…`;
+    }
+  }
+
+  const comboBtnG = document.getElementById('combo-play-btn') as HTMLButtonElement | null;
+  if (comboBtnG) {
+    const n = selectedIds.size;
+    if (n > 0 && isTurn && me.hand.length > 0) {
+      comboBtnG.textContent = n === 1 ? '▶ Play 1 card' : `▶ Play ${n} cards`;
+      comboBtnG.style.display = 'block';
+    } else {
+      comboBtnG.style.display = 'none';
     }
   }
 

@@ -5,22 +5,22 @@ import fs from 'fs';
 
 const GAME_BASE = '/games/rogue-flush/';
 
-function mergeBoardRushSharedAssets(gameDir: string) {
+function mergeSharedAssets(gameDir: string) {
   let outDir = path.resolve(gameDir, 'dist');
-  const sharedAssetsDir = path.resolve(gameDir, '../board-rush/public/assets');
+  const sharedDir = path.resolve(gameDir, '../../shared');
 
   return {
-    name: 'merge-board-rush-shared-assets',
+    name: 'merge-shared-assets',
     configureServer(server: { middlewares: { use: (handler: (req: { url?: string }, res: { setHeader: (name: string, value: string) => void; end: (body?: string | Buffer) => void }, next: () => void) => void) => void } }) {
       server.middlewares.use((req, res, next) => {
         const url = req.url?.split('?')[0] ?? '';
-        if (!url.startsWith('/assets/')) {
+        if (!url.startsWith('/assets/') || url.startsWith('/assets/icons/')) {
           next();
           return;
         }
 
         const relPath = url.replace(/^\/assets\//, '');
-        const fullPath = path.join(sharedAssetsDir, relPath);
+        const fullPath = path.join(sharedDir, relPath);
         if (!fs.existsSync(fullPath)) {
           next();
           return;
@@ -43,8 +43,18 @@ function mergeBoardRushSharedAssets(gameDir: string) {
       outDir = path.resolve(gameDir, config.build.outDir);
     },
     closeBundle() {
-      if (!fs.existsSync(sharedAssetsDir)) return;
-      fs.cpSync(sharedAssetsDir, path.join(outDir, 'assets'), { recursive: true, force: true });
+      if (!fs.existsSync(sharedDir)) return;
+      const skipExts = new Set(['.ts', '.js', '.css', '.md']);
+      const destAssets = path.join(outDir, 'assets');
+      for (const item of fs.readdirSync(sharedDir)) {
+        const srcPath = path.join(sharedDir, item);
+        if (fs.statSync(srcPath).isDirectory()) {
+          fs.cpSync(srcPath, path.join(destAssets, item), { recursive: true, force: true });
+        } else if (!skipExts.has(path.extname(item).toLowerCase())) {
+          if (!fs.existsSync(destAssets)) fs.mkdirSync(destAssets, { recursive: true });
+          fs.copyFileSync(srcPath, path.join(destAssets, item));
+        }
+      }
     },
   };
 }
@@ -121,7 +131,7 @@ export default defineConfig(({ mode }) => {
 
     plugins: [
       mergeGamePublicAssets(__dirname),
-      mergeBoardRushSharedAssets(__dirname),
+      mergeSharedAssets(__dirname),
       VitePWA({
         registerType: 'autoUpdate',
         manifest: {
