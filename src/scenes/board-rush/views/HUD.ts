@@ -906,41 +906,37 @@ export class HUD {
   }
 
   private syncLayout(): void {
-    const target = this.parent.querySelector('canvas') ?? this.parent;
-    const parentRect = this.parent.getBoundingClientRect();
-    const targetRect  = target.getBoundingClientRect();
-    const canvasW = Math.round(targetRect.width  || parentRect.width);
-    const canvasH = Math.round(targetRect.height || parentRect.height);
-    const vvScale = window.visualViewport?.scale ?? 1;
+    // Use layout viewport (innerWidth/Height) — immune to DOM overflow expansion.
+    // visualViewport can shrink when the on-screen keyboard is open; use it only
+    // for the keyboard-aware height, otherwise prefer innerWidth/Height.
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
 
-    // True device viewport (unscaled)
-    const vw = window.visualViewport?.width  ?? window.innerWidth;
-    const vh = window.visualViewport?.height ?? window.innerHeight;
-    const shortEdge   = Math.min(vw, vh);
-    const deviceMode  = shortEdge <= 430 ? 'phone' : shortEdge <= 820 ? 'tablet' : 'desktop';
-    const aspect      = vh > 0 ? vw / vh : 16 / 9;
-    const aspectMode  = aspect >= 1.7 ? 'wide' : aspect >= 1.15 ? 'landscape' : aspect > 0.85 ? 'square' : 'portrait';
+    const shortEdge  = Math.min(vw, vh);
+    const deviceMode = shortEdge <= 430 ? 'phone' : shortEdge <= 820 ? 'tablet' : 'desktop';
+    const aspect     = vh > 0 ? vw / vh : 16 / 9;
+    const aspectMode = aspect >= 1.7 ? 'wide' : aspect >= 1.15 ? 'landscape' : aspect > 0.85 ? 'square' : 'portrait';
     const isPortraitPhone = deviceMode === 'phone' && (aspectMode === 'portrait' || aspectMode === 'square');
-
-    const effW   = canvasW * vvScale;
-    const effH   = canvasH * vvScale;
-    const layout = effW <= 420 || effH <= 340 ? 'xs' : effW <= 720 || effH <= 560 ? 'sm' : effW <= 980 ? 'md' : 'lg';
+    const layout = vw <= 420 || vh <= 340 ? 'xs' : vw <= 720 || vh <= 560 ? 'sm' : vw <= 980 ? 'md' : 'lg';
 
     this.root.dataset.layout      = layout;
     this.root.dataset.orientation = vw >= vh ? 'landscape' : 'portrait';
     this.root.dataset.aspectMode  = aspectMode;
     this.root.dataset.device      = deviceMode;
     this.root.style.setProperty('--hud-short-edge',        `${Math.round(shortEdge)}px`);
-    this.root.style.setProperty('--hud-effective-width',   `${Math.round(effW)}px`);
-    this.root.style.setProperty('--hud-effective-height',  `${Math.round(effH)}px`);
+    this.root.style.setProperty('--hud-effective-width',   `${Math.round(vw)}px`);
+    this.root.style.setProperty('--hud-effective-height',  `${Math.round(vh)}px`);
+
+    // Always fixed — detaches HUD from the DOM layout tree entirely,
+    // preventing the 1280px root from expanding its parent and
+    // corrupting the next measurement cycle.
+    this.root.style.position = 'fixed';
+    this.root.style.left     = '0';
+    this.root.style.top      = '0';
+    this.root.style.overflow = 'hidden';
 
     if (isPortraitPhone) {
-      // Full-screen fixed overlay — no canvas-relative transform needed.
-      // Avoids the overflow problem when canvas is letterboxed to e.g. 390×219
-      // inside a 390×844 viewport.
-      this.root.style.position        = 'fixed';
-      this.root.style.left            = '0';
-      this.root.style.top             = '0';
+      // Portrait phone: fill the viewport; content uses dvh/dvw layout.
       this.root.style.width           = `${Math.round(vw)}px`;
       this.root.style.height          = `${Math.round(vh)}px`;
       this.root.style.transform       = 'none';
@@ -948,19 +944,20 @@ export class HUD {
       this.root.style.setProperty('--hud-scale', '1');
       this.root.style.setProperty('--hud-aspect', aspect.toFixed(3));
     } else {
-      // Scaled 1280×720 overlay anchored to the canvas rect
-      const canvasLeft = Math.round(targetRect.left - parentRect.left);
-      const canvasTop  = Math.round(targetRect.top  - parentRect.top);
-      const scale      = Math.max(0.42, Math.min(1.35, Math.min(canvasW / 1280, canvasH / 720)));
-      this.root.style.position        = 'absolute';
-      this.root.style.left            = '0px';
-      this.root.style.top             = '0px';
+      // Landscape / desktop: scale a 1280×720 inner canvas to fit the viewport,
+      // using the same FIT+CENTER maths as Phaser so HUD aligns with game canvas.
+      const scale   = Math.max(0.3, Math.min(1.4, Math.min(vw / 1280, vh / 720)));
+      const scaledW = Math.round(1280 * scale);
+      const scaledH = Math.round(720  * scale);
+      const offsetX = Math.round((vw - scaledW) / 2);
+      const offsetY = Math.round((vh - scaledH) / 2);
+
       this.root.style.width           = '1280px';
       this.root.style.height          = '720px';
       this.root.style.transformOrigin = 'top left';
-      this.root.style.transform       = `translate(${canvasLeft}px,${canvasTop}px) scale(${scale})`;
+      this.root.style.transform       = `translate(${offsetX}px,${offsetY}px) scale(${scale})`;
       this.root.style.setProperty('--hud-scale', scale.toFixed(3));
-      this.root.style.setProperty('--hud-aspect', (canvasH > 0 ? canvasW / canvasH : 16 / 9).toFixed(3));
+      this.root.style.setProperty('--hud-aspect', (vh > 0 ? vw / vh : 16 / 9).toFixed(3));
     }
   }
 

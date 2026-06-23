@@ -140,6 +140,7 @@
       import { BRAND_ADS } from '@shared/ad-provider';
       initTheme();
 
+      (async () => {
       // Init sync / auth (detects ?mt_session= from magic link, restores existing session)
       await sync.init();
 
@@ -252,6 +253,7 @@
         }
         document.getElementById('premiumActivatedMsg')?.style.setProperty('display', 'block');
       }
+      })();
     </script>
   </body>
 </html>

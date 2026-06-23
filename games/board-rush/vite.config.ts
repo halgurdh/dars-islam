@@ -22,6 +22,7 @@ export default defineConfig(({ mode }) => {
       target: 'es2020',
       outDir: isPWA ? './dist-pwa' : './dist',
       assetsInlineLimit: 0,
+      chunkSizeWarningLimit: 2000,
     },
 
     server: {
