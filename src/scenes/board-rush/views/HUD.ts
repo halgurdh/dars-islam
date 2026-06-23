@@ -12,7 +12,7 @@ import { ArcadeStore } from '../../../../shared/arcade-store';
 import { injectAd } from '../../../../shared/ad-provider';
 import { sync } from '../../../../shared/sync';
 
-type UIMode = 'landing' | 'local' | 'online' | 'net-pick' | 'shop' | 'ad' | 'auth';
+type UIMode = 'landing' | 'local' | 'online' | 'net-pick' | 'shop' | 'ad' | 'auth' | 'workspace';
 
 interface CardBackDef {
   key: string;
@@ -88,9 +88,11 @@ export class HUD {
     // Init Supabase sync — re-render landing when auth state changes
     ArcadeStore.registerSyncCallback(() => sync.scheduleSync());
     sync.init().then(() => {
+      this.applyWorkspaceBranding();
       if (this._uiMode === 'landing') this.render();
     });
     sync.onAuthChange(() => {
+      this.applyWorkspaceBranding();
       if (this._uiMode === 'landing' || this._uiMode === 'auth') {
         this._uiMode = 'landing';
         this.render();
@@ -154,6 +156,7 @@ export class HUD {
   // ── Router ────────────────────────────────────────────────────────────────
 
   render(): void {
+    this.applyWorkspaceBranding();
     const phase = this.machine.currentName as string | null;
 
     // Active game phase: render game HUD (host-driven)
@@ -169,6 +172,7 @@ export class HUD {
     if (this._uiMode === 'shop')     { this.renderShop(); return; }
     if (this._uiMode === 'ad')       { this.renderAdModal(); return; }
     if (this._uiMode === 'auth')     { this.renderAuth(); return; }
+    if (this._uiMode === 'workspace'){ this.renderWorkspaceSettings(); return; }
     this.renderLanding();
   }
 
@@ -177,6 +181,10 @@ export class HUD {
   private renderLanding(): void {
     const coins   = ArcadeStore.getCoins();
     const premium = ArcadeStore.getPremium();
+    const workspace = sync.workspace;
+    const workspaceLine = workspace
+      ? `<div class="workspace-chip">${this.escapeHtml(workspace.settings.brand_name)} · ${sync.accountType === 'commercial' ? 'commercial' : 'personal'} · ${this.escapeHtml(workspace.plan_key)}</div>`
+      : '';
     const canAd   = ArcadeStore.canWatchAd();
     const coolMs  = ArcadeStore.adCooldownRemaining();
     const coolMin = Math.ceil(coolMs / 60000);
@@ -190,6 +198,7 @@ export class HUD {
         <div class="panel center">
           <h1>⚔ BOARD RUSH ⚔</h1>
           ${premiumBadge}
+          ${workspaceLine}
           <p class="sub">A fantasy board game adventure</p>
 
           <div class="coin-bar">
@@ -199,7 +208,7 @@ export class HUD {
           </div>
           <div class="auth-bar">
             ${sync.isLoggedIn
-              ? `<span class="auth-email">☁ ${sync.email}</span><button id="btnSignOut" class="btn-auth-sm">Sign out</button>`
+              ? `<span class="auth-email">☁ ${sync.email}</span><button id="btnWorkspace" class="btn-auth-sm">Studio</button><button id="btnSignOut" class="btn-auth-sm">Sign out</button>`
               : `<button id="btnSignIn" class="btn-auth">☁ Sign in to sync across devices</button>`
             }
           </div>
@@ -243,6 +252,9 @@ export class HUD {
 
     (this.root.querySelector('#btnSignIn') as HTMLButtonElement | null)?.addEventListener('click', () => {
       playClick(); this._uiMode = 'auth'; this.render();
+    });
+    (this.root.querySelector('#btnWorkspace') as HTMLButtonElement | null)?.addEventListener('click', () => {
+      playClick(); this._uiMode = 'workspace'; this.render();
     });
     (this.root.querySelector('#btnSignOut') as HTMLButtonElement | null)?.addEventListener('click', async () => {
       playClick(); await sync.signOut(); this.render();
@@ -306,6 +318,72 @@ export class HUD {
         msgEl.textContent = 'Could not send link — check your email and try again.';
       }
     };
+  }
+
+  private renderWorkspaceSettings(): void {
+    const workspace = sync.workspace;
+    if (!workspace) {
+      this._uiMode = 'landing';
+      this.render();
+      return;
+    }
+
+    const canEdit = workspace.role === 'owner' || workspace.role === 'admin';
+    this.root.innerHTML = `
+      <div class="overlay">
+        <div class="panel center" style="max-width:420px">
+          <h2>Workspace</h2>
+          <p class="sub">${this.escapeHtml(workspace.settings.brand_name)} · ${this.escapeHtml(workspace.account_type)} · ${this.escapeHtml(workspace.plan_key)}</p>
+          <p class="sub">Members: ${workspace.member_count} · Role: ${this.escapeHtml(workspace.role)}</p>
+          <div class="row" style="margin-top:12px">
+            <label style="width:100%">Brand name
+              <input id="wsBrandName" value="${this.escapeAttr(workspace.settings.brand_name)}" ${canEdit ? '' : 'disabled'} maxlength="120" />
+            </label>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <label style="width:100%">Tagline
+              <input id="wsTagline" value="${this.escapeAttr(workspace.settings.brand_tagline ?? '')}" ${canEdit ? '' : 'disabled'} maxlength="160" />
+            </label>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <label style="width:100%">Accent color
+              <input id="wsAccent" value="${this.escapeAttr(workspace.settings.accent_color)}" ${canEdit ? '' : 'disabled'} maxlength="7" />
+            </label>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <label style="width:100%">Logo URL
+              <input id="wsLogo" value="${this.escapeAttr(workspace.settings.logo_url ?? '')}" ${canEdit ? '' : 'disabled'} maxlength="255" />
+            </label>
+          </div>
+          <div id="wsMsg" style="min-height:18px; font-size:12px; margin:8px 0; color:var(--accent)"></div>
+          <div class="actions col" style="gap:10px">
+            ${canEdit ? '<button id="wsSave" style="font-size:15px; padding:12px">Save Workspace</button>' : ''}
+            <button id="wsBack" style="opacity:0.7">← Back</button>
+          </div>
+        </div>
+      </div>`;
+
+    const msgEl = this.root.querySelector('#wsMsg') as HTMLElement;
+    (this.root.querySelector('#wsBack') as HTMLButtonElement).onclick = () => {
+      playClick(); this._uiMode = 'landing'; this.render();
+    };
+    (this.root.querySelector('#wsSave') as HTMLButtonElement | null)?.addEventListener('click', async () => {
+      playClick();
+      const brand_name = (this.root.querySelector('#wsBrandName') as HTMLInputElement).value.trim();
+      const brand_tagline = (this.root.querySelector('#wsTagline') as HTMLInputElement).value.trim();
+      const accent_color = (this.root.querySelector('#wsAccent') as HTMLInputElement).value.trim();
+      const logo_url = (this.root.querySelector('#wsLogo') as HTMLInputElement).value.trim();
+      msgEl.textContent = 'Saving…';
+      try {
+        await sync.saveWorkspaceSettings({ brand_name, brand_tagline, accent_color, logo_url });
+        this.applyWorkspaceBranding();
+        msgEl.textContent = 'Saved.';
+        this.render();
+      } catch (error) {
+        msgEl.style.color = '#e54040';
+        msgEl.textContent = error instanceof Error ? error.message : 'Could not save workspace.';
+      }
+    });
   }
 
   // ── Shop ──────────────────────────────────────────────────────────────────
@@ -872,6 +950,39 @@ export class HUD {
     }
   }
 
+  private applyWorkspaceBranding(): void {
+    const accent = sync.workspace?.settings.accent_color;
+    if (!accent || !/^#[0-9a-fA-F]{6}$/.test(accent)) {
+      this.root.style.removeProperty('--accent');
+      this.root.style.removeProperty('--accent-light');
+      return;
+    }
+
+    const brighten = (hex: string, factor: number): string => {
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      const mix = (value: number) => Math.min(255, Math.round(value + (255 - value) * factor));
+      return `#${[mix(r), mix(g), mix(b)].map((v) => v.toString(16).padStart(2, '0')).join('')}`;
+    };
+
+    this.root.style.setProperty('--accent', accent);
+    this.root.style.setProperty('--accent-light', brighten(accent, 0.25));
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  private escapeAttr(value: string): string {
+    return this.escapeHtml(value)
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   private combatPanel(myTurn: boolean): string {
     const c = this.ctx.combat;
     if (!c) return '';
@@ -1342,6 +1453,9 @@ export class HUD {
         font-size:var(--hud-text-sm); }
       .auth-email { color:var(--text-secondary); opacity:0.8; max-width:200px;
         overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+      .workspace-chip { display:inline-block; margin:4px 0 6px; padding:4px 10px; border-radius:999px;
+        background:rgba(255,255,255,0.06); border:1px solid var(--border-color); color:var(--text-secondary);
+        font-size:11px; letter-spacing:0.2px; }
       .btn-auth { font-size:12px; padding:5px 10px; min-height:30px; opacity:0.75;
         background:transparent !important; border-color:var(--border-color) !important; }
       .btn-auth:hover { opacity:1 !important; }

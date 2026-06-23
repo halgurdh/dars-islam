@@ -10,6 +10,7 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) json_error('Invalid email');
 
 try {
     $db = db();
+    $accountType = classify_account_type($email);
 
     // Get or create user
     $stmt = $db->prepare('SELECT id FROM users WHERE email = ?');
@@ -18,8 +19,11 @@ try {
 
     if (!$user) {
         $id = uuid();
-        $db->prepare('INSERT INTO users (id, email) VALUES (?, ?)')->execute([$id, $email]);
+        $db->prepare('INSERT INTO users (id, email, account_type) VALUES (?, ?, ?)')
+            ->execute([$id, $email, $accountType]);
         $user = ['id' => $id];
+    } else {
+        $db->prepare('UPDATE users SET account_type = ? WHERE id = ?')->execute([$accountType, $user['id']]);
     }
 
     // Delete any existing unused tokens for this user

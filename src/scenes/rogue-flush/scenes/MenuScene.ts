@@ -65,7 +65,7 @@ export class MenuScene extends Phaser.Scene {
     const btnY = H * 0.53;
     const btn  = this._makeButton(CX, btnY, 300, 72, '▶  START RUN', 0xcc2200, 0xff4433);
 
-    btn.on('pointerdown', () => {
+    btn.bg.on('pointerdown', () => {
       if (this.done) return;
       this.done = true;
       playClick();
@@ -78,7 +78,7 @@ export class MenuScene extends Phaser.Scene {
     const mpBtnY = H * 0.63;
     const mpBtn  = this._makeButton(CX, mpBtnY, 300, 60, '⚔  MULTIPLAYER', 0x1a3355, 0x2a4477);
 
-    mpBtn.on('pointerdown', () => {
+    mpBtn.bg.on('pointerdown', () => {
       if (this.done) return;
       this.done = true;
       playClick();
@@ -87,7 +87,7 @@ export class MenuScene extends Phaser.Scene {
     });
 
     this.tweens.add({
-      targets: mpBtn, scaleX: 1.02, scaleY: 1.02,
+      targets: mpBtn.container, scaleX: 1.02, scaleY: 1.02,
       yoyo: true, repeat: -1, duration: 1300, ease: 'Sine.easeInOut', delay: 1800,
     });
 
@@ -106,8 +106,8 @@ export class MenuScene extends Phaser.Scene {
     this.tweens.add({ targets: subtitle, alpha: 1, duration: 600, delay: 700 });
     this.tweens.add({ targets: line,     alpha: 1, duration: 500, delay: 900 });
     this.tweens.add({ targets: logo,     alpha: 0.7, duration: 800, delay: 400 });
-    this.tweens.add({ targets: btn,   alpha: 1, y: btnY,   duration: 600, ease: 'Back.easeOut', delay: 1000 });
-    this.tweens.add({ targets: mpBtn, alpha: 1, y: mpBtnY, duration: 600, ease: 'Back.easeOut', delay: 1150 });
+    this.tweens.add({ targets: btn.container,   alpha: 1, y: btnY,   duration: 600, ease: 'Back.easeOut', delay: 1000 });
+    this.tweens.add({ targets: mpBtn.container, alpha: 1, y: mpBtnY, duration: 600, ease: 'Back.easeOut', delay: 1150 });
 
     // Suit icons fan in
     for (let i = 0; i < 4; i++) {
@@ -119,7 +119,7 @@ export class MenuScene extends Phaser.Scene {
 
     // Button idle pulse
     this.tweens.add({
-      targets: btn, scaleX: 1.03, scaleY: 1.03,
+      targets: btn.container, scaleX: 1.03, scaleY: 1.03,
       yoyo: true, repeat: -1, duration: 1100, ease: 'Sine.easeInOut', delay: 1600,
     });
 
@@ -187,7 +187,9 @@ export class MenuScene extends Phaser.Scene {
     });
   }
 
-  private _makeButton(x: number, y: number, bw: number, bh: number, label: string, color: number, hoverColor: number): Phaser.GameObjects.Container {
+  private _makeButton(
+    x: number, y: number, bw: number, bh: number, label: string, color: number, hoverColor: number,
+  ): { container: Phaser.GameObjects.Container; bg: Phaser.GameObjects.Rectangle } {
     const cont = this.add.container(x, y).setAlpha(0).setDepth(10);
 
     const shadow = this.add.rectangle(4, 6, bw, bh, 0x000000, 0.4).setOrigin(0.5);
@@ -208,6 +210,6 @@ export class MenuScene extends Phaser.Scene {
     bg.on('pointerdown',  () => { bg.setFillStyle(0xaa1100); this.tweens.add({ targets: cont, y: y + 3, duration: 60 }); });
     bg.on('pointerup',    () => { bg.setFillStyle(hoverColor); this.tweens.add({ targets: cont, y, duration: 60 }); });
 
-    return cont;
+    return { container: cont, bg };
   }
 }
