@@ -134,7 +134,7 @@ export class GameScene extends Phaser.Scene {
     // pointerover/pointerout events fire correctly — Phaser 3 containers do
     // not reliably forward hover events to interactive children.
     const objs: Phaser.GameObjects.GameObject[] = [];
-    const sc = <T extends Phaser.GameObjects.GameObject>(o: T, d = 20): T => {
+    const sc = <T extends Phaser.GameObjects.GameObject & { setDepth(v: number): T }>(o: T, d = 20): T => {
       o.setDepth(d); objs.push(o); return o;
     };
 
