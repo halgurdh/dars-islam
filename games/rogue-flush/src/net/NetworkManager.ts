@@ -1,6 +1,6 @@
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import type { RFMember, RFEvent } from './protocol';
-import { getSupabaseClient } from '../../../net/supabaseClient';
+import { getSupabaseClient } from '@src/net/supabaseClient';
 
 type Role = 'offline' | 'host' | 'guest';
 

@@ -872,19 +872,6 @@ export class HUD {
     }
   }
 
-  private escapeHtml(value: string): string {
-    return value
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-  }
-
-  private escapeAttr(value: string): string {
-    return this.escapeHtml(value)
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
-
   private combatPanel(myTurn: boolean): string {
     const c = this.ctx.combat;
     if (!c) return '';

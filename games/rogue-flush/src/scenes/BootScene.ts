@@ -46,6 +46,6 @@ export class BootScene extends Phaser.Scene {
   }
 
   create(): void {
-    this.scene.start('Menu');
+    this.scene.start('RFSplash');
   }
 }

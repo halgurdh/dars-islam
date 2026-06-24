@@ -1,11 +1,20 @@
 import Phaser from 'phaser';
-import { musicManager } from '../../../music';
-import { CHIP_LIBRARY, CUSTOM_GAUGE_MAX, ENEMY_MAX_HP, ENEMY_MOVE_MS, PLAYER_MAX_HP, PLAYER_MOVE_MS, SCENE_HEIGHT, SCENE_WIDTH } from '../constants';
+import { musicManager } from '../../../../src/music';
+import {
+  CHIP_LIBRARY,
+  CUSTOM_GAUGE_MAX,
+  ENEMY_MAX_HP,
+  ENEMY_MOVE_MS,
+  PLAYER_MAX_HP,
+  PLAYER_MOVE_MS,
+  SCENE_HEIGHT,
+  SCENE_WIDTH,
+} from '../constants';
 import { EnemyCharacter, PlayerCharacter } from '../entities/Character';
 import { ChipManager } from '../systems/ChipManager';
 import { GridSystem } from '../systems/GridSystem';
 import { UIManager } from '../systems/UIManager';
-import type { BattleState, ChipDefinition, GridCoord, GridOwner } from '../types';
+import type { BattleState, ChipDefinition, CustomMenuHost, GridCoord, GridOwner } from '../types';
 
 interface Projectile {
   sprite: Phaser.GameObjects.Image;
@@ -18,7 +27,12 @@ interface Projectile {
   hasHit: boolean;
 }
 
-export class BattleScene extends Phaser.Scene {
+interface BattleSceneData {
+  returnSceneKey?: string;
+  encounterId?: string;
+}
+
+export class BattleScene extends Phaser.Scene implements CustomMenuHost {
   private battleState: BattleState = 'BATTLE_INTRO';
   private grid!: GridSystem;
   private player!: PlayerCharacter;
@@ -30,28 +44,27 @@ export class BattleScene extends Phaser.Scene {
   private enterKey!: Phaser.Input.Keyboard.Key;
   private spaceKey!: Phaser.Input.Keyboard.Key;
   private gaugeValue = 0;
-  private customHand: ChipDefinition[] = [];
-  private customCursor = 0;
-  private selectedChipIndices: number[] = [];
+  private currentHand: ChipDefinition[] = [];
   private projectiles: Projectile[] = [];
   private enemyLoop?: Phaser.Time.TimerEvent;
   private areaGrabTimer?: Phaser.Time.TimerEvent;
   private enemyActionLocked = false;
   private combatFrozen = true;
+  private returnSceneKey?: string;
+  private encounterId?: string;
 
   constructor() {
-    super('NetStrikeBattle');
+    super('BattleScene');
   }
 
-  create(): void {
-    // Reset all mutable state so scene.restart() starts clean
+  create(data?: BattleSceneData): void {
+    this.returnSceneKey = data?.returnSceneKey;
+    this.encounterId = data?.encounterId;
     this.battleState = 'BATTLE_INTRO';
     this.gaugeValue = 0;
     this.combatFrozen = true;
     this.enemyActionLocked = false;
-    this.customHand = [];
-    this.customCursor = 0;
-    this.selectedChipIndices = [];
+    this.currentHand = [];
     this.projectiles = [];
 
     this.createBackdrop();
@@ -70,6 +83,14 @@ export class BattleScene extends Phaser.Scene {
     this.setupInput();
     this.createHudLabels();
 
+    this.events.once('shutdown', () => {
+      this.enemyLoop?.destroy();
+      this.areaGrabTimer?.destroy();
+      if (this.scene.isActive('CustomMenuScene')) {
+        this.scene.stop('CustomMenuScene');
+      }
+    });
+
     this.grid.playIntro(() => {
       this.tweens.add({ targets: [this.player, this.enemy], alpha: 1, duration: 220 });
       this.time.delayedCall(320, () => {
@@ -86,12 +107,33 @@ export class BattleScene extends Phaser.Scene {
     if (this.battleState === 'REALTIME_COMBAT') {
       this.gaugeValue = Math.min(CUSTOM_GAUGE_MAX, this.gaugeValue + delta);
       this.handleCombatInput();
-    } else if (this.battleState === 'CUSTOM_SCREEN') {
-      this.handleCustomScreenInput();
     }
 
     this.ui.updateGauge(this.gaugeValue, this.gaugeValue >= CUSTOM_GAUGE_MAX);
     this.updateProjectiles(delta);
+  }
+
+  getCustomHand(): ChipDefinition[] {
+    return this.currentHand.length > 0 ? [...this.currentHand] : this.chipManager.drawHand();
+  }
+
+  loadChips(selectedChips: ChipDefinition[]): void {
+    if (selectedChips.length === 0) {
+      return;
+    }
+    this.chipManager.queueSelected(selectedChips);
+    this.ui.updateQueue(this.chipManager.getQueue());
+  }
+
+  exitCustomMenu(confirmed: boolean): void {
+    this.gaugeValue = 0;
+    this.battleState = 'REALTIME_COMBAT';
+    this.combatFrozen = false;
+    this.enemyActionLocked = false;
+    this.ui.updateState(this.battleState);
+    if (confirmed) {
+      this.ui.showBanner('CHIPS SENT!', '#ffe49f');
+    }
   }
 
   private createBackdrop(): void {
@@ -162,7 +204,7 @@ export class BattleScene extends Phaser.Scene {
     }
 
     if (Phaser.Input.Keyboard.JustDown(this.enterKey) && this.gaugeValue >= CUSTOM_GAUGE_MAX) {
-      this.openCustomScreen();
+      this.openCustomMenu();
       return;
     }
 
@@ -183,32 +225,6 @@ export class BattleScene extends Phaser.Scene {
     }
   }
 
-  private handleCustomScreenInput(): void {
-    if (Phaser.Input.Keyboard.JustDown(this.cursors.left)) {
-      this.customCursor = Phaser.Math.Wrap(this.customCursor - 1, 0, this.customHand.length);
-      this.ui.refreshCustomScreen(this.customHand, this.selectedChipIndices, this.customCursor);
-    }
-    if (Phaser.Input.Keyboard.JustDown(this.cursors.right)) {
-      this.customCursor = Phaser.Math.Wrap(this.customCursor + 1, 0, this.customHand.length);
-      this.ui.refreshCustomScreen(this.customHand, this.selectedChipIndices, this.customCursor);
-    }
-    if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
-      const idx = this.selectedChipIndices.indexOf(this.customCursor);
-      if (idx >= 0) {
-        this.selectedChipIndices.splice(idx, 1);
-      } else if (this.selectedChipIndices.length < 3) {
-        this.selectedChipIndices.push(this.customCursor);
-      }
-      this.ui.refreshCustomScreen(this.customHand, this.selectedChipIndices, this.customCursor);
-    }
-    if (Phaser.Input.Keyboard.JustDown(this.enterKey)) {
-      const chips = this.selectedChipIndices.map((index) => this.customHand[index]);
-      this.chipManager.queueSelected(chips);
-      this.ui.updateQueue(this.chipManager.getQueue());
-      this.closeCustomScreen();
-    }
-  }
-
   private consumeMovementInput(): GridCoord | null {
     if (Phaser.Input.Keyboard.JustDown(this.cursors.left) || Phaser.Input.Keyboard.JustDown(this.wasd.A)) {
       return { col: -1, row: 0 };
@@ -225,28 +241,22 @@ export class BattleScene extends Phaser.Scene {
     return null;
   }
 
-  private openCustomScreen(): void {
-    this.battleState = 'CUSTOM_SCREEN';
+  private openCustomMenu(): void {
+    if (this.scene.isActive('CustomMenuScene')) {
+      return;
+    }
+
+    this.battleState = 'CUSTOM_MENU';
     this.combatFrozen = true;
     this.enemyActionLocked = true;
     this.ui.updateState(this.battleState);
-    this.customHand = this.chipManager.drawHand();
-    if (this.customHand.length === 0) {
-      this.customHand = CHIP_LIBRARY.slice(0, 3);
+    this.currentHand = this.chipManager.drawHand();
+    if (this.currentHand.length === 0) {
+      this.currentHand = CHIP_LIBRARY.slice(0, 5);
     }
-    this.customCursor = 0;
-    this.selectedChipIndices = [];
-    this.ui.showCustomScreen(this.customHand, this.selectedChipIndices, this.customCursor);
-  }
 
-  private closeCustomScreen(): void {
-    this.gaugeValue = 0;
-    this.ui.hideCustomScreen();
-    this.battleState = 'REALTIME_COMBAT';
-    this.combatFrozen = false;
-    this.enemyActionLocked = false;
-    this.ui.updateState(this.battleState);
-    this.ui.showBanner('CHIPS SENT!', '#ffe49f');
+    this.scene.launch('CustomMenuScene', { battleKey: this.scene.key, hand: this.currentHand });
+    this.scene.pause();
   }
 
   private firePlayerAction(): void {
@@ -259,16 +269,21 @@ export class BattleScene extends Phaser.Scene {
 
     if (chip.id === 'cannon') {
       this.fireProjectile('player', this.player.coord.row, chip.damage, 980, true);
-      this.ui.showBanner('CANNON!', '#ffd278');
+      this.ui.showBanner(`${chip.name.toUpperCase()} ${chip.code}!`, '#ffd278');
       return;
     }
 
     if (chip.id === 'wide-sword') {
-      this.executeWideSword();
+      this.executeWideSword(chip);
       return;
     }
 
-    this.executeAreaGrab();
+    if (chip.id === 'recovery') {
+      this.applyRecovery(chip);
+      return;
+    }
+
+    this.executeAreaGrab(chip);
   }
 
   private fireMegaBuster(): void {
@@ -338,7 +353,7 @@ export class BattleScene extends Phaser.Scene {
     });
   }
 
-  private executeWideSword(): void {
+  private executeWideSword(chip: ChipDefinition): void {
     const targetColumn = this.grid.getImpactColumn('player', this.player.coord);
     if (targetColumn === null) {
       return;
@@ -360,12 +375,12 @@ export class BattleScene extends Phaser.Scene {
       onComplete: () => slash.destroy(),
     });
     if (this.enemy.coord.col === targetColumn) {
-      this.damageCharacter(this.enemy, 80, 7);
+      this.damageCharacter(this.enemy, chip.damage, 7);
     }
-    this.ui.showBanner('WIDE SWORD!', '#bafec9');
+    this.ui.showBanner(`${chip.name.toUpperCase()} ${chip.code}!`, '#bafec9');
   }
 
-  private executeAreaGrab(): void {
+  private executeAreaGrab(chip: ChipDefinition): void {
     const stolen = this.grid.stealEnemyColumn();
     if (stolen === null) {
       this.ui.showBanner('AREA BLOCKED', '#ffe2a0');
@@ -380,7 +395,13 @@ export class BattleScene extends Phaser.Scene {
     });
     const coords = this.grid.getColumnTiles(stolen);
     this.grid.flashWarning(coords, 520);
-    this.ui.showBanner('AREA GRAB!', '#ffe89a');
+    this.ui.showBanner(`${chip.name.toUpperCase()} ${chip.code}!`, '#ffe89a');
+  }
+
+  private applyRecovery(chip: ChipDefinition): void {
+    this.player.heal(chip.effectValue);
+    this.spawnRecoveryPopup(this.player.x, this.player.y - 90, `+${chip.effectValue} HP`);
+    this.ui.showBanner(`${chip.name.toUpperCase()} ${chip.code}!`, '#b4f6ff');
   }
 
   private runEnemyTurn(): void {
@@ -483,6 +504,25 @@ export class BattleScene extends Phaser.Scene {
     });
   }
 
+  private spawnRecoveryPopup(x: number, y: number, label: string): void {
+    const popup = this.add.text(x, y, label, {
+      fontFamily: 'Segoe UI',
+      fontSize: '24px',
+      fontStyle: 'bold',
+      color: '#b7fff0',
+      stroke: '#07111f',
+      strokeThickness: 5,
+    }).setDepth(1200).setOrigin(0.5);
+    this.tweens.add({
+      targets: popup,
+      y: y - 38,
+      alpha: 0,
+      duration: 560,
+      ease: 'Cubic.easeOut',
+      onComplete: () => popup.destroy(),
+    });
+  }
+
   private moveEnemyToValidTile(): void {
     const fallback = [{ col: 4, row: 1 }, { col: 5, row: 1 }, { col: 4, row: 0 }, { col: 4, row: 2 }]
       .find((coord) => this.grid.canOccupy('enemy', coord));
@@ -495,15 +535,41 @@ export class BattleScene extends Phaser.Scene {
     if (this.battleState === 'GAME_OVER' || this.battleState === 'VICTORY') {
       return;
     }
+
     this.battleState = nextState;
     this.combatFrozen = true;
     this.enemyActionLocked = true;
     this.enemyLoop?.destroy();
     this.ui.updateState(this.battleState);
-    if (nextState === 'VICTORY') {
-      this.ui.showEndOverlay('VICTORY', 'Enemy deleted.', 0x8af7bb, () => this.scene.restart());
-    } else {
-      this.ui.showEndOverlay('GAME OVER', 'Your operator has been forced offline.', 0xff89ad, () => this.scene.restart());
+
+    if (this.scene.isActive('CustomMenuScene')) {
+      this.scene.stop('CustomMenuScene');
     }
+
+    if (!this.returnSceneKey) {
+      if (nextState === 'VICTORY') {
+        this.ui.showEndOverlay('VICTORY', 'Enemy deleted.', 0x8af7bb, () => this.scene.restart());
+      } else {
+        this.ui.showEndOverlay('GAME OVER', 'Your operator has been forced offline.', 0xff89ad, () => this.scene.restart());
+      }
+      return;
+    }
+
+    const didWin = nextState === 'VICTORY';
+    const rewardChip = didWin
+      ? { ...CHIP_LIBRARY[Phaser.Math.Between(0, CHIP_LIBRARY.length - 1)] }
+      : undefined;
+    const subtitle = didWin
+      ? 'Target purged. Returning to the overworld...'
+      : 'Signal collapsed. Returning to the overworld...';
+
+    this.ui.showEndOverlay(didWin ? 'VICTORY' : 'GAME OVER', subtitle, didWin ? 0x8af7bb : 0xff89ad);
+    this.time.delayedCall(1250, () => {
+      this.game.events.emit(didWin ? 'BATTLE_WIN' : 'BATTLE_LOSE', {
+        encounterId: this.encounterId,
+        rewardChip,
+      });
+      this.scene.stop();
+    });
   }
 }

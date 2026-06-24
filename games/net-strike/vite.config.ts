@@ -111,8 +111,6 @@ export default defineConfig(({ mode }) => {
     publicDir: path.resolve(__dirname, 'public'),
     resolve: {
       alias: {
-        '@src': path.resolve(__dirname, '../../src'),
-        '@scenes': path.resolve(__dirname, '../../src/scenes'),
         '@shared': path.resolve(__dirname, '../../shared'),
       },
     },

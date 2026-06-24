@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
-import { BootScene } from '../../../src/scenes/board-rush/scenes/BootScene';
-import { SplashScene } from '../../../src/scenes/board-rush/scenes/SplashScene';
-import { GameScene } from '../../../src/scenes/board-rush/scenes/GameScene';
+import { BootScene } from './scenes/BootScene';
+import { SplashScene } from './scenes/SplashScene';
+import { GameScene } from './scenes/GameScene';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { GridCoord, GridOwner } from '../types';
 import { GridSystem } from '../systems/GridSystem';
+import { getSlicedFrameOrigin } from '../spriteSlices';
 
 type AnimationName = 'idle' | 'dash' | 'shoot' | 'sword' | 'hit';
 
@@ -36,9 +37,13 @@ export class Character extends Phaser.GameObjects.Container {
     // Shadow
     this.shadow = scene.add.ellipse(0, 10, 76, 18, 0x000000, 0.45);
 
-    // Sprite
-    this.sprite = scene.add.sprite(0, -18, `${charPrefix}_idle`);
-    this.sprite.setOrigin(0.5, 0.5);
+    // Sprite — texture key matches the spritesheet key (sprite1=player, sprite2=enemy)
+    const texKey = charPrefix === 'player' ? 'sprite1' : 'sprite2';
+    const startFrame = `${charPrefix}_cell_0`;
+    this.sprite = scene.add.sprite(0, -18, texKey, startFrame);
+    this.syncSpriteOrigin();
+    if (charPrefix === 'enemy') this.sprite.setFlipX(true);
+    this.sprite.on(Phaser.Animations.Events.ANIMATION_UPDATE, () => this.syncSpriteOrigin());
     this.sprite.play(`${charPrefix}_idle`);
 
     // HP bar
@@ -155,6 +160,29 @@ export class Character extends Phaser.GameObjects.Container {
         this.sprite.alpha = 1;
       },
     });
+  }
+
+  heal(amount: number): void {
+    this.health = Math.min(this.maxHealth, this.health + amount);
+    this.scene.tweens.add({
+      targets: this.sprite,
+      tint: 0x8affc1,
+      duration: 110,
+      yoyo: true,
+      onComplete: () => {
+        this.sprite.clearTint();
+      },
+    });
+  }
+
+  private syncSpriteOrigin(): void {
+    const frameName = this.sprite.frame.name;
+    const origin = getSlicedFrameOrigin(frameName);
+    if (origin) {
+      this.sprite.setOrigin(origin.x, origin.y);
+      return;
+    }
+    this.sprite.setOrigin(0.5, 0.5);
   }
 }
 

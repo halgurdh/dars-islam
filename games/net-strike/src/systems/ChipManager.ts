@@ -13,7 +13,9 @@ export class ChipManager {
   drawHand(): ChipDefinition[] {
     const hand: ChipDefinition[] = [];
     for (let index = 0; index < 5; index += 1) {
-      hand.push({ ...CHIP_LIBRARY[this.rng.between(0, CHIP_LIBRARY.length - 1)] });
+      const blueprint = CHIP_LIBRARY[this.rng.between(0, CHIP_LIBRARY.length - 1)];
+      const code = blueprint.allowedCodes[this.rng.between(0, blueprint.allowedCodes.length - 1)];
+      hand.push({ ...blueprint, code });
     }
     return hand;
   }

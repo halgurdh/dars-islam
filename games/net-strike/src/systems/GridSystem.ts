@@ -23,6 +23,7 @@ export class GridSystem {
   private readonly skew: number;
   private readonly tiles: TileVisual[] = [];
   private stolenColumn: number | null = null;
+  private readonly hiddenOwners = new Set<GridOwner>();
 
   constructor(scene: Phaser.Scene, originX: number, originY: number, tileWidth: number, tileHeight: number, skew: number) {
     this.scene = scene;
@@ -84,7 +85,10 @@ export class GridSystem {
     if (coord.col < 0 || coord.col >= this.cols || coord.row < 0 || coord.row >= this.rows) {
       return false;
     }
-    return this.getTileOwner(coord.col) === owner;
+    if (this.getTileOwner(coord.col) !== owner) {
+      return false;
+    }
+    return this.getTileState(coord) !== 'BROKEN';
   }
 
   getTileOwner(col: number): GridOwner {
@@ -122,6 +126,13 @@ export class GridSystem {
     return Array.from({ length: this.rows }, (_, row) => ({ col, row }));
   }
 
+  getPlayerTiles(): GridCoord[] {
+    return Array.from({ length: 3 * this.rows }, (_, index) => ({
+      col: Math.floor(index / this.rows),
+      row: index % this.rows,
+    }));
+  }
+
   stealEnemyColumn(): number | null {
     const target = this.stolenColumn ?? 3;
     if (this.getTileOwner(target) === 'player') {
@@ -141,9 +152,18 @@ export class GridSystem {
   }
 
   flashWarning(coords: GridCoord[], duration = 600, onComplete?: () => void): void {
+    const previousStates = new Map<string, TileState>();
+    coords.forEach((coord) => {
+      previousStates.set(`${coord.col},${coord.row}`, this.getTileState(coord));
+    });
     coords.forEach((coord) => this.setTileState(coord, 'FLASHING_WARNING'));
     this.scene.time.delayedCall(duration, () => {
-      coords.forEach((coord) => this.setTileState(coord, this.getTileOwner(coord.col) === 'player' && this.stolenColumn === coord.col ? 'STOLEN' : 'NORMAL'));
+      coords.forEach((coord) => {
+        if (this.getTileState(coord) === 'FLASHING_WARNING') {
+          const previous = previousStates.get(`${coord.col},${coord.row}`);
+          this.setTileState(coord, previous && previous !== 'FLASHING_WARNING' ? previous : this.getResetState(coord));
+        }
+      });
       onComplete?.();
     });
   }
@@ -154,6 +174,23 @@ export class GridSystem {
     this.redrawTile(coord);
   }
 
+  getTileState(coord: GridCoord): TileState {
+    return this.tiles[this.indexOf(coord)].state;
+  }
+
+  isTileBroken(coord: GridCoord): boolean {
+    return this.getTileState(coord) === 'BROKEN';
+  }
+
+  setOwnerVisibility(owner: GridOwner, visible: boolean): void {
+    if (visible) {
+      this.hiddenOwners.delete(owner);
+    } else {
+      this.hiddenOwners.add(owner);
+    }
+    this.refreshAllTiles();
+  }
+
   isSameCoord(a: GridCoord, b: GridCoord): boolean {
     return a.col === b.col && a.row === b.row;
   }
@@ -162,7 +199,13 @@ export class GridSystem {
     for (let col = 0; col < this.cols; col += 1) {
       for (let row = 0; row < this.rows; row += 1) {
         const isStolen = this.stolenColumn === col && col >= 3;
-        this.setTileState({ col, row }, isStolen ? 'STOLEN' : 'NORMAL');
+        const coord = { col, row };
+        const current = this.getTileState(coord);
+        if (current === 'BROKEN' || current === 'CRACKED') {
+          this.redrawTile(coord);
+          continue;
+        }
+        this.setTileState(coord, isStolen ? 'STOLEN' : this.getResetState(coord));
       }
     }
   }
@@ -182,8 +225,27 @@ export class GridSystem {
     const owner = this.getTileOwner(coord.col);
     const isWarning = tile.state === 'FLASHING_WARNING';
     const isStolen = tile.state === 'STOLEN' || (owner === 'player' && coord.col >= 3 && this.stolenColumn === coord.col);
-    const fill = isWarning ? 0xa60d24 : owner === 'player' ? 0x0a77f7 : 0xd81f51;
-    const border = isWarning ? 0xff6d8a : owner === 'player' ? 0x81daff : 0xff99b8;
+    const isCracked = tile.state === 'CRACKED';
+    const isBroken = tile.state === 'BROKEN';
+    const isHidden = tile.state === 'HIDDEN' || this.hiddenOwners.has(owner);
+    const fill = isHidden
+      ? 0x07111f
+      : isBroken
+        ? 0x02050a
+        : isWarning
+          ? 0xa60d24
+          : isCracked
+            ? 0x6a4b15
+            : owner === 'player' ? 0x0a77f7 : 0xd81f51;
+    const border = isHidden
+      ? 0x0b1a2c
+      : isBroken
+        ? 0x355269
+        : isWarning
+          ? 0xff6d8a
+          : isCracked
+            ? 0xffd16e
+            : owner === 'player' ? 0x81daff : 0xff99b8;
     const glow = isStolen ? 0xf4c95d : border;
 
     tile.shadow.clear()
@@ -196,7 +258,7 @@ export class GridSystem {
       ], true);
 
     tile.glow.clear()
-      .fillStyle(glow, isWarning ? 0.18 : 0.1)
+      .fillStyle(glow, isHidden ? 0.04 : isWarning ? 0.18 : isBroken ? 0.08 : 0.1)
       .fillPoints([
         new Phaser.Geom.Point(-8, -6),
         new Phaser.Geom.Point(this.tileWidth + 8, -6),
@@ -205,7 +267,7 @@ export class GridSystem {
       ], true);
 
     tile.face.clear()
-      .fillStyle(fill, isStolen ? 0.9 : 0.78)
+      .fillStyle(fill, isHidden ? 0.16 : isBroken ? 0.52 : isStolen ? 0.9 : 0.78)
       .fillPoints([
         new Phaser.Geom.Point(0, 0),
         new Phaser.Geom.Point(this.tileWidth, 0),
@@ -213,13 +275,26 @@ export class GridSystem {
         new Phaser.Geom.Point(this.skew, this.tileHeight),
       ], true);
 
-    tile.detail.clear().lineStyle(2, 0xffffff, 0.08);
-    for (let i = 0; i < 3; i += 1) {
-      const offset = 14 + i * 24;
-      tile.detail.beginPath();
-      tile.detail.moveTo(offset, 8);
-      tile.detail.lineTo(offset + this.skew, this.tileHeight - 8);
-      tile.detail.strokePath();
+    tile.detail.clear().lineStyle(2, 0xffffff, isHidden ? 0.02 : 0.08);
+    if (isBroken) {
+      tile.detail.fillStyle(0x0f2238, 0.55).fillEllipse(this.tileWidth * 0.54, this.tileHeight * 0.56, this.tileWidth * 0.62, this.tileHeight * 0.42);
+    } else {
+      for (let i = 0; i < 3; i += 1) {
+        const offset = 14 + i * 24;
+        tile.detail.beginPath();
+        tile.detail.moveTo(offset, 8);
+        tile.detail.lineTo(offset + this.skew, this.tileHeight - 8);
+        tile.detail.strokePath();
+      }
+      if (isCracked) {
+        tile.detail.lineStyle(3, 0xfff1b3, 0.6);
+        tile.detail.beginPath();
+        tile.detail.moveTo(22, 14);
+        tile.detail.lineTo(52, 34);
+        tile.detail.lineTo(38, 56);
+        tile.detail.lineTo(76, 80);
+        tile.detail.strokePath();
+      }
     }
 
     tile.border.clear()
@@ -232,5 +307,16 @@ export class GridSystem {
       ], true, true);
 
     tile.owner = owner;
+  }
+
+  private getResetState(coord: GridCoord): TileState {
+    const owner = this.getTileOwner(coord.col);
+    if (this.hiddenOwners.has(owner)) {
+      return 'HIDDEN';
+    }
+    if (owner === 'player' && this.stolenColumn === coord.col) {
+      return 'STOLEN';
+    }
+    return 'NORMAL';
   }
 }

@@ -1,8 +1,9 @@
 import Phaser from 'phaser';
-import { BootScene } from '../../../src/scenes/rogue-flush/scenes/BootScene';
-import { MenuScene } from '../../../src/scenes/rogue-flush/scenes/MenuScene';
-import { LobbyScene } from '../../../src/scenes/rogue-flush/scenes/LobbyScene';
-import { PlayScene } from '../../../src/scenes/rogue-flush/scenes/PlayScene';
+import { BootScene }   from './scenes/BootScene';
+import { SplashScene } from './scenes/SplashScene';
+import { MenuScene }   from './scenes/MenuScene';
+import { LobbyScene }  from './scenes/LobbyScene';
+import { PlayScene }   from './scenes/PlayScene';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -14,7 +15,7 @@ const config: Phaser.Types.Core.GameConfig = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene, MenuScene, LobbyScene, PlayScene],
+  scene: [BootScene, SplashScene, MenuScene, LobbyScene, PlayScene],
 };
 
 // eslint-disable-next-line no-new

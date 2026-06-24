@@ -244,6 +244,13 @@ body {
   font-size: 4rem;
 }
 
+.game-card__icon {
+  width: 112px;
+  height: 112px;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.35));
+}
+
 .game-card__body {
   padding: 1.25rem;
   flex: 1;

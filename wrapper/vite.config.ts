@@ -33,17 +33,17 @@ export default defineConfig({
         secure: false,
       },
       '/games/karma': {
-        target: 'http://localhost:5175',
+        target: 'http://localhost:5176',
         changeOrigin: true,
         secure: false,
       },
       '/games/rogue-flush': {
-        target: 'http://localhost:5177',
+        target: 'http://localhost:5175',
         changeOrigin: true,
         secure: false,
       },
       '/games/net-strike': {
-        target: 'http://localhost:5176',
+        target: 'http://localhost:5177',
         changeOrigin: true,
         secure: false,
       },

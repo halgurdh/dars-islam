@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
-import { musicManager } from '../../../music';
-import { playSplash } from '../../../sfx';
+import { musicManager } from '../../../../src/music';
+import { playSplash } from '../../../../src/sfx';
 
 export class SplashScene extends Phaser.Scene {
   private done = false;
@@ -88,6 +88,6 @@ export class SplashScene extends Phaser.Scene {
     this.done = true;
     musicManager.init();
     this.cameras.main.fadeOut(500, 0, 0, 0);
-    this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('NetStrikeBattle'));
+    this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('BattleScene'));
   }
 }

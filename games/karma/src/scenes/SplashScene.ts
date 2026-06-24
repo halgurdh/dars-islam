@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { playSplash } from '../../../../src/sfx';
+import { musicManager } from '../../../../src/music';
 
 export class SplashScene extends Phaser.Scene {
   private done = false;
@@ -77,6 +78,7 @@ export class SplashScene extends Phaser.Scene {
   private advance(): void {
     if (this.done) return;
     this.done = true;
+    musicManager.init();
     this.cameras.main.fadeOut(500, 0, 0, 0);
     this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('KarmaMenu'));
   }

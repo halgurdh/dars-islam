@@ -4,7 +4,7 @@ import type { PlayerState, PlayResult } from '../KarmaGame';
 import type { Card } from '../Card';
 import { Rank } from '../Card';
 import { aiDecide } from '../AI';
-import { isRainbow, canMakeRainbow } from '../Rules';
+import { isRainbow, canMakeRainbow, canPlay, getValidGroups } from '../Rules';
 import { playClick } from '../../../../src/sfx';
 
 // ── Layout (1280 × 720 landscape) ────────────────────────────────────────────
@@ -82,6 +82,9 @@ export class GameScene extends Phaser.Scene {
                    : this.mode === 'local-3p' ? [0, 1, 2] : [0, 1, 2, 3];
 
     this.g = new KarmaGame(n, humanIds);
+
+    // Ensure timer is killed if scene is shut down (e.g. navigating to menu mid-AI-turn)
+    this.events.once('shutdown', () => { this.aiTimer?.remove(); this.aiTimer = null; });
 
     // ── Static background ───────────────────────────────────────────────────
     this.add.rectangle(CX, H / 2, W, H, 0x071410);
@@ -465,12 +468,20 @@ export class GameScene extends Phaser.Scene {
     let guide = '';
     if (myTurn) {
       if (source === 'hand') {
-        const n = this.selectedIds.size;
-        guide = n === 0
-          ? 'Tap cards to select, then tap ▶ PLAY  — or drag a card to the pile'
-          : `${n} card${n > 1 ? 's' : ''} selected — tap ▶ PLAY or drag to pile`;
+        const validNow = getValidGroups(
+          this.g.players[this.viewerIndex].hand, this.g.pile, this.g.under7,
+        );
+        const rbOk = canMakeRainbow(this.g.players[this.viewerIndex].hand);
+        if (validNow.length === 0 && !rbOk) {
+          guide = 'No valid play — tap TAKE PILE to pick up the pile';
+        } else {
+          const n = this.selectedIds.size;
+          guide = n === 0
+            ? 'Tap a highlighted card to select, then ▶ PLAY  — or drag to pile'
+            : `${n} card${n > 1 ? 's' : ''} selected — tap ▶ PLAY or drag to pile`;
+        }
       } else if (source === 'faceup') {
-        guide = 'Tap a face-up card to play it';
+        guide = 'Tap a face-up card to play it (dimmed = not playable)';
       } else if (source === 'facedown') {
         guide = 'Tap a face-down card to reveal it!';
       }
@@ -541,11 +552,16 @@ export class GameScene extends Phaser.Scene {
       if (fu) {
         const img = this.addDyn(this.add.image(tx, FU_Y, this.cardKey(fu)).setDisplaySize(TBL_CW, TBL_CH));
         if (myTurn && source === 'faceup') {
-          img.setInteractive({ useHandCursor: true }).setTint(0xaaffcc);
-          const bsx = img.scaleX, bsy = img.scaleY;
-          img.on('pointerdown', () => { playClick(); this.handleResult(this.g.playCards([fu.id])); });
-          img.on('pointerover', () => { img.setTint(0x88ffaa); img.setScale(bsx * 1.14, bsy * 1.14); });
-          img.on('pointerout',  () => { img.setTint(0xaaffcc); img.setScale(bsx, bsy); });
+          const fuPlayable = canPlay([fu], this.g.pile, this.g.under7);
+          if (fuPlayable) {
+            img.setInteractive({ useHandCursor: true }).setTint(0xaaffcc);
+            const bsx = img.scaleX, bsy = img.scaleY;
+            img.on('pointerdown', () => { playClick(); this.handleResult(this.g.playCards([fu.id])); });
+            img.on('pointerover', () => { img.setTint(0x88ffaa); img.setScale(bsx * 1.14, bsy * 1.14); });
+            img.on('pointerout',  () => { img.setTint(0xaaffcc); img.setScale(bsx, bsy); });
+          } else {
+            img.setAlpha(0.30).setTint(0x556677);
+          }
         }
       } else {
         this.addDyn(this.add.rectangle(tx, FU_Y, TBL_CW - 2, TBL_CH - 2, 0x091510).setStrokeStyle(1, 0x1a3322));
@@ -587,6 +603,13 @@ export class GameScene extends Phaser.Scene {
     const selIsRainbow = selCards.length === 4 && isRainbow(selCards);
     const rbPossible   = myTurn && canMakeRainbow(hand);
 
+    // Pre-compute which ranks are valid to play this turn for visual feedback
+    const validRanks = myTurn
+      ? new Set(getValidGroups(hand, this.g.pile, this.g.under7).flatMap(g => g.map(c => c.rank)))
+      : null;
+    // Rainbow suit cards are playable even if their rank isn't individually valid
+    const hasNoValidPlay = myTurn && validRanks !== null && validRanks.size === 0 && !rbPossible;
+
     const n       = hand.length;
     // Constrain span to x=[168, 1112] to leave room for side buttons
     const maxSpan = 944;
@@ -594,9 +617,14 @@ export class GameScene extends Phaser.Scene {
     const startX  = CX - ((n - 1) * spacing) / 2;
 
     hand.forEach((card, idx) => {
-      const isSel    = this.selectedIds.has(card.id);
-      const isSame   = !isSel && this.selectedRank !== null && this.selectedRank === card.rank;
-      const isRbHint = !isSel && !isSame && rbPossible && card.suit !== null && !selIsRainbow;
+      const isSel      = this.selectedIds.has(card.id);
+      const isSame     = !isSel && this.selectedRank !== null && this.selectedRank === card.rank;
+      const isRbHint   = !isSel && !isSame && rbPossible && card.suit !== null && !selIsRainbow;
+      // A card is playable if its rank appears in validRanks, or it can join a rainbow
+      const isPlayable = !myTurn || validRanks === null
+        || validRanks.has(card.rank)
+        || (rbPossible && card.suit !== null);
+
       const cx = startX + idx * spacing;
       const cy = HAND_CY - (isSel ? 22 : 0);
 
@@ -605,10 +633,11 @@ export class GameScene extends Phaser.Scene {
       );
       img.setDepth(idx + (isSel ? 60 : 0));
 
-      if      (isSel)    { img.setTint(0xaaffcc); }
-      else if (isSame)   { img.setTint(0xccffee); img.setAlpha(0.92); }
-      else if (isRbHint) { img.setTint(0xffffaa); }
-      else if (!myTurn)  { img.setAlpha(0.42); }
+      if      (isSel)          { img.setTint(0xaaffcc); }
+      else if (isSame)         { img.setTint(0xccffee); img.setAlpha(0.92); }
+      else if (isRbHint)       { img.setTint(0xffffaa); }
+      else if (!myTurn)        { img.setAlpha(0.42); }
+      else if (!isPlayable)    { img.setAlpha(0.30); img.setTint(0x556677); }
 
       // Raised selection glow border
       if (isSel) {
@@ -618,7 +647,8 @@ export class GameScene extends Phaser.Scene {
         );
       }
 
-      if (!myTurn) return;
+      // Non-playable cards and non-my-turn: no interaction
+      if (!myTurn || !isPlayable) return;
 
       img.setInteractive({ useHandCursor: true });
       let dragged = false;
@@ -665,6 +695,14 @@ export class GameScene extends Phaser.Scene {
 
       this.input.setDraggable(img);
     });
+
+    // "No valid play" nudge — take the pile
+    if (hasNoValidPlay) {
+      this.addDyn(this.add.text(CX, HAND_CY - 44, '⬆  No valid play — you must TAKE the pile', {
+        fontFamily: 'Georgia, serif', fontSize: '15px', color: '#ffaa44',
+        backgroundColor: '#110800', padding: { x: 14, y: 5 },
+      }).setOrigin(0.5).setDepth(12));
+    }
   }
 
   // ── Render: action buttons ────────────────────────────────────────────────────
