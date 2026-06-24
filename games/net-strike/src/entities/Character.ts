@@ -37,10 +37,8 @@ export class Character extends Phaser.GameObjects.Container {
     // Shadow
     this.shadow = scene.add.ellipse(0, 10, 76, 18, 0x000000, 0.45);
 
-    // Sprite — texture key matches the spritesheet key (sprite1=player, sprite2=enemy)
-    const texKey = charPrefix === 'player' ? 'sprite1' : 'sprite2';
-    const startFrame = `${charPrefix}_cell_0`;
-    this.sprite = scene.add.sprite(0, -18, texKey, startFrame);
+    const startTexture = `${charPrefix}_cell_0`;
+    this.sprite = scene.add.sprite(0, -18, startTexture);
     this.syncSpriteOrigin();
     if (charPrefix === 'enemy') this.sprite.setFlipX(true);
     this.sprite.on(Phaser.Animations.Events.ANIMATION_UPDATE, () => this.syncSpriteOrigin());
@@ -176,7 +174,7 @@ export class Character extends Phaser.GameObjects.Container {
   }
 
   private syncSpriteOrigin(): void {
-    const frameName = this.sprite.frame.name;
+    const frameName = this.sprite.texture.key;
     const origin = getSlicedFrameOrigin(frameName);
     if (origin) {
       this.sprite.setOrigin(origin.x, origin.y);

@@ -101,7 +101,7 @@ export class WorldExplorationScene extends Phaser.Scene {
   }
 
   private createPlayer(): void {
-    this.player = this.physics.add.sprite(160, 160, 'sprite1', 'player_cell_0')
+    this.player = this.physics.add.sprite(160, 160, 'player_cell_0')
       .setDepth(50)
       .setScale(0.28);
     this.syncPlayerOrigin();
@@ -315,7 +315,7 @@ export class WorldExplorationScene extends Phaser.Scene {
   }
 
   private syncPlayerOrigin(): void {
-    const origin = getSlicedFrameOrigin(this.player.frame.name);
+    const origin = getSlicedFrameOrigin(this.player.texture.key);
     if (origin) {
       this.player.setOrigin(origin.x, origin.y);
       return;
