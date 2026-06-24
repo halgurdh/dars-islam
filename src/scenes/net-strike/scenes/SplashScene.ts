@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { musicManager } from '../../../music';
+import { playSplash } from '../../../sfx';
 
 export class SplashScene extends Phaser.Scene {
   private done = false;
@@ -10,6 +11,7 @@ export class SplashScene extends Phaser.Scene {
 
   create(): void {
     this.done = false;
+    playSplash();
     const { width, height } = this.scale;
     const cx = width / 2;
     const cy = height / 2;

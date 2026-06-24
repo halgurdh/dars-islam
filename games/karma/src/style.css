@@ -513,6 +513,14 @@
 }
 .combo-play-btn:hover  { background: linear-gradient(135deg, #00e082, #00c06e); transform: scale(1.02); }
 .combo-play-btn:active { transform: scale(.97); }
+.hand-card.rainbow-hint img {
+  box-shadow: 0 0 0 2px #ffd700, 0 0 14px rgba(255,215,0,.5), var(--shadow-card);
+  animation: rainbow-pulse .9s ease-in-out infinite alternate;
+}
+@keyframes rainbow-pulse {
+  from { box-shadow: 0 0 0 2px #ffd700, 0 0 8px rgba(255,215,0,.3), var(--shadow-card); }
+  to   { box-shadow: 0 0 0 3px #ff69b4, 0 0 22px rgba(255,105,180,.6), var(--shadow-card); }
+}
 .hand-card.invalid-dim { opacity: .4; pointer-events: none; }
 
 /* Face-up cards in hand (when playing from faceup) */

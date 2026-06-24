@@ -1,4 +1,4 @@
-import { Card, Rank } from './Card';
+import { Card, Rank, Suit } from './Card';
 
 // Walk pile from top, skip transparent (3, Joker) to find effective top value
 export function effectiveTop(pile: Card[]): Card | null {
@@ -26,8 +26,21 @@ export function isTransparent(rank: Rank): boolean {
   return rank === Rank.Three || rank === Rank.Joker;
 }
 
+/** True when the 4 cards cover all 4 suits — a rainbow combo. */
+export function isRainbow(cards: Card[]): boolean {
+  if (cards.length !== 4) return false;
+  const suits = new Set(cards.map(c => c.suit));
+  return suits.size === 4 && !suits.has(null);
+}
+
+/** True when a hand contains at least one card of each suit (rainbow possible). */
+export function canMakeRainbow(hand: Card[]): boolean {
+  const suits = new Set(hand.filter(c => c.suit !== null).map(c => c.suit as Suit));
+  return suits.size >= 4;
+}
+
 /**
- * Can this group of same-rank cards be played onto the current pile?
+ * Can this group of cards be played onto the current pile?
  *
  * Special rules:
  *  2 / 3 / Joker  — always playable
@@ -37,6 +50,7 @@ export function isTransparent(rank: Rank): boolean {
  */
 export function canPlay(cards: Card[], pile: Card[], under7: boolean): boolean {
   if (cards.length === 0) return false;
+  if (isRainbow(cards)) return true;
   const rank = cards[0].rank;
   if (!cards.every(c => c.rank === rank)) return false;
 

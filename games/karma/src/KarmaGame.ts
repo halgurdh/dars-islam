@@ -1,6 +1,6 @@
 import { Card, Rank, cardLabel } from './Card';
 import { createDeck } from './Deck';
-import { canPlay, isQuartet, isTransparent, getValidGroups } from './Rules';
+import { canPlay, isQuartet, isTransparent, isRainbow, canMakeRainbow, getValidGroups } from './Rules';
 
 export enum GamePhase {
   Setup = 'setup',
@@ -166,7 +166,8 @@ export class KarmaGame {
     const hand = source === 'hand'
       ? p.hand
       : p.faceUp.filter((c): c is Card => c !== null);
-    return getValidGroups(hand, this.pile, this.under7).length > 0;
+    return getValidGroups(hand, this.pile, this.under7).length > 0
+      || (source === 'hand' && canMakeRainbow(hand));
   }
 
   // ─── Actions ───────────────────────────────────────────────────────────────
@@ -279,6 +280,15 @@ export class KarmaGame {
         type: 'quartet', cards, playerId: p.id, nextPlayerId: p.id,
         message: `${p.name} makes FOUR OF A KIND! 🃏 Go again!`,
         burnedPile: true, drewCount, skippedIds: [], under7After: false,
+        playerFinished: isEmpty, gameOver: false,
+      };
+    }
+
+    if (isRainbow(cards)) {
+      return {
+        type: 'played', cards, playerId: p.id, nextPlayerId: p.id,
+        message: `${p.name} plays a RAINBOW! 🌈 Go again!`,
+        burnedPile: false, drewCount, skippedIds: [], under7After: this.under7,
         playerFinished: isEmpty, gameOver: false,
       };
     }

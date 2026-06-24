@@ -1,12 +1,13 @@
 import './style.css';
-import { musicManager } from '../../../src/music';
+import { musicManager, } from '../../../src/music';
+import { playSplash } from '../../../src/sfx';
 import { escapeHtml } from './utils';
 
 const splashLogoUrl = new URL('../../../shared/splash.png', import.meta.url).href;
 import { Card, Rank, cardImgSrc, cardLabel, CARD_BACK, rankName, suitSymbol } from './Card';
 const esc = escapeHtml;
 import { KarmaGame, GamePhase, PlayResult } from './KarmaGame';
-import { canPlay, getValidGroups } from './Rules';
+import { canPlay, getValidGroups, isRainbow, canMakeRainbow } from './Rules';
 import { aiDecide, validateAIDecision } from './AI';
 import { karmaNet } from './net/KarmaNetManager';
 import type { KarmaSnap, KarmaSnapPlayer } from './net/karmaProtocol';
@@ -95,6 +96,8 @@ function showSplash() {
       </div>
     </div>
   `;
+
+  playSplash();
 
   requestAnimationFrame(() => requestAnimationFrame(() => {
     const el = (id: string) => document.getElementById(id);
@@ -787,12 +790,16 @@ function renderCenter(players: PlayerView[]) {
     if (isTurn) {
       if (source === 'hand') {
         const validGroups = getValidGroups(me.hand, game.pile, game.under7);
-        if (validGroups.length === 0) {
+        const selCards = game.players[viewerIndex].hand.filter(c => selectedIds.has(c.id));
+        const rainbow = isRainbow(selCards);
+        if (validGroups.length === 0 && !canMakeRainbow(me.hand)) {
           statusEl.textContent = 'No valid card — take the pile!';
+        } else if (rainbow) {
+          statusEl.textContent = '🌈 Rainbow! Hit "Play Rainbow" to go again!';
         } else if (selectedIds.size > 1) {
           statusEl.textContent = `${selectedIds.size} cards selected — hit "Play ${selectedIds.size} cards"`;
         } else if (selectedIds.size === 1) {
-          statusEl.textContent = 'Click same-rank cards to add to combo, or hit Play';
+          statusEl.textContent = 'Click same-rank cards for a combo, or different suit for 🌈 rainbow';
         } else {
           statusEl.textContent = 'Your turn — click a card to select, then Play';
         }
@@ -818,7 +825,9 @@ function renderCenter(players: PlayerView[]) {
   if (comboBtn) {
     const n = selectedIds.size;
     if (n > 0 && isTurn && source === 'hand') {
-      comboBtn.textContent = n === 1 ? '▶ Play 1 card' : `▶ Play ${n} cards`;
+      const selCards = game.players[viewerIndex].hand.filter(c => selectedIds.has(c.id));
+      const rainbow = isRainbow(selCards);
+      comboBtn.textContent = rainbow ? '🌈 Play Rainbow!' : n === 1 ? '▶ Play 1 card' : `▶ Play ${n} cards`;
       comboBtn.style.display = 'block';
     } else {
       comboBtn.style.display = 'none';
@@ -899,6 +908,10 @@ function renderHumanHand(me: PlayerView) {
   const isTurn = game.currentPlayer === me.id;
   const validGroups = isTurn ? getValidGroups(me.hand, game.pile, game.under7) : [];
   const validRanks = new Set(validGroups.map(g => g[0].rank));
+  const inRainbowMode = selectedRank === null && selectedIds.size > 0;
+  const selectedSuits = inRainbowMode
+    ? new Set(me.hand.filter(c => selectedIds.has(c.id)).map(c => c.suit))
+    : new Set();
 
   container.innerHTML = '';
   for (const card of me.hand) {
@@ -907,6 +920,8 @@ function renderHumanHand(me: PlayerView) {
     el.dataset['id'] = card.id;
     el.dataset['rank'] = String(card.rank);
     if (selectedIds.has(card.id)) el.classList.add('selected');
+    else if (inRainbowMode && card.suit !== null && !selectedSuits.has(card.suit) && selectedIds.size < 4)
+      el.classList.add('rainbow-hint');
     else if (selectedRank !== null && card.rank === selectedRank) el.classList.add('same-rank-hint');
 
     const img = document.createElement('img');
@@ -1128,9 +1143,16 @@ function onPointerMove(e: PointerEvent) {
   if (!isDragging && Math.sqrt(dx * dx + dy * dy) > 8) {
     isDragging = true;
     const { id, rank } = pointerDown;
-    if (!selectedIds.has(id)) {
-      if (selectedRank !== null && selectedRank !== rank) { selectedIds.clear(); }
-      selectedIds.add(id); selectedRank = rank;
+    const inRainbowMode = selectedRank === null && selectedIds.size > 1;
+    if (!inRainbowMode || !selectedIds.has(id)) {
+      const hand = mode === 'online-guest'
+        ? (guestSnap?.players[myIndex].hand ?? [])
+        : game.players[viewerIndex].hand;
+      selectedIds.clear();
+      selectedRank = rank;
+      for (const c of hand) {
+        if (c.rank === rank) selectedIds.add(c.id);
+      }
       if (mode === 'online-guest') renderGuestGame(); else renderAll();
     }
     createDragGhosts();
@@ -1157,12 +1179,37 @@ function onPointerUp(e: PointerEvent) {
 }
 
 function toggleSelect(cardId: string, rank: Rank) {
+  const hand = mode === 'online-guest'
+    ? (guestSnap?.players[myIndex].hand ?? [])
+    : game.players[viewerIndex].hand;
+
   if (selectedIds.has(cardId)) {
     selectedIds.delete(cardId);
-    if (selectedIds.size === 0) selectedRank = null;
+    if (selectedIds.size === 0) {
+      selectedRank = null;
+    } else {
+      const remaining = hand.filter(c => selectedIds.has(c.id));
+      const allSame = remaining.every(c => c.rank === remaining[0].rank);
+      selectedRank = allSame ? remaining[0].rank : null;
+    }
   } else {
-    if (selectedRank !== null && selectedRank !== rank) selectedIds.clear();
-    selectedIds.add(cardId); selectedRank = rank;
+    const newCard = hand.find(c => c.id === cardId);
+    if (!newCard) return;
+
+    if (selectedIds.size === 0) {
+      selectedIds.add(cardId); selectedRank = rank;
+    } else if (selectedRank !== null && selectedRank === rank) {
+      selectedIds.add(cardId);
+    } else if (selectedIds.size < 4 && newCard.suit !== null) {
+      const selectedSuits = new Set(hand.filter(c => selectedIds.has(c.id)).map(c => c.suit));
+      if (!selectedSuits.has(newCard.suit)) {
+        selectedIds.add(cardId); selectedRank = null;
+      } else {
+        selectedIds.clear(); selectedIds.add(cardId); selectedRank = rank;
+      }
+    } else {
+      selectedIds.clear(); selectedIds.add(cardId); selectedRank = rank;
+    }
   }
   if (mode === 'online-guest') renderGuestGame(); else renderAll();
 }
