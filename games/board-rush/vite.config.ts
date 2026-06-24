@@ -12,12 +12,13 @@ function mergeSharedAssets(gameDir: string) {
     configureServer(server: { middlewares: { use: (handler: (req: { url?: string }, res: { setHeader: (name: string, value: string) => void; end: (body?: string | Buffer) => void }, next: () => void) => void) => void } }) {
       server.middlewares.use((req, res, next) => {
         const url = req.url?.split('?')[0] ?? '';
-        if (!url.startsWith('/assets/') || url.startsWith('/assets/icons/')) {
+        const assetsIdx = url.indexOf('/assets/');
+        if (assetsIdx === -1 || url.includes('/assets/icons/') || url.includes('/assets/music/')) {
           next();
           return;
         }
 
-        const relPath = url.replace(/^\/assets\//, '');
+        const relPath = url.slice(assetsIdx + '/assets/'.length);
         const fullPath = path.join(sharedDir, relPath);
         if (!fs.existsSync(fullPath)) {
           next();
