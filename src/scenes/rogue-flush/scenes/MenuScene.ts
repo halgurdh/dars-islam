@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { playClick } from '@src/sfx';
+import { playClick, playSplash } from '@src/sfx';
 import { musicManager } from '@src/music';
 import { cardImageKey, type Suit, type Rank } from '../data/cards';
 
@@ -125,10 +125,15 @@ export class MenuScene extends Phaser.Scene {
 
     // Audio
     try {
-      if (this.sound && (this.cache as unknown as Record<string, { exists?: (k: string) => boolean }>)['audio']?.exists?.('splash')) {
-        this.sound.play('splash', { volume: 0.6 });
+      const hasSplash = !!(this.cache?.audio?.exists?.('splash'));
+      if (this.sound && hasSplash) {
+        this.sound.play('splash', { volume: 0.7 });
+      } else {
+        playSplash();
       }
-    } catch { /* silently ignore */ }
+    } catch {
+      playSplash();
+    }
   }
 
   // ── Private helpers ────────────────────────────────────────────────────────

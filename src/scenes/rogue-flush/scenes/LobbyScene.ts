@@ -2,10 +2,11 @@ import Phaser from 'phaser';
 import { rfNetwork } from '../net/NetworkManager';
 import type { RFMember } from '../net/protocol';
 
-// Layout constants matching the 720×1280 portrait canvas
-const W  = 720;
-const H  = 1280;
-const CX = W / 2;
+// Layout constants — 1280 × 720 landscape canvas
+const W       = 1280;
+const H       = 720;
+const CX      = W / 2;
+const PANEL_W = 560; // max panel width so elements don't span the full landscape width
 
 type LobbyState = 'menu' | 'connecting' | 'lobby';
 
@@ -82,7 +83,7 @@ export class LobbyScene extends Phaser.Scene {
       fontFamily: 'sans-serif', fontSize: '11px', color: '#556655', letterSpacing: 3,
     }).setOrigin(0, 0.5);
 
-    const nameBg = this.add.rectangle(CX, nameLabelY + 46, W - 60, 52, 0x110808)
+    const nameBg = this.add.rectangle(CX, nameLabelY + 46, PANEL_W, 52, 0x110808)
       .setStrokeStyle(1, 0x552200, 0.8).setInteractive({ useHandCursor: true });
     this._nameDisplay = this.add.text(CX, nameLabelY + 46, this.playerName, {
       fontFamily: 'Georgia, serif', fontSize: '22px', color: '#ffccaa',
@@ -104,7 +105,7 @@ export class LobbyScene extends Phaser.Scene {
     this._menuGroup.push(this._errorText);
 
     // HOST ROOM button
-    const hostBtn = this._makeButton(CX, 430, W - 80, 70, '♠  HOST ROOM', 0xaa2200, 0xdd3311, () => {
+    const hostBtn = this._makeButton(CX, 430, PANEL_W - 20, 60, '♠  HOST ROOM', 0xaa2200, 0xdd3311, () => {
       this._clearError();
       this._enterConnecting('Creating room…');
       rfNetwork.createRoom().then((code) => {
@@ -117,7 +118,7 @@ export class LobbyScene extends Phaser.Scene {
     this._menuGroup.push(...hostBtn);
 
     // JOIN WITH CODE button
-    const joinBtn = this._makeButton(CX, 530, W - 80, 70, '♥  JOIN WITH CODE', 0x223355, 0x334477, () => {
+    const joinBtn = this._makeButton(CX, 520, PANEL_W - 20, 60, '♥  JOIN WITH CODE', 0x223355, 0x334477, () => {
       this._openCodeInput();
     });
     this._menuGroup.push(...joinBtn);
@@ -129,7 +130,7 @@ export class LobbyScene extends Phaser.Scene {
     this._menuGroup.push(div);
 
     // Back to menu
-    const backBtn = this._makeButton(CX, H - 80, 200, 52, '← Back', 0x1a1a1a, 0x333333, () => {
+    const backBtn = this._makeButton(CX, H - 38, 200, 48, '← Back', 0x1a1a1a, 0x333333, () => {
       this._removeInputEl();
       this.cameras.main.fadeOut(300, 0, 0, 0);
       this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('Menu'));
@@ -173,19 +174,19 @@ export class LobbyScene extends Phaser.Scene {
     this.add.text(60, 340, 'PLAYERS', {
       fontFamily: 'sans-serif', fontSize: '11px', color: '#334433', letterSpacing: 3,
     });
-    const listBg = this.add.rectangle(CX, 500, W - 40, 316, 0x0a0a0a, 0.7)
+    const listBg = this.add.rectangle(CX, 480, PANEL_W + 20, 260, 0x0a0a0a, 0.7)
       .setStrokeStyle(1, 0x1a3a1a, 1);
     this._lobbyGroup.push(listBg);
 
     // 4 player row slots
     for (let i = 0; i < 4; i++) {
-      const rowY = 366 + i * 74;
-      const bg = this.add.rectangle(CX, rowY + 20, W - 60, 60, 0x080808, 0.9)
+      const rowY = 362 + i * 62;
+      const bg = this.add.rectangle(CX, rowY + 16, PANEL_W, 52, 0x080808, 0.9)
         .setStrokeStyle(1, 0x1c2c1c, 1);
-      const name = this.add.text(80, rowY + 20, '', {
-        fontFamily: 'Georgia, serif', fontSize: '18px', color: '#cccccc',
+      const name = this.add.text(CX - PANEL_W / 2 + 20, rowY + 16, '', {
+        fontFamily: 'Georgia, serif', fontSize: '16px', color: '#cccccc',
       }).setOrigin(0, 0.5);
-      const status = this.add.text(W - 60, rowY + 20, '', {
+      const status = this.add.text(CX + PANEL_W / 2 - 16, rowY + 16, '', {
         fontFamily: 'sans-serif', fontSize: '13px', color: '#448844',
       }).setOrigin(1, 0.5);
       this._playerRows.push({ bg, name, status });
@@ -193,13 +194,13 @@ export class LobbyScene extends Phaser.Scene {
     }
 
     // Status text (e.g. "Waiting for host to start…")
-    this._statusText = this.add.text(CX, 680, 'Waiting for host to start…', {
+    this._statusText = this.add.text(CX, 616, 'Waiting for host to start…', {
       fontFamily: 'Georgia, serif', fontSize: '17px', color: '#777777', align: 'center',
     }).setOrigin(0.5);
     this._lobbyGroup.push(this._statusText);
 
     // START GAME button (host only, enabled when ≥2 players)
-    const [startBg, startShadow, startTxt] = this._makeButtonParts(CX, 760, W - 80, 72, '▶  START GAME', 0x336600, 0x448800);
+    const [startBg, startShadow, startTxt] = this._makeButtonParts(CX, 660, PANEL_W - 20, 58, '▶  START GAME', 0x336600, 0x448800);
     this._startBtn = startBg;
     this._startBtnTxt = startTxt;
     this._lobbyGroup.push(startShadow, startBg, startTxt);
@@ -211,7 +212,7 @@ export class LobbyScene extends Phaser.Scene {
     });
 
     // Leave lobby
-    const leaveBtn = this._makeButton(CX, H - 80, 200, 52, '✕  Leave', 0x221111, 0x441111, () => {
+    const leaveBtn = this._makeButton(CX, H - 38, 200, 48, '✕  Leave', 0x221111, 0x441111, () => {
       rfNetwork.destroy();
       this._showState('menu');
     });

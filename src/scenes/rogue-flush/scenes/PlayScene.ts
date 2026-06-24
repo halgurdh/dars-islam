@@ -7,23 +7,22 @@ import { Card, HAND_CARD_W, HAND_CARD_H, PLAY_CARD_W, PLAY_CARD_H } from '../obj
 import { type CardDef, cardChips } from '../data/cards';
 import { HAND_BASE, evaluateHand, scoringCards } from '../data/pokerHands';
 
-// ─── Layout constants (720 × 1280 portrait canvas) ────────────────────────────
-const W  = 720;
-const H  = 1280;
+// ─── Layout constants (1280 × 720 landscape canvas) ──────────────────────────
+const W  = 1280;
+const H  = 720;
 const CX = W / 2;
 
-const HUD_Y         = 50;   // top strip centre
-const JOKER_Y       = 148;  // joker slots row centre
-const HAND_TYPE_Y   = 232;  // hand-type label
-const PLAY_ZONE_Y   = 420;  // played card centre
-const SCORE_DISP_Y  = 568;  // chips × mult boxes centre
-const HAND_Y        = 762;  // player's hand card centre
-const STATUS_Y      = 905;  // hands / discards / deck row
-const BTN_Y         = 992;  // Play Hand button centre
-const DISCARD_BTN_Y = 1076; // Discard button centre
+const HUD_Y        = 32;   // top strip centre
+const JOKER_Y      = 106;  // joker slots row centre
+const HAND_TYPE_Y  = 172;  // hand-type label
+const PLAY_ZONE_Y  = 295;  // played card centre
+const SCORE_DISP_Y = 418;  // chips × mult boxes centre
+const HAND_Y       = 575;  // player's hand card centre
+const STATUS_Y     = 492;  // hands / discards / deck row
+const BTN_Y        = 660;  // action buttons row centre (play + discard side-by-side)
 
-const HAND_SPACING  = 72;   // x-distance between card centres in hand (8 cards)
-const PLAY_SPACING  = 106;  // x-distance between card centres in play zone (5 max)
+const HAND_SPACING = 104;  // x-distance between card centres in hand (8 cards)
+const PLAY_SPACING = 120;  // x-distance between card centres in play zone (5 max)
 
 const HAND_SIZE     = 8;
 const MAX_SELECTED  = 5;
@@ -675,9 +674,9 @@ export class PlayScene extends Phaser.Scene {
   }
 
   private _buildActionButtons(): void {
-    this.playBtn    = this._makeButton(CX, BTN_Y,         W - 60,  68, '▶  PLAY HAND', 0xaa2200, 0xdd3311,
+    this.playBtn    = this._makeButton(CX - 220, BTN_Y, 380, 54, '▶  PLAY HAND', 0xaa2200, 0xdd3311,
       () => { if (this.phase === Phase.PLAYER) this._playHand(); });
-    this.discardBtn = this._makeButton(CX, DISCARD_BTN_Y, W - 100, 52, '↺  DISCARD',   0x443300, 0x775500,
+    this.discardBtn = this._makeButton(CX + 220, BTN_Y, 280, 46, '↺  DISCARD',   0x443300, 0x775500,
       () => { if (this.phase === Phase.PLAYER) this._discard(); });
   }
 
@@ -693,7 +692,7 @@ export class PlayScene extends Phaser.Scene {
     this.overlay.removeAll(true);
     this.overlay.setVisible(true).setAlpha(0).setScale(0.85);
 
-    const panel  = this.add.rectangle(0, 0, W - 60, 420, 0x0a1a0a, 0.97).setStrokeStyle(3, 0xcc2200, 1).setOrigin(0.5);
+    const panel  = this.add.rectangle(0, 0, Math.min(W - 60, 680), 380, 0x0a1a0a, 0.97).setStrokeStyle(3, 0xcc2200, 1).setOrigin(0.5);
     const titleT = this.add.text(0, -150, title, {
       fontFamily: 'Georgia, serif', fontSize: '44px', color: '#ff4433',
       stroke: '#440000', strokeThickness: 5,

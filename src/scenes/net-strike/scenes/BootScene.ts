@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 
-const splashLogoUrl = new URL('../../../../shared/splash.png', import.meta.url).href;
+const splashLogoUrl  = new URL('../../../../shared/splash.png', import.meta.url).href;
+const splashAudioUrl = new URL('../../../../shared/splash.mp3', import.meta.url).href;
 
 export class BootScene extends Phaser.Scene {
   constructor() {
@@ -9,6 +10,7 @@ export class BootScene extends Phaser.Scene {
 
   preload(): void {
     this.load.image('ns-splash-logo', splashLogoUrl);
+    this.load.audio('splash', splashAudioUrl);
 
     // Load character spritesheets
     const chars = ['player', 'enemy'] as const;

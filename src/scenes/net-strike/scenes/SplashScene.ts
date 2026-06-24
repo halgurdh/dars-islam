@@ -11,7 +11,6 @@ export class SplashScene extends Phaser.Scene {
 
   create(): void {
     this.done = false;
-    playSplash();
     const { width, height } = this.scale;
     const cx = width / 2;
     const cy = height / 2;
@@ -71,6 +70,17 @@ export class SplashScene extends Phaser.Scene {
     this.time.delayedCall(4000, () => this.advance());
     this.input.keyboard?.once('keydown', () => this.advance());
     this.input.once('pointerdown', () => this.advance());
+
+    try {
+      const hasSplash = !!(this.cache?.audio?.exists?.('splash'));
+      if (this.sound && hasSplash) {
+        this.sound.play('splash', { volume: 0.7 });
+      } else {
+        playSplash();
+      }
+    } catch {
+      playSplash();
+    }
   }
 
   private advance(): void {
