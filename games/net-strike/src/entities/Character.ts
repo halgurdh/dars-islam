@@ -35,19 +35,19 @@ export class Character extends Phaser.GameObjects.Container {
     this.charPrefix = charPrefix;
 
     // Shadow
-    this.shadow = scene.add.ellipse(0, 10, 76, 18, 0x000000, 0.45);
+    this.shadow = scene.add.ellipse(0, 8, 76, 18, 0x000000, 0.45);
 
     const startTexture = `${charPrefix}_cell_0`;
-    this.sprite = scene.add.sprite(0, -18, startTexture);
+    this.sprite = scene.add.sprite(0, 0, startTexture);
     this.syncSpriteOrigin();
     if (charPrefix === 'enemy') this.sprite.setFlipX(true);
     this.sprite.on(Phaser.Animations.Events.ANIMATION_UPDATE, () => this.syncSpriteOrigin());
     this.sprite.play(`${charPrefix}_idle`);
 
     // HP bar
-    this.hpBack = scene.add.rectangle(0, -72, 88, 9, 0x07111f, 0.92);
-    this.hpUnder = scene.add.rectangle(-44, -72, 88, 5, 0xff7a7a, 0.45).setOrigin(0, 0.5);
-    this.hpFront = scene.add.rectangle(-44, -72, 88, 5, this.owner === 'player' ? 0x67f7a1 : 0xff9eb0, 0.95).setOrigin(0, 0.5);
+    this.hpBack = scene.add.rectangle(0, -138, 88, 9, 0x07111f, 0.92);
+    this.hpUnder = scene.add.rectangle(-44, -138, 88, 5, 0xff7a7a, 0.45).setOrigin(0, 0.5);
+    this.hpFront = scene.add.rectangle(-44, -138, 88, 5, this.owner === 'player' ? 0x67f7a1 : 0xff9eb0, 0.95).setOrigin(0, 0.5);
 
     this.add([this.shadow, this.sprite, this.hpBack, this.hpUnder, this.hpFront]);
     this.setSize(96, 120);

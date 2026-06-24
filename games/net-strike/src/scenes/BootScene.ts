@@ -52,14 +52,15 @@ export class BootScene extends Phaser.Scene {
     ];
 
     for (const def of animDefs) {
-      if (!this.anims.exists(def.name)) {
-        this.anims.create({
-          key: def.name,
-          frames: def.frames.map((frame) => ({ key: frame })),
-          frameRate: def.fps,
-          repeat: def.repeat,
-        });
+      if (this.anims.exists(def.name)) {
+        this.anims.remove(def.name);
       }
+      this.anims.create({
+        key: def.name,
+        frames: def.frames.map((frame) => ({ key: frame })),
+        frameRate: def.fps,
+        repeat: def.repeat,
+      });
     }
 
     // Procedural textures for projectiles
@@ -87,9 +88,10 @@ export class BootScene extends Phaser.Scene {
 
   private registerManualFrames(frames: typeof PLAYER_FRAME_DEFINITIONS): string[] {
     for (const frame of frames) {
-      if (!this.textures.exists(frame.name)) {
-        this.createMaskedFrameTexture(frame);
+      if (this.textures.exists(frame.name)) {
+        this.textures.remove(frame.name);
       }
+      this.createMaskedFrameTexture(frame);
     }
     return frames.map((frame) => frame.name);
   }
@@ -227,6 +229,6 @@ export class BootScene extends Phaser.Scene {
     const saturation = high - low;
     const backgroundDelta = Math.abs(red - background.red) + Math.abs(green - background.green) + Math.abs(blue - background.blue);
 
-    return backgroundDelta > 34 || saturation > 58 || high < 56 || high > 202;
+    return backgroundDelta > 46 || saturation > 58 || high < 56 || high > 202;
   }
 }

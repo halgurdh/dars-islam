@@ -14,15 +14,6 @@ from pathlib import Path
 
 
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
-DEFAULT_CENTERS = [
-    [418, 628, 830, 1028],
-    [410, 616, 818, 1022],
-    [432, 628, 824, 1018],
-    [376, 618, 833, 1052],
-    [400, 606, 812, 1014],
-]
-
-
 def paeth(a: int, b: int, c: int) -> int:
     p = a + b - c
     pa = abs(p - a)
@@ -123,43 +114,62 @@ def detect_row_bounds(
     height: int,
     pixels: list[tuple[int, int, int, int]],
     bg: tuple[int, int, int],
-    rows: int,
+    rows: int | None,
     bg_threshold: int,
 ) -> list[tuple[int, int]]:
-    bounds: list[tuple[int, int]] = []
-    ideal = [round(i * height / rows) for i in range(rows + 1)]
+    counts = []
 
+    for y in range(height):
+        count = 0
+        for x in range(0, width, 2):
+            if foreground(pixel_at(pixels, width, x, y), bg, bg_threshold):
+                count += 1
+        counts.append((y, count))
+
+    global_threshold = max(8, int(max((count for _, count in counts), default=0) * 0.08))
+    segments: list[tuple[int, int]] = []
+    active_start: int | None = None
+
+    for y, count in counts:
+        if count >= global_threshold and active_start is None:
+            active_start = y
+        elif count < global_threshold and active_start is not None:
+            segments.append((active_start, y - 1))
+            active_start = None
+    if active_start is not None:
+        segments.append((active_start, height - 1))
+
+    if rows is None:
+        return [(start, end - start + 1) for start, end in segments]
+
+    ideal = [round(i * height / rows) for i in range(rows + 1)]
+    ideal_height = height / rows
+    bounds: list[tuple[int, int]] = []
     for row in range(rows):
         y0, y1 = ideal[row], ideal[row + 1] - 1
-        counts = []
-        for y in range(y0, y1 + 1):
-            count = 0
-            for x in range(0, width, 2):
-                if foreground(pixel_at(pixels, width, x, y), bg, bg_threshold):
-                    count += 1
-            counts.append((y, count))
+        center = round((y0 + y1) / 2)
+        containing = next(((start, end) for start, end in segments if start <= center <= end), None)
+        if containing and (containing[1] - containing[0] + 1) <= ideal_height * 1.35:
+            bounds.append((containing[0], containing[1] - containing[0] + 1))
+            continue
 
-        threshold = max(8, int(max((count for _, count in counts), default=0) * 0.08))
-        active = [y for y, count in counts if count >= threshold]
+        local_counts = [(y, count) for y, count in counts if y0 <= y <= y1]
+        local_threshold = max(8, int(max((count for _, count in local_counts), default=0) * 0.08))
+        active = [y for y, count in local_counts if count >= local_threshold]
         if not active:
             bounds.append((y0, y1 - y0 + 1))
             continue
 
-        top = max(y0, min(active) - 2)
-        bottom = min(y1, max(active) + 2)
+        top = min(active)
+        bottom = max(active)
         bounds.append((top, bottom - top + 1))
 
     return bounds
 
 
-def auto_centers(width: int, rows: int, columns: int) -> list[list[int]]:
-    return [[round((col + 0.5) * width / columns) for col in range(columns)] for _ in range(rows)]
-
-
-def parse_centers(text: str | None, rows: int, columns: int, width: int) -> list[list[int]]:
+def parse_centers(text: str | None, rows: int, columns: int) -> list[list[int]] | None:
     if text is None:
-        return [row[:] for row in DEFAULT_CENTERS] if rows == 5 and columns == 4 else auto_centers(width, rows, columns)
-
+        return None
     row_values = []
     for row_text in text.split(";"):
         centers = [int(value.strip()) for value in row_text.split(",") if value.strip()]
@@ -172,42 +182,102 @@ def parse_centers(text: str | None, rows: int, columns: int, width: int) -> list
     return row_values
 
 
-def detect_frame(
+def segments_from_projection(counts: list[tuple[int, int]], threshold: int, min_gap: int, min_size: int) -> list[tuple[int, int]]:
+    raw_segments: list[tuple[int, int]] = []
+    start: int | None = None
+    last_active: int | None = None
+
+    for position, count in counts:
+        if count >= threshold:
+            if start is None:
+                start = position
+            last_active = position
+        elif start is not None and last_active is not None and position - last_active > min_gap:
+            raw_segments.append((start, last_active))
+            start = None
+            last_active = None
+
+    if start is not None and last_active is not None:
+        raw_segments.append((start, last_active))
+
+    return [(start, end) for start, end in raw_segments if end - start + 1 >= min_size]
+
+
+def detect_row_frames(
     width: int,
+    height: int,
     pixels: list[tuple[int, int, int, int]],
     bg: tuple[int, int, int],
     y: int,
-    height: int,
-    left: int,
-    right: int,
+    row_height: int,
+    columns: int | None,
     padding: int,
     bg_threshold: int,
-) -> tuple[int, int, int, int]:
-    min_x, min_y = right, y + height
-    max_x, max_y = left, y
+) -> list[tuple[int, int, int, int]]:
+    x_counts = []
+    for x in range(width):
+        count = 0
+        for py in range(y, y + row_height):
+            if foreground(pixel_at(pixels, width, x, py), bg, bg_threshold):
+                count += 1
+        x_counts.append((x, count))
 
-    for py in range(y, y + height):
-        for px in range(left, right + 1):
-            if foreground(pixel_at(pixels, width, px, py), bg, bg_threshold):
-                min_x = min(min_x, px)
-                min_y = min(min_y, py)
-                max_x = max(max_x, px)
-                max_y = max(max_y, py)
+    threshold = max(2, int(max((count for _, count in x_counts), default=0) * 0.06))
+    x_segments = segments_from_projection(x_counts, threshold, min_gap=10, min_size=8)
 
-    if max_x < min_x or max_y < min_y:
-        return left, y, right - left + 1, height
+    if columns is not None and len(x_segments) != columns:
+        x_segments = split_or_merge_segments(x_segments, columns)
 
-    x0 = max(left, min_x - padding)
-    y0 = max(y, min_y - padding)
-    x1 = min(right, max_x + padding)
-    y1 = min(y + height - 1, max_y + padding)
-    return x0, y0, x1 - x0 + 1, y1 - y0 + 1
+    frames = []
+    for left, right in x_segments:
+        min_x, min_y = right, y + row_height
+        max_x, max_y = left, y
+
+        for py in range(y, y + row_height):
+            for px in range(left, right + 1):
+                if foreground(pixel_at(pixels, width, px, py), bg, bg_threshold):
+                    min_x = min(min_x, px)
+                    min_y = min(min_y, py)
+                    max_x = max(max_x, px)
+                    max_y = max(max_y, py)
+
+        if max_x < min_x or max_y < min_y:
+            frames.append((left, y, right - left + 1, row_height))
+            continue
+
+        x0 = max(0, min_x - padding)
+        y0 = max(0, min_y - padding)
+        x1 = min(width - 1, max_x + padding)
+        y1 = min(height - 1, max_y + padding)
+        frames.append((x0, y0, x1 - x0 + 1, y1 - y0 + 1))
+
+    return frames
+
+
+def split_or_merge_segments(segments: list[tuple[int, int]], target_count: int) -> list[tuple[int, int]]:
+    if len(segments) == target_count:
+        return segments
+    if len(segments) > target_count:
+        merged = segments[:]
+        while len(merged) > target_count:
+            gap_index = min(range(len(merged) - 1), key=lambda index: merged[index + 1][0] - merged[index][1])
+            merged[gap_index] = (merged[gap_index][0], merged[gap_index + 1][1])
+            del merged[gap_index + 1]
+        return merged
+
+    expanded = segments[:]
+    while len(expanded) < target_count and expanded:
+        widest_index = max(range(len(expanded)), key=lambda index: expanded[index][1] - expanded[index][0])
+        start, end = expanded[widest_index]
+        mid = (start + end) // 2
+        expanded[widest_index:widest_index + 1] = [(start, mid), (mid + 1, end)]
+    return expanded
 
 
 def scan(
     path: Path,
-    rows: int,
-    columns: int,
+    rows: int | None,
+    columns: int | None,
     padding: int,
     centers_text: str | None,
     bg_threshold: int,
@@ -221,19 +291,30 @@ def scan(
     ]
     bg = tuple(sum(c[i] for c in corners) // len(corners) for i in range(3))
     row_bounds = detect_row_bounds(width, height, pixels, bg, rows, bg_threshold)
-    centers_by_row = parse_centers(centers_text, rows, columns, width)
+    if centers_text is not None and (rows is None or columns is None):
+        raise ValueError("--centers requires --rows and --columns")
+    centers_by_row = parse_centers(centers_text, rows, columns) if rows is not None and columns is not None else None
     frames: list[list[tuple[int, int, int, int]]] = []
 
-    for row, centers in enumerate(centers_by_row):
+    for row, row_bounds_item in enumerate(row_bounds):
+        y, row_height = row_bounds_item
+        if centers_by_row is None:
+            frames.append(detect_row_frames(width, height, pixels, bg, y, row_height, columns, padding, bg_threshold))
+            continue
+
+        centers = centers_by_row[row]
         lanes = [0]
         for a, b in zip(centers, centers[1:]):
             lanes.append(round((a + b) / 2))
         lanes.append(width)
-
         y, row_height = row_bounds[row]
         row_frames = []
-        for col in range(columns):
-            row_frames.append(detect_frame(width, pixels, bg, y, row_height, lanes[col], lanes[col + 1] - 1, padding, bg_threshold))
+        for col in range(columns or 0):
+            left = lanes[col]
+            right = lanes[col + 1] - 1
+            frame = detect_row_frames(width, height, pixels, bg, y, row_height, None, padding, bg_threshold)
+            lane_frame = [item for item in frame if item[0] >= left and item[0] + item[2] - 1 <= right]
+            row_frames.append(lane_frame[0] if lane_frame else (left, y, right - left + 1, row_height))
         frames.append(row_frames)
 
     return frames
@@ -259,8 +340,8 @@ def main() -> None:
     parser.add_argument("sprites", nargs="*", type=Path)
     parser.add_argument("--gameName", "--game-name", dest="game_name")
     parser.add_argument("--root", type=Path, default=Path.cwd())
-    parser.add_argument("--rows", type=int, default=5)
-    parser.add_argument("--columns", type=int, default=4)
+    parser.add_argument("--rows", type=int)
+    parser.add_argument("--columns", type=int)
     parser.add_argument("--padding", type=int, default=0)
     parser.add_argument("--bg-threshold", type=int, default=46)
     parser.add_argument("--centers", help="semicolon-separated row centers, e.g. '418,628,830,1028;...'")

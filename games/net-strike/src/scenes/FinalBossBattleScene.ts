@@ -22,6 +22,8 @@ export class FinalBossBattleScene extends Phaser.Scene implements CustomMenuHost
   private bossRoot!: Phaser.GameObjects.Container;
   private bossBody!: Phaser.GameObjects.Graphics;
   private bossCore!: Phaser.GameObjects.Arc;
+  private bossEye!: Phaser.GameObjects.Arc;
+  private bossCrown!: Phaser.GameObjects.Graphics;
   private shieldRing!: Phaser.GameObjects.Graphics;
   private bossHpFill!: Phaser.GameObjects.Graphics;
   private bossHpText!: Phaser.GameObjects.Text;
@@ -176,19 +178,21 @@ export class FinalBossBattleScene extends Phaser.Scene implements CustomMenuHost
     this.shieldRing = this.add.graphics();
     this.bossBody = this.add.graphics();
     this.bossCore = this.add.circle(0, 0, 38, 0xff6f9b, 0.95).setDepth(2);
+    this.bossEye = this.add.circle(0, 0, 14, 0xffffff, 0.95).setDepth(3);
     const antenna = this.add.graphics();
     const clawLeft = this.add.graphics();
     const clawRight = this.add.graphics();
+    this.bossCrown = this.add.graphics();
 
-    antenna.fillStyle(0x19344d, 1).fillRoundedRect(-18, -186, 36, 150, 14);
-    antenna.fillStyle(0x42d8ff, 0.68).fillRoundedRect(-6, -174, 12, 108, 8);
-    clawLeft.fillStyle(0x10253c, 1).fillTriangle(-176, -12, -102, -70, -98, 52);
-    clawLeft.lineStyle(4, 0x7fe7ff, 0.76).strokeTriangle(-176, -12, -102, -70, -98, 52);
-    clawRight.fillStyle(0x3f1025, 1).fillTriangle(176, -12, 102, -70, 98, 52);
-    clawRight.lineStyle(4, 0xff8ab4, 0.76).strokeTriangle(176, -12, 102, -70, 98, 52);
+    antenna.fillStyle(0x19344d, 1).fillRoundedRect(-18, -206, 36, 170, 14);
+    antenna.fillStyle(0x42d8ff, 0.68).fillRoundedRect(-6, -192, 12, 126, 8);
+    clawLeft.fillStyle(0x10253c, 1).fillTriangle(-218, -16, -112, -94, -118, 82);
+    clawLeft.lineStyle(5, 0x7fe7ff, 0.76).strokeTriangle(-218, -16, -112, -94, -118, 82);
+    clawRight.fillStyle(0x3f1025, 1).fillTriangle(218, -16, 112, -94, 118, 82);
+    clawRight.lineStyle(5, 0xff8ab4, 0.76).strokeTriangle(218, -16, 112, -94, 118, 82);
 
     this.redrawBoss(false);
-    this.bossRoot.add([this.shieldRing, clawLeft, clawRight, antenna, this.bossBody, this.bossCore]);
+    this.bossRoot.add([this.shieldRing, clawLeft, clawRight, antenna, this.bossCrown, this.bossBody, this.bossCore, this.bossEye]);
 
     this.pulseTween = this.tweens.add({
       targets: this.bossCore,
@@ -199,6 +203,15 @@ export class FinalBossBattleScene extends Phaser.Scene implements CustomMenuHost
       repeat: -1,
       ease: 'Sine.easeInOut',
       paused: true,
+    });
+    this.tweens.add({
+      targets: this.bossEye,
+      scaleX: 1.5,
+      alpha: 0.55,
+      duration: 520,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
     });
   }
 
@@ -379,8 +392,11 @@ export class FinalBossBattleScene extends Phaser.Scene implements CustomMenuHost
     this.registerManagedDelay(800, () => {
       const beam = this.add.graphics().setDepth(930);
       const y = this.grid.getCenterLineY(row);
-      beam.fillStyle(0xff4d74, 0.82).fillRect(186, y - 24, 880, 48);
-      beam.lineStyle(5, 0xffe3ef, 0.9).strokeRect(186, y - 24, 880, 48);
+      beam.fillStyle(0xff2d64, 0.22).fillRect(156, y - 44, 946, 88);
+      beam.fillStyle(0xff4d74, 0.82).fillRect(174, y - 22, 910, 44);
+      beam.fillStyle(0xffffff, 0.92).fillRect(174, y - 6, 910, 12);
+      beam.lineStyle(4, 0xffe3ef, 0.9).strokeRect(174, y - 22, 910, 44);
+      this.spawnMuzzleBurst(this.bossRoot.x - 152, y, 0xff6f9b);
       this.trackManagedObject(beam);
       this.spawnBossParticles(900, y, 0xff7ea6, 16);
       if (this.player.coord.row === row) {
@@ -406,15 +422,20 @@ export class FinalBossBattleScene extends Phaser.Scene implements CustomMenuHost
 
     this.registerManagedDelay(1000, () => {
       markers.forEach(({ coord, pos, marker }) => {
-        const meteor = this.add.graphics().setDepth(935);
-        meteor.fillStyle(0xffa04d, 1).fillTriangle(pos.x, pos.y - 70, pos.x + 18, pos.y - 18, pos.x - 18, pos.y - 18);
-        meteor.lineStyle(3, 0xfff3d2, 0.8).strokeTriangle(pos.x, pos.y - 70, pos.x + 18, pos.y - 18, pos.x - 18, pos.y - 18);
+        const meteor = this.add.container(pos.x, pos.y - 132).setDepth(935);
+        const trail = this.add.graphics();
+        trail.fillStyle(0xff6f39, 0.24).fillTriangle(0, -54, -30, 26, 30, 26);
+        const core = this.add.graphics();
+        core.fillStyle(0xffc06a, 1).fillCircle(0, 0, 18);
+        core.fillStyle(0xffffff, 0.8).fillCircle(-5, -5, 7);
+        core.lineStyle(3, 0xfff3d2, 0.85).strokeCircle(0, 0, 18);
+        meteor.add([trail, core]);
         this.trackManagedObject(meteor);
         this.tweens.add({
           targets: meteor,
-          y: 70,
+          y: pos.y,
           alpha: 0,
-          duration: 180,
+          duration: 220,
           ease: 'Cubic.easeIn',
           onComplete: () => meteor.destroy(),
         });
@@ -649,6 +670,19 @@ export class FinalBossBattleScene extends Phaser.Scene implements CustomMenuHost
     this.registerManagedDelay(420, () => particles.destroy());
   }
 
+  private spawnMuzzleBurst(x: number, y: number, tint: number): void {
+    const flash = this.add.graphics().setDepth(941);
+    flash.fillStyle(tint, 0.34).fillCircle(x, y, 58);
+    flash.fillStyle(0xffffff, 0.9).fillCircle(x, y, 18);
+    flash.lineStyle(4, 0xffffff, 0.55);
+    for (let index = 0; index < 10; index += 1) {
+      const angle = Phaser.Math.DegToRad(index * 36);
+      flash.lineBetween(x, y, x + Math.cos(angle) * 74, y + Math.sin(angle) * 74);
+    }
+    this.trackManagedObject(flash);
+    this.tweens.add({ targets: flash, scaleX: 1.35, scaleY: 1.35, alpha: 0, duration: 220, onComplete: () => flash.destroy() });
+  }
+
   private openCustomMenu(): void {
     if (this.scene.isActive('CustomMenuScene')) {
       return;
@@ -783,17 +817,30 @@ export class FinalBossBattleScene extends Phaser.Scene implements CustomMenuHost
   private redrawBoss(vulnerable: boolean): void {
     this.shieldRing.clear();
     this.shieldRing.lineStyle(6, vulnerable ? 0xffd7a2 : 0x79ddff, vulnerable ? 0.35 : 0.8);
-    this.shieldRing.strokeCircle(0, 0, 138);
+    this.shieldRing.strokeCircle(0, 0, 152);
     this.shieldRing.lineStyle(2, vulnerable ? 0xfff0ca : 0xc7f4ff, 0.7);
-    this.shieldRing.strokeCircle(0, 0, 176);
+    this.shieldRing.strokeCircle(0, 0, 198);
+
+    this.bossCrown.clear();
+    this.bossCrown.fillStyle(0x0f273a, 1);
+    this.bossCrown.fillTriangle(-104, -168, -40, -236, 8, -160);
+    this.bossCrown.fillTriangle(104, -168, 40, -236, -8, -160);
+    this.bossCrown.lineStyle(4, vulnerable ? 0xffd28c : 0x7ce8ff, 0.72);
+    this.bossCrown.strokeTriangle(-104, -168, -40, -236, 8, -160);
+    this.bossCrown.strokeTriangle(104, -168, 40, -236, -8, -160);
 
     this.bossBody.clear();
-    this.bossBody.fillStyle(0x0b2032, 1).fillRoundedRect(-124, -164, 248, 328, 42);
+    this.bossBody.fillStyle(0x081927, 1).fillRoundedRect(-144, -178, 288, 356, 46);
+    this.bossBody.fillStyle(0x102f42, 1).fillRoundedRect(-116, -146, 232, 292, 34);
     this.bossBody.fillStyle(0x421427, 0.92).fillRoundedRect(-82, -122, 164, 244, 26);
-    this.bossBody.fillStyle(vulnerable ? 0xffcf82 : 0x6fd9ff, vulnerable ? 0.3 : 0.16).fillCircle(0, 0, 118);
-    this.bossBody.lineStyle(5, vulnerable ? 0xffc56b : 0x7ce8ff, 0.92).strokeRoundedRect(-124, -164, 248, 328, 42);
+    this.bossBody.fillStyle(vulnerable ? 0xffcf82 : 0x6fd9ff, vulnerable ? 0.3 : 0.16).fillCircle(0, 0, 126);
+    this.bossBody.lineStyle(6, vulnerable ? 0xffc56b : 0x7ce8ff, 0.92).strokeRoundedRect(-144, -178, 288, 356, 46);
     this.bossBody.lineStyle(3, vulnerable ? 0xffefcc : 0xb7f0ff, 0.74);
     this.bossBody.strokeRoundedRect(-84, -124, 168, 248, 26);
+    this.bossBody.lineStyle(2, 0xffffff, 0.18);
+    for (let y = -112; y <= 112; y += 56) {
+      this.bossBody.lineBetween(-118, y, 118, y);
+    }
   }
 
   private getPlayerRow(row: number): GridCoord[] {

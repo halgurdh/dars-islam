@@ -88,6 +88,6 @@ export class SplashScene extends Phaser.Scene {
     this.done = true;
     musicManager.init();
     this.cameras.main.fadeOut(500, 0, 0, 0);
-    this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('BattleScene'));
+    this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('FinalBossBattleScene'));
   }
 }
