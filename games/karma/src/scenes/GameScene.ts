@@ -18,7 +18,8 @@ const LOG_Y      = 244;
 const GUIDE_Y    = 268;
 const CARD_ROW_Y = 348;
 const DECK_X     = 190;
-const PILE_X     = 1090;
+const PILE_X     = 640;   // centre
+const INFO_X     = 1090;  // game-info on the right
 const UNDER7_Y   = 412;
 
 // Table zone   y = 432 – 582
@@ -133,9 +134,6 @@ export class GameScene extends Phaser.Scene {
   private showSetup(playerId: number, onDone: () => void): void {
     const p   = this.g.players[playerId];
     const sel = new Set<string>();
-    // All objects added directly to scene (NOT inside a container) so that
-    // pointerover/pointerout events fire correctly — Phaser 3 containers do
-    // not reliably forward hover events to interactive children.
     const objs: Phaser.GameObjects.GameObject[] = [];
     const sc = <T extends Phaser.GameObjects.GameObject & { setDepth(v: number): T }>(o: T, d = 20): T => {
       o.setDepth(d); objs.push(o); return o;
@@ -146,26 +144,23 @@ export class GameScene extends Phaser.Scene {
     sc(this.add.ellipse(CX, H / 2 + 20, 920, 560, 0x0b1d14, 0.85), 20);
 
     // Title
-    sc(this.add.text(CX, 62, p.name, {
-      fontFamily: 'Georgia, serif', fontSize: '22px', color: '#55997a',
-    }).setOrigin(0.5), 21);
-    sc(this.add.text(CX, 96, 'Choose your 3 face-up cards', {
+    sc(this.add.text(CX, 52, '🃏 You — choose 3 table cards', {
       fontFamily: 'Georgia, serif', fontSize: '32px', color: '#00e082',
       stroke: '#001a0d', strokeThickness: 4,
     }).setOrigin(0.5), 21);
-    sc(this.add.text(CX, 132, 'They stay face-up all game — everyone can see them', {
+    sc(this.add.text(CX, 92, 'These will be placed face-up on the table. The rest becomes your starting hand.', {
       fontFamily: 'Georgia, serif', fontSize: '14px', color: '#3d7755',
     }).setOrigin(0.5), 21);
 
     // Counter badge
-    const countBg = sc(this.add.rectangle(CX, H / 2 + 146, 230, 46, 0x0d2218)
+    const countBg = sc(this.add.rectangle(CX, H / 2 + 168, 230, 46, 0x0d2218)
       .setStrokeStyle(2, 0x1a4433), 21);
-    const countTxt = sc(this.add.text(CX, H / 2 + 146, '0 / 3 selected', {
+    const countTxt = sc(this.add.text(CX, H / 2 + 168, '0 / 3 selected', {
       fontFamily: 'Georgia, serif', fontSize: '18px', color: '#55776a',
     }).setOrigin(0.5), 22);
 
-    // Confirm button — direct on scene so hover events work
-    const cfmY  = H / 2 + 210;
+    // Confirm button
+    const cfmY  = H / 2 + 232;
     const cfmBg = sc(this.add.rectangle(CX, cfmY, 270, 60, 0x122018)
       .setStrokeStyle(2, 0x1a3328).setOrigin(0.5).setInteractive({ useHandCursor: true }), 21);
     const cfmTxt = sc(this.add.text(CX, cfmY, 'Select 3 cards', {
@@ -188,43 +183,64 @@ export class GameScene extends Phaser.Scene {
       }
     };
 
-    // ── 6 hand cards — 2 rows of 3 ──────────────────────────────────────────
-    const colW = 132, rowH = 168, cols = 3;
-    const baseX = CX - (cols - 1) * colW / 2;
-    const baseY = H / 2 - 92;
+    // ── 6 hand cards — single row with tooltips & check badges ──────────────
+    const nCards   = p.hand.length;
+    const cardW    = 98, cardH = 136, gap = 12;
+    const totalW   = nCards * cardW + (nCards - 1) * gap;
+    const startX   = CX - totalW / 2 + cardW / 2;
+    const cardRowY = H / 2 - 40;
 
     p.hand.forEach((card, i) => {
-      const cx = baseX + (i % cols) * colW;
-      const cy = baseY + Math.floor(i / cols) * rowH;
+      const cx = startX + i * (cardW + gap);
+      const cy = cardRowY;
 
-      const glow = sc(this.add.rectangle(cx, cy, 96, 134, 0x00ff88, 0)
+      // Tooltip shown on hover
+      const tooltip = sc(this.add.text(cx, cardRowY + cardH / 2 + 22, this.cardTooltip(card), {
+        fontFamily: 'Georgia, serif', fontSize: '11px', color: '#88bb99',
+        backgroundColor: '#0a1c14', padding: { x: 6, y: 3 },
+      }).setOrigin(0.5).setAlpha(0), 25);
+
+      // Green glow ring behind card (appears on selection)
+      const glow = sc(this.add.rectangle(cx, cy, cardW + 6, cardH + 6, 0x00ff88, 0)
         .setStrokeStyle(3, 0x00ff88, 0), 22);
-      const img  = sc(this.add.image(cx, cy, this.cardKey(card))
-        .setDisplaySize(88, 122).setInteractive({ useHandCursor: true }), 23);
+
+      // Card image
+      const img = sc(this.add.image(cx, cy, this.cardKey(card))
+        .setDisplaySize(cardW - 8, cardH - 8).setInteractive({ useHandCursor: true }), 23);
+
+      // Checkmark badge (top-right of card)
+      const check = sc(this.add.text(cx + cardW / 2 - 12, cy - cardH / 2 + 12, '✓', {
+        fontFamily: 'Arial, sans-serif', fontSize: '16px', color: '#fff',
+        backgroundColor: '#00cc66', padding: { x: 6, y: 2 },
+      }).setOrigin(0.5).setAlpha(0).setDepth(24), 24);
 
       const bsx = img.scaleX, bsy = img.scaleY;
 
       img.on('pointerover', () => {
+        tooltip.setAlpha(1);
         if (sel.has(card.id)) return;
-        this.tweens.add({ targets: img, scaleX: bsx * 1.10, scaleY: bsy * 1.10, y: cy - 10, duration: 110, ease: 'Sine.easeOut' });
+        this.tweens.add({ targets: img, scaleX: bsx * 1.10, scaleY: bsy * 1.10, y: cy - 12, duration: 120, ease: 'Sine.easeOut' });
         img.setTint(0xccffdd);
       });
       img.on('pointerout', () => {
+        tooltip.setAlpha(0);
         if (sel.has(card.id)) return;
-        this.tweens.add({ targets: img, scaleX: bsx, scaleY: bsy, y: cy, duration: 110, ease: 'Sine.easeIn' });
+        this.tweens.add({ targets: img, scaleX: bsx, scaleY: bsy, y: cy, duration: 120, ease: 'Sine.easeIn' });
         img.clearTint();
       });
       img.on('pointerdown', () => {
         if (sel.has(card.id)) {
           sel.delete(card.id);
-          this.tweens.add({ targets: img, y: cy, scaleX: bsx, scaleY: bsy, duration: 130, ease: 'Back.easeIn' });
+          this.tweens.add({ targets: img, y: cy, scaleX: bsx, scaleY: bsy, duration: 140, ease: 'Back.easeIn' });
+          this.tweens.add({ targets: [check], alpha: 0, duration: 120 });
           this.tweens.add({ targets: glow, alpha: 0, duration: 120 });
           glow.setStrokeStyle(3, 0x00ff88, 0);
           img.clearTint();
         } else if (sel.size < 3) {
           sel.add(card.id);
-          this.tweens.add({ targets: img, y: cy - 20, scaleX: bsx * 1.05, scaleY: bsy * 1.05, duration: 160, ease: 'Back.easeOut' });
-          this.tweens.add({ targets: glow, alpha: 0.35, duration: 120 });
+          this.tweens.add({ targets: img, y: cy - 26, scaleX: bsx * 1.05, scaleY: bsy * 1.05, duration: 180, ease: 'Back.easeOut' });
+          this.tweens.add({ targets: [check], alpha: 1, duration: 120 });
+          this.tweens.add({ targets: glow, alpha: 0.40, duration: 120 });
           glow.setStrokeStyle(3, 0x00ff88, 0.85);
           img.setTint(0x88ffaa);
           playClick();
@@ -233,12 +249,11 @@ export class GameScene extends Phaser.Scene {
       });
     });
 
-    // Confirm button interactions (direct on scene = hover works)
+    // Confirm button interactions
     cfmBg.on('pointerover', () => { if (sel.size === 3) cfmBg.setFillStyle(0x009955); });
     cfmBg.on('pointerout',  () => { cfmBg.setFillStyle(sel.size === 3 ? 0x007a3e : 0x122018); });
     cfmBg.on('pointerdown', () => {
       if (sel.size !== 3) {
-        // Shake + flash red to signal "not ready yet"
         const origColor = 0x122018;
         cfmBg.setFillStyle(0x441111).setStrokeStyle(2, 0xcc3322);
         this.tweens.add({
@@ -253,12 +268,28 @@ export class GameScene extends Phaser.Scene {
       }
       playClick();
       this.g.playerSetup(playerId, [...sel]);
-      // Fade out all setup objects
       this.tweens.add({
         targets: objs, alpha: 0, duration: 220,
         onComplete: () => { objs.forEach(o => o.destroy()); onDone(); },
       });
     });
+  }
+
+  /** Descriptive tooltip for each card during setup. */
+  private cardTooltip(card: Card): string {
+    const r = card.rank;
+    if (r === Rank.Joker) return 'Joker — Transparent (like 3)';
+    if (r === 10) return '10 — BURN: the whole pile is cleared';
+    if (r === 2) return '2 — Resets the pile; any card follows';
+    if (r === 3 || r === Rank.Jack) return `${r === 3 ? '3' : 'Jack'} — Transparent (like previous card)`;
+    if (r === Rank.King) return 'King — Magic card; next clears the pile';
+    if (r === Rank.Ace) return 'Ace — Highest card';
+    // 4-9, Queen — just show rank
+    const rankLabel = r <= 10 ? String(r) : r === Rank.Queen ? 'Q' : '';
+    const suitSymbol = card.suit !== null
+      ? { Clubs: '♣', Diamonds: '♦', Hearts: '♥', Spades: '♠' }[card.suit]
+      : '';
+    return `${rankLabel} ${suitSymbol}`.trim();
   }
 
   private beginGame(): void {
@@ -493,12 +524,35 @@ export class GameScene extends Phaser.Scene {
       }).setOrigin(0.5));
     }
 
+    // Game info panel (right side)
+    const infoBg = this.addDyn(this.add.rectangle(INFO_X, CARD_ROW_Y + 8, 160, 120, 0x0a1912, 0.85)
+      .setStrokeStyle(1, 0x1a3328));
+    // Pile count indicator at top
+    this.addDyn(this.add.text(INFO_X, CARD_ROW_Y - 46, `Pile  ${this.g.pile.length}`, {
+      fontFamily: 'Georgia, serif', fontSize: '13px', color: '#448866',
+    }).setOrigin(0.5));
+
+    // Status text
+    this.addDyn(this.add.text(INFO_X, CARD_ROW_Y - 18, guide || (myTurn ? 'Your turn' : ''), {
+      fontFamily: 'Georgia, serif', fontSize: '12px', color: '#77aa99',
+      wordWrap: { width: 140 }, align: 'center',
+    }).setOrigin(0.5));
+
     // Under-7 banner
     if (this.g.under7) {
-      this.addDyn(this.add.text(CX, UNDER7_Y, '⬇  Must play UNDER 7!', {
-        fontFamily: 'Georgia, serif', fontSize: '16px', color: '#ffdd44',
-        backgroundColor: '#111100', padding: { x: 12, y: 4 },
+      this.addDyn(this.add.text(INFO_X, CARD_ROW_Y + 18, '⬇  Must play UNDER 7!', {
+        fontFamily: 'Georgia, serif', fontSize: '13px', color: '#ffdd44',
+        backgroundColor: '#111100', padding: { x: 8, y: 3 },
       }).setOrigin(0.5));
+    }
+
+    // Game log
+    if (this.logLines.length > 0) {
+      const logText = this.logLines.slice(0, 3).join('\n');
+      this.addDyn(this.add.text(INFO_X, CARD_ROW_Y + 48, logText, {
+        fontFamily: 'Georgia, serif', fontSize: '11px', color: '#446655',
+        wordWrap: { width: 140 }, align: 'center', lineSpacing: 2,
+      }).setOrigin(0.5, 0));
     }
 
     // Deck
@@ -628,6 +682,14 @@ export class GameScene extends Phaser.Scene {
       const cx = startX + idx * spacing;
       const cy = HAND_CY - (isSel ? 22 : 0);
 
+      // Tooltip (visible on hover)
+      const tooltip = this.addDyn(
+        this.add.text(cx, HAND_CY + 30, this.cardTooltip(card), {
+          fontFamily: 'Georgia, serif', fontSize: '11px', color: '#88bb99',
+          backgroundColor: '#0a1c14', padding: { x: 6, y: 3 },
+        }).setOrigin(0.5).setAlpha(0).setDepth(70),
+      );
+
       const img = this.addDyn(
         this.add.image(cx, cy, this.cardKey(card)).setDisplaySize(HAND_CW, HAND_CH),
       );
@@ -648,7 +710,12 @@ export class GameScene extends Phaser.Scene {
       }
 
       // Non-playable cards and non-my-turn: no interaction
-      if (!myTurn || !isPlayable) return;
+      if (!myTurn || !isPlayable) {
+        // Still show tooltip on hover for dimension
+        img.on('pointerover', () => { tooltip.setAlpha(1); });
+        img.on('pointerout',  () => { tooltip.setAlpha(0); });
+        return;
+      }
 
       img.setInteractive({ useHandCursor: true });
       let dragged = false;
