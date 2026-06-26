@@ -29,7 +29,7 @@ export class MenuScene extends Phaser.Scene {
       shadow: { offsetX: 0, offsetY: 0, color: '#00ff99', blur: 40, fill: true },
     }).setOrigin(0.5).setAlpha(0).setScale(0.5);
 
-    const sub = this.add.text(cx, H * 0.28 + 72, 'Dutch Shithead Card Game', {
+    const sub = this.add.text(cx, H * 0.28 + 72, 'Karma — the Shithead | Karma card game', {
       fontFamily: 'Georgia, serif', fontSize: '21px', color: '#55997a',
     }).setOrigin(0.5).setAlpha(0);
 

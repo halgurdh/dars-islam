@@ -33,7 +33,7 @@ export class SplashScene extends Phaser.Scene {
       shadow: { offsetX: 0, offsetY: 0, color: '#00ff99', blur: 48, fill: true },
     }).setOrigin(0.5).setAlpha(0).setScale(0.6);
 
-    const subtitle = this.add.text(cx, cy + 44, 'The Dutch Shithead Card Game', {
+    const subtitle = this.add.text(cx, cy + 44, 'Karma — the Shithead | Karma card game', {
       fontFamily: 'Georgia, serif', fontSize: '22px', color: '#66aa88',
     }).setOrigin(0.5).setAlpha(0);
 

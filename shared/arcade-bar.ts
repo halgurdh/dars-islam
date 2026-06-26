@@ -1,6 +1,6 @@
-import { ArcadeStore } from './arcade-store.js';
-import { injectAd } from './ad-provider.js';
-import { sync } from './sync.js';
+import { ArcadeStore } from './arcade-store';
+import { injectAd } from './ad-provider';
+import { sync } from './sync';
 
 const AD_REWARD_COINS = 50;
 const AD_DURATION_SEC = 30;
@@ -36,6 +36,8 @@ export class ArcadeBar {
   private modal: HTMLElement | null = null;
   private adInterval: ReturnType<typeof setInterval> | null = null;
   private authUnsub: (() => void) | null = null;
+  private collapsed = false;
+  private hideTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
     this.injectStyles();
@@ -55,8 +57,16 @@ export class ArcadeBar {
   destroy(): void {
     this.authUnsub?.();
     this.authUnsub = null;
+    if (this.hideTimer !== null) { clearTimeout(this.hideTimer); this.hideTimer = null; }
     this.closeModal();
     this.root.remove();
+  }
+
+  private resetHideTimer(): void {
+    if (this.hideTimer !== null) clearTimeout(this.hideTimer);
+    if (!this.collapsed) {
+      this.hideTimer = setTimeout(() => { this.collapsed = true; this.renderBar(); }, 10_000);
+    }
   }
 
   // ── Bar ───────────────────────────────────────────────────────────────────
@@ -66,27 +76,40 @@ export class ArcadeBar {
     const canAd  = ArcadeStore.canWatchAd();
     const coolMs = ArcadeStore.adCooldownRemaining();
     const coolMin = Math.ceil(coolMs / 60_000);
+    const chevron = this.collapsed
+      ? `<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><polyline points="7,4 13,10 7,16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+      : `<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><polyline points="13,4 7,10 13,16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
     this.root.innerHTML = `
       <div class="ab-bar">
-        <span class="ab-coins">🪙 ${coins}</span>
-        <button class="ab-btn" id="abShop">🛒 Shop</button>
-        <button class="ab-btn ${canAd ? '' : 'ab-cool'}" id="abAd" ${canAd ? '' : 'disabled'}>
-          📺 ${canAd ? `+${AD_REWARD_COINS}🪙` : `${coolMin}m`}
-        </button>
-        ${sync.isLoggedIn
-          ? `<span class="ab-email">☁ ${sync.email?.split('@')[0] ?? ''}</span>
-             <button class="ab-btn ab-btn-sm" id="abSignOut">Sign out</button>`
-          : `<button class="ab-btn ab-btn-auth" id="abSignIn">☁ Sign in</button>`}
+        <button class="ab-toggle" id="abToggle" title="${this.collapsed ? 'Show bar' : 'Hide bar'}">${chevron}</button>
+        ${this.collapsed ? '' : `
+          <span class="ab-coins">🪙 ${coins}</span>
+          <button class="ab-btn" id="abShop">🛒 Shop</button>
+          <button class="ab-btn ${canAd ? '' : 'ab-cool'}" id="abAd" ${canAd ? '' : 'disabled'}>
+            📺 ${canAd ? `+${AD_REWARD_COINS}🪙` : `${coolMin}m`}
+          </button>
+          ${sync.isLoggedIn
+            ? `<span class="ab-email">☁ ${sync.email?.split('@')[0] ?? ''}</span>
+               <button class="ab-btn ab-btn-sm" id="abSignOut">Sign out</button>`
+            : `<button class="ab-btn ab-btn-auth" id="abSignIn">☁ Sign in</button>`}
+        `}
       </div>`;
 
-    this.root.querySelector('#abShop')!.addEventListener('click', () => this.openShop());
-    const adBtn = this.root.querySelector('#abAd') as HTMLButtonElement | null;
-    if (adBtn && canAd) adBtn.addEventListener('click', () => this.openAd());
-    this.root.querySelector('#abSignIn')?.addEventListener('click', () => this.openAuth());
-    this.root.querySelector('#abSignOut')?.addEventListener('click', async () => {
-      await sync.signOut(); this.renderBar();
+    this.resetHideTimer();
+    this.root.querySelector('#abToggle')!.addEventListener('click', () => {
+      this.collapsed = !this.collapsed;
+      this.renderBar();
     });
+    if (!this.collapsed) {
+      this.root.querySelector('#abShop')!.addEventListener('click', () => this.openShop());
+      const adBtn = this.root.querySelector('#abAd') as HTMLButtonElement | null;
+      if (adBtn && canAd) adBtn.addEventListener('click', () => this.openAd());
+      this.root.querySelector('#abSignIn')?.addEventListener('click', () => this.openAuth());
+      this.root.querySelector('#abSignOut')?.addEventListener('click', async () => {
+        await sync.signOut(); this.renderBar();
+      });
+    }
   }
 
   // ── Modal helpers ─────────────────────────────────────────────────────────
@@ -261,22 +284,28 @@ export class ArcadeBar {
     const s = document.createElement('style');
     s.id = 'arcade-bar-styles';
     s.textContent = `
-      .arcade-bar-root { position:fixed; top:8px; right:56px; z-index:9000;
+      .arcade-bar-root { position:fixed; top:16px; right:80px; z-index:9000;
         font-family:'Segoe UI',system-ui,sans-serif; pointer-events:auto; }
-      .ab-bar { display:flex; align-items:center; gap:6px; flex-wrap:wrap;
-        background:rgba(0,0,0,0.7); border:1px solid rgba(255,255,255,0.13);
-        border-radius:10px; padding:5px 10px; backdrop-filter:blur(10px); }
-      .ab-coins { font-weight:700; color:#ffd700; font-size:13px; }
-      .ab-email { font-size:11px; color:#aaa; max-width:100px;
+      .ab-bar { display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+        background:rgba(0,0,0,0.75); border:1px solid rgba(255,255,255,0.15);
+        border-radius:18px; padding:15px 30px; backdrop-filter:blur(10px); }
+      .ab-coins { font-weight:700; color:#ffd700; font-size:39px; }
+      .ab-email { font-size:33px; color:#aaa; max-width:300px;
         overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
       .ab-btn { background:rgba(255,255,255,0.1); color:#fff;
-        border:1px solid rgba(255,255,255,0.18); border-radius:6px;
-        padding:4px 9px; font-size:12px; cursor:pointer; white-space:nowrap;
+        border:1px solid rgba(255,255,255,0.18); border-radius:12px;
+        padding:12px 27px; font-size:36px; cursor:pointer; white-space:nowrap;
         transition:background 0.12s; }
       .ab-btn:hover:not(:disabled) { background:rgba(255,255,255,0.22); }
       .ab-btn:disabled { opacity:0.4; cursor:default; }
       .ab-cool { opacity:0.45; }
-      .ab-btn-auth,.ab-btn-sm { font-size:11px; }
+      .ab-btn-auth,.ab-btn-sm { font-size:33px; }
+      .ab-toggle { background:rgba(255,255,255,0.08); color:#fff;
+        border:1px solid rgba(255,255,255,0.18); border-radius:10px;
+        width:48px; height:48px; display:flex; align-items:center; justify-content:center;
+        cursor:pointer; padding:0; flex-shrink:0; transition:background 0.12s; }
+      .ab-toggle:hover { background:rgba(255,255,255,0.2); }
+      .ab-toggle svg { display:block; }
 
       .arcade-bar-modal { position:fixed; inset:0; background:rgba(0,0,0,0.8);
         display:flex; align-items:center; justify-content:center;

@@ -46,6 +46,8 @@ export class CustomMenuScene extends Phaser.Scene {
     this.battleScene = this.scene.get(this.battleKey) as unknown as CustomMenuHost;
     this.hand = data?.hand ?? this.battleScene.getCustomHand();
     this.selectedIndices = [];
+    this.queueLabels = [];
+    this.cardVisuals = [];
     this.cursorIndex = 0;
     this.isClosing = false;
 

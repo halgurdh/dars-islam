@@ -2,13 +2,17 @@ import Phaser from 'phaser';
 import { playClick } from '@src/sfx';
 import { musicManager } from '@src/music';
 import { cardImageKey, type Suit, type Rank } from '../data/cards';
+import { ArcadeBar } from '@shared/arcade-bar';
 
 export class MenuScene extends Phaser.Scene {
   private done = false;
+  private arcadeBar!: ArcadeBar;
 
   constructor() { super('Menu'); }
 
   create(): void {
+    this.arcadeBar = new ArcadeBar();
+    this.events.once('shutdown', () => this.arcadeBar.destroy());
     const { width: W, height: H } = this.scale;
     const CX = W / 2;
 

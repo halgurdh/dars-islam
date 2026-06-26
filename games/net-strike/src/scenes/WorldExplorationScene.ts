@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { CHIP_LIBRARY, SCENE_WIDTH } from '../constants';
 import { getSlicedFrameOrigin } from '../spriteSlices';
 import type { ChipDefinition } from '../types';
+import { ArcadeBar } from '@shared/arcade-bar';
 
 const TILE_SIZE = 32;
 const WORLD_WIDTH = 1600;
@@ -56,6 +57,7 @@ export class WorldExplorationScene extends Phaser.Scene {
   private worldCandles: { x: number; y: number }[] = [];
   private worldTerminalPos = { x: 1264, y: 456 };
   private worldPlayerPos = { x: 112, y: 112 };
+  private arcadeBar!: ArcadeBar;
 
   constructor() {
     super('WorldExplorationScene');
@@ -63,6 +65,8 @@ export class WorldExplorationScene extends Phaser.Scene {
 
   create(): void {
     this.transitionLocked = false;
+    this.arcadeBar = new ArcadeBar();
+    this.events.once('shutdown', () => this.arcadeBar.destroy());
     this.battleCount = this.registry.get('netStrikeBattleCount') as number ?? 0;
     this.generateWorldLayout();
     this.createWorld();
@@ -365,14 +369,17 @@ export class WorldExplorationScene extends Phaser.Scene {
     if (Math.abs(dx) > 200) dirs.push(dx > 0 ? 'east' : 'west');
     if (Math.abs(dy) > 150) dirs.push(dy > 0 ? 'south' : 'north');
     const hint = `Terminal signal detected ${dirs.join('-') || 'nearby'}.`;
-    this.add.text(24, 22, `ASTER GRID // SECTOR ${sector}`, {
+    const sectorText = this.add.text(24, 22, `ASTER GRID // SECTOR ${sector}`, {
       fontFamily: 'Trebuchet MS', fontSize: '22px', fontStyle: 'bold', color: '#d7fff6',
       stroke: '#000000', strokeThickness: 4,
     }).setScrollFactor(0).setDepth(600);
-    this.add.text(24, 52, hint, {
+    const hintText = this.add.text(24, 52, hint, {
       fontFamily: 'Trebuchet MS', fontSize: '15px', color: '#9dc9be',
       stroke: '#000000', strokeThickness: 3,
     }).setScrollFactor(0).setDepth(600);
+    this.time.delayedCall(10000, () => {
+      this.tweens.add({ targets: [sectorText, hintText], alpha: 0, duration: 800, ease: 'Sine.easeIn' });
+    });
   }
 
   private updateMovement(_delta: number): void {
