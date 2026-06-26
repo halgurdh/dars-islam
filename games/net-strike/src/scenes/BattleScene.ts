@@ -50,6 +50,8 @@ export class BattleScene extends Phaser.Scene implements CustomMenuHost {
   private areaGrabTimer?: Phaser.Time.TimerEvent;
   private enemyActionLocked = false;
   private combatFrozen = true;
+  private shotsFired = 0;
+  private fireOnCooldown = false;
   private returnSceneKey?: string;
   private encounterId?: string;
 
@@ -66,6 +68,8 @@ export class BattleScene extends Phaser.Scene implements CustomMenuHost {
     this.enemyActionLocked = false;
     this.currentHand = [];
     this.projectiles = [];
+    this.shotsFired = 0;
+    this.fireOnCooldown = false;
 
     this.createBackdrop();
     this.grid = new GridSystem(this, 278, 258, 112, 96, 26);
@@ -260,30 +264,36 @@ export class BattleScene extends Phaser.Scene implements CustomMenuHost {
   }
 
   private firePlayerAction(): void {
+    if (this.fireOnCooldown) {
+      return;
+    }
+
     const chip = this.chipManager.consumeNext();
     this.ui.updateQueue(this.chipManager.getQueue());
+
     if (!chip) {
       this.fireMegaBuster();
-      return;
-    }
-
-    if (chip.id === 'cannon') {
+    } else if (chip.id === 'cannon') {
       this.fireProjectile('player', this.player.coord.row, chip.damage, 980, true);
       this.ui.showBanner(`${chip.name.toUpperCase()} ${chip.code}!`, '#ffd278');
-      return;
-    }
-
-    if (chip.id === 'wide-sword') {
+    } else if (chip.id === 'wide-sword') {
       this.executeWideSword(chip);
-      return;
-    }
-
-    if (chip.id === 'recovery') {
+    } else if (chip.id === 'recovery') {
       this.applyRecovery(chip);
-      return;
+    } else {
+      this.executeAreaGrab(chip);
     }
 
-    this.executeAreaGrab(chip);
+    this.shotsFired += 1;
+    if (this.shotsFired >= 10) {
+      this.shotsFired = 0;
+      this.fireOnCooldown = true;
+      this.ui.showBanner('OVERHEAT — COOLING DOWN', '#ff9d5a');
+      this.time.delayedCall(3000, () => {
+        this.fireOnCooldown = false;
+        this.ui.showBanner('READY', '#b7ffd2');
+      });
+    }
   }
 
   private fireMegaBuster(): void {
@@ -295,7 +305,7 @@ export class BattleScene extends Phaser.Scene implements CustomMenuHost {
     const shooter = owner === 'player' ? this.player : this.enemy;
     shooter.shootPulse();
     const startX = shooter.x + (owner === 'player' ? 38 : -38);
-    const sprite = this.add.image(startX, this.grid.getCenterLineY(row), heavy ? 'net-strike-cannon' : 'net-strike-bullet')
+    const sprite = this.add.image(startX, this.grid.getCenterLineY(row) - 70, heavy ? 'net-strike-cannon' : 'net-strike-bullet')
       .setDepth(900)
       .setBlendMode(Phaser.BlendModes.ADD);
     const particles = this.add.particles(0, 0, 'net-strike-dot', {

@@ -45,8 +45,8 @@ export class SplashScene extends Phaser.Scene {
       fontFamily: 'Georgia, serif', fontSize: '18px', color: '#664433',
     }).setOrigin(0.5).setAlpha(0);
 
-    const logo = this.add.image(W - 16, H - 16, 'splash-logo')
-      .setOrigin(1, 1).setDisplaySize(110, 110).setAlpha(0);
+    const logo = this.add.image(W - 28, H - 24, 'splash-logo')
+      .setOrigin(1, 1).setDisplaySize(220, 220).setAlpha(0);
 
     this.tweens.add({ targets: title,    alpha: 1, scale: 1, duration: 880, ease: 'Back.easeOut', delay: 160 });
     this.tweens.add({ targets: subtitle, alpha: 1, duration: 580, delay: 720 });

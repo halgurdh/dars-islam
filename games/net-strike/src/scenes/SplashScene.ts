@@ -53,8 +53,8 @@ export class SplashScene extends Phaser.Scene {
       color: '#4a7a9b',
     }).setOrigin(0.5).setAlpha(0);
 
-    const logo = this.add.image(width - 16, height - 16, 'ns-splash-logo')
-      .setOrigin(1, 1).setDisplaySize(108, 108).setAlpha(0);
+    const logo = this.add.image(width - 28, height - 24, 'ns-splash-logo')
+      .setOrigin(1, 1).setDisplaySize(220, 220).setAlpha(0);
 
     this.tweens.add({ targets: title,    alpha: 1, scale: 1, duration: 900, ease: 'Back.easeOut', delay: 200 });
     this.tweens.add({ targets: subtitle, alpha: 1, duration: 600, delay: 700 });
@@ -88,6 +88,6 @@ export class SplashScene extends Phaser.Scene {
     this.done = true;
     musicManager.init();
     this.cameras.main.fadeOut(500, 0, 0, 0);
-    this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('FinalBossBattleScene'));
+    this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('WorldExplorationScene'));
   }
 }

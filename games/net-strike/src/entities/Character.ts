@@ -45,9 +45,9 @@ export class Character extends Phaser.GameObjects.Container {
     this.sprite.play(`${charPrefix}_idle`);
 
     // HP bar
-    this.hpBack = scene.add.rectangle(0, -138, 88, 9, 0x07111f, 0.92);
-    this.hpUnder = scene.add.rectangle(-44, -138, 88, 5, 0xff7a7a, 0.45).setOrigin(0, 0.5);
-    this.hpFront = scene.add.rectangle(-44, -138, 88, 5, this.owner === 'player' ? 0x67f7a1 : 0xff9eb0, 0.95).setOrigin(0, 0.5);
+    this.hpBack = scene.add.rectangle(0, -200, 88, 9, 0x07111f, 0.92);
+    this.hpUnder = scene.add.rectangle(-44, -200, 88, 5, 0xff7a7a, 0.45).setOrigin(0, 0.5);
+    this.hpFront = scene.add.rectangle(-44, -200  , 88, 5, this.owner === 'player' ? 0x67f7a1 : 0xff9eb0, 0.95).setOrigin(0, 0.5);
 
     this.add([this.shadow, this.sprite, this.hpBack, this.hpUnder, this.hpFront]);
     this.setSize(96, 120);

@@ -57,9 +57,9 @@ export class SplashScene extends Phaser.Scene {
     line.lineBetween(cx - 220, cy + 100, cx + 220, cy + 100);
 
     // Splash logo (bottom-right)
-    const logo = this.add.image(width - 20, height - 20, 'splash-logo')
+    const logo = this.add.image(width - 32, height - 28, 'splash-logo')
       .setOrigin(1, 1)
-      .setDisplaySize(140, 140)
+      .setDisplaySize(220, 220)
       .setAlpha(0);
 
     // Auto-advance after 3 s; input can skip at any time

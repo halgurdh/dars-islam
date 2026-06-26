@@ -45,6 +45,9 @@ export class WorldExplorationScene extends Phaser.Scene {
   private encounterResolved = false;
   private transitionLocked = false;
   private scanLines!: Phaser.GameObjects.TileSprite;
+  private dashTweenActive = false;
+  private battleCount = 0;
+  private readonly MAX_BATTLES_BEFORE_BOSS = 10;
 
   constructor() {
     super('WorldExplorationScene');
@@ -52,14 +55,29 @@ export class WorldExplorationScene extends Phaser.Scene {
 
   create(): void {
     this.transitionLocked = false;
+    this.battleCount = this.registry.get('netStrikeBattleCount') as number ?? 0;
     this.createWorld();
-    this.createTerminal();
+
+    const bossDefeated = this.registry.get('netStrikeBossDefeated') as boolean ?? false;
+    if (bossDefeated) {
+      this.encounterResolved = true;
+      this.createTerminalPlaceholder();
+    } else {
+      this.encounterResolved = false;
+      this.createTerminal();
+    }
+
     this.createPlayer();
     this.createPrompt();
     this.setupInput();
     this.setupCamera();
     this.registerBattleListeners();
-    this.showToast('Signal stable. Find the live terminal.', '#d7fff6');
+
+    if (bossDefeated) {
+      this.showToast('All threats eliminated. Grid secure.', '#baffc9');
+    } else {
+      this.showToast('Signal stable. Find the live terminal.', '#d7fff6');
+    }
   }
 
   update(_: number, delta: number): void {
@@ -68,7 +86,7 @@ export class WorldExplorationScene extends Phaser.Scene {
       return;
     }
 
-    this.updateMovement();
+    this.updateMovement(delta);
     this.updatePrompt();
     this.playerShadow.setPosition(this.player.x, this.player.y + 4);
   }
@@ -172,6 +190,21 @@ export class WorldExplorationScene extends Phaser.Scene {
     body.setOffset(width / 2 - 17, height - 30);
   }
 
+  private createTerminalPlaceholder(): void {
+    const x = 1264;
+    const y = 456;
+    const base = this.add.graphics();
+    base.fillStyle(0x08141a, 0.4).fillRoundedRect(-42, -58, 84, 116, 18);
+    base.lineStyle(1, 0x284a4a, 0.3).strokeRoundedRect(-42, -58, 84, 116, 18);
+    const text = this.add.text(0, 0, 'OFFLINE', {
+      fontFamily: 'Trebuchet MS',
+      fontSize: '13px',
+      color: '#3d6a6a',
+    }).setOrigin(0.5);
+
+    this.terminal = this.add.container(x, y, [base, text]).setDepth(44).setAlpha(0.6);
+  }
+
   private createTerminal(): void {
     const x = 1264;
     const y = 456;
@@ -243,11 +276,13 @@ export class WorldExplorationScene extends Phaser.Scene {
     }).setScrollFactor(0).setDepth(130);
   }
 
-  private updateMovement(): void {
+  private updateMovement(_delta: number): void {
     const moveX = (this.cursors.left.isDown || this.wasd.A.isDown ? -1 : 0) + (this.cursors.right.isDown || this.wasd.D.isDown ? 1 : 0);
     const moveY = (this.cursors.up.isDown || this.wasd.W.isDown ? -1 : 0) + (this.cursors.down.isDown || this.wasd.S.isDown ? 1 : 0);
     const vector = new Phaser.Math.Vector2(moveX, moveY);
-    if (vector.lengthSq() > 0) {
+    const moving = vector.lengthSq() > 0;
+
+    if (moving) {
       vector.normalize().scale(220);
     }
     this.player.setVelocity(vector.x, vector.y);
@@ -256,6 +291,34 @@ export class WorldExplorationScene extends Phaser.Scene {
       this.player.setFlipX(true);
     } else if (vector.x > 5) {
       this.player.setFlipX(false);
+    }
+
+    // Dash glitch animation (alpha pulse) when moving
+    if (moving && !this.dashTweenActive) {
+      this.dashTweenActive = true;
+      const flicker = (): void => {
+        if (this.scene.isActive()) {
+          this.tweens.add({
+            targets: this.player,
+            alpha: 0.55,
+            duration: 80,
+            yoyo: true,
+            onComplete: () => {
+              this.player.alpha = 1;
+              const v = this.player.body?.velocity ?? { x: 0, y: 0 };
+              const stillMoving = Math.abs(v.x) > 5 || Math.abs(v.y) > 5;
+              if (stillMoving && this.scene.isActive()) {
+                flicker();
+              } else {
+                this.dashTweenActive = false;
+              }
+            },
+          });
+        } else {
+          this.dashTweenActive = false;
+        }
+      };
+      flicker();
     }
   }
 
@@ -305,7 +368,13 @@ export class WorldExplorationScene extends Phaser.Scene {
     }
 
     this.time.delayedCall(420, () => {
-      this.scene.launch('FinalBossBattleScene', { returnSceneKey: this.scene.key, encounterId: this.terminalId });
+      if (this.battleCount >= this.MAX_BATTLES_BEFORE_BOSS) {
+        // Final boss battle
+        this.scene.launch('FinalBossBattleScene', { returnSceneKey: this.scene.key, encounterId: this.terminalId });
+      } else {
+        // Normal battle
+        this.scene.launch('BattleScene', { returnSceneKey: this.scene.key, encounterId: `battle-${this.battleCount}` });
+      }
       this.scene.pause();
     });
   }
@@ -323,7 +392,8 @@ export class WorldExplorationScene extends Phaser.Scene {
   }
 
   private handleBattleWin(data?: EncounterOutcome): void {
-    if (data?.encounterId === this.terminalId) {
+    const isFinalBoss = data?.encounterId === this.terminalId;
+    if (isFinalBoss) {
       this.encounterResolved = true;
       this.terminal.destroy(true);
       this.prompt.setVisible(false);
@@ -331,14 +401,25 @@ export class WorldExplorationScene extends Phaser.Scene {
       const rewards = this.registry.get('netStrikeRewards') as ChipDefinition[] | undefined;
       this.registry.set('netStrikeRewards', [...(rewards ?? []), reward]);
       this.showToast(`Chip data archived: ${reward.name} ${reward.code}.`, '#baffc9');
+    } else {
+      // Normal battle win - increment counter
+      this.battleCount += 1;
+      this.registry.set('netStrikeBattleCount', this.battleCount);
+      const remaining = this.MAX_BATTLES_BEFORE_BOSS - this.battleCount;
+      if (remaining > 0) {
+        this.showToast(`Encounter purged. ${remaining} sectors remain.`, '#baffc9');
+      } else {
+        this.showToast('All sectors clear. Boss terminal unlocked!', '#ffe49f');
+      }
     }
     this.transitionLocked = false;
     this.scene.resume(this.scene.key);
   }
 
   private handleBattleLose(): void {
+    // Retry the battle - just unlock and show a retry message
     this.transitionLocked = false;
-    this.showToast('Connection dropped. Terminal remains active.', '#ffb6d0');
+    this.showToast('Connection interrupted. Re-establishing link...', '#ffb6d0');
     this.scene.resume(this.scene.key);
   }
 

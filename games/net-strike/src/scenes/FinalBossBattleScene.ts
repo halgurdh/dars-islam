@@ -1,6 +1,16 @@
 import Phaser from 'phaser';
 import { CUSTOM_GAUGE_MAX, PLAYER_MAX_HP, PLAYER_MOVE_MS, SCENE_HEIGHT, SCENE_WIDTH } from '../constants';
 import { PlayerCharacter } from '../entities/Character';
+
+interface BossProjectile {
+  sprite: Phaser.GameObjects.Image;
+  particles: Phaser.GameObjects.Particles.ParticleEmitter;
+  damage: number;
+  accent: number;
+  label: string;
+  heavy: boolean;
+  hasHit: boolean;
+}
 import { ChipManager } from '../systems/ChipManager';
 import { GridSystem } from '../systems/GridSystem';
 import { UIManager } from '../systems/UIManager';
@@ -50,6 +60,9 @@ export class FinalBossBattleScene extends Phaser.Scene implements CustomMenuHost
   private reticleEvent?: Phaser.Time.TimerEvent;
   private lockedReticleCoord: GridCoord = { col: 1, row: 1 };
   private managedObjects: Phaser.GameObjects.GameObject[] = [];
+  private bossProjectiles: BossProjectile[] = [];
+  private shotsFired = 0;
+  private fireOnCooldown = false;
 
   constructor() {
     super('FinalBossBattleScene');
@@ -67,6 +80,9 @@ export class FinalBossBattleScene extends Phaser.Scene implements CustomMenuHost
     this.crackedTiles.clear();
     this.currentHand = [];
     this.cleanupManagedTimers();
+    this.bossProjectiles = [];
+    this.shotsFired = 0;
+    this.fireOnCooldown = false;
     this.lockedReticleCoord = { col: 1, row: 1 };
 
     this.createBackdrop();
@@ -90,6 +106,8 @@ export class FinalBossBattleScene extends Phaser.Scene implements CustomMenuHost
       this.cleanupManagedTimers();
       this.pulseTween?.remove();
       this.reticle?.destroy();
+      this.bossProjectiles.forEach((p) => { p.sprite.destroy(); p.particles.stop(); p.particles.destroy(); });
+      this.bossProjectiles = [];
       if (this.scene.isActive('CustomMenuScene')) {
         this.scene.stop('CustomMenuScene');
       }
@@ -118,6 +136,7 @@ export class FinalBossBattleScene extends Phaser.Scene implements CustomMenuHost
 
     this.ui.updateGauge(this.gaugeValue, this.gaugeValue >= CUSTOM_GAUGE_MAX);
     this.updateBossVisuals();
+    this.updateBossProjectiles(delta);
   }
 
   getCustomHand(): ChipDefinition[] {
@@ -293,35 +312,39 @@ export class FinalBossBattleScene extends Phaser.Scene implements CustomMenuHost
   }
 
   private firePlayerAction(): void {
+    if (this.fireOnCooldown) {
+      return;
+    }
+
     const chip = this.chipManager.consumeNext();
     this.ui.updateQueue(this.chipManager.getQueue());
-    if (!chip) {
-      this.player.shootPulse();
-      this.applyBossDamage(20, 0xffd878, 'BUSTER');
-      return;
-    }
 
-    if (chip.id === 'wide-sword') {
+    if (!chip) {
+      this.fireBossProjectile(20, 0xffd878, 'BUSTER', false);
+    } else if (chip.id === 'wide-sword') {
       this.player.swordSlash();
       this.applyBossDamage(chip.damage, chip.accent, chip.name.toUpperCase());
-      return;
-    }
-
-    if (chip.id === 'recovery') {
+    } else if (chip.id === 'recovery') {
       this.player.heal(chip.effectValue);
       this.spawnHealPopup(`+${chip.effectValue} HP`);
       this.ui.showBanner(`${chip.name.toUpperCase()} ${chip.code}!`, '#b7fff0');
-      return;
-    }
-
-    if (chip.id === 'area-grab') {
+    } else if (chip.id === 'area-grab') {
       const restored = this.restoreBrokenTile();
       this.ui.showBanner(restored ? 'GRID PATCHED!' : 'NO BROKEN TILES', restored ? '#ffe49f' : '#ffcfb7');
-      return;
+    } else {
+      this.fireBossProjectile(chip.damage, chip.accent, `${chip.name.toUpperCase()} ${chip.code}`, chip.id === 'cannon');
     }
 
-    this.player.shootPulse();
-    this.applyBossDamage(chip.damage, chip.accent, `${chip.name.toUpperCase()} ${chip.code}`);
+    this.shotsFired += 1;
+    if (this.shotsFired >= 10) {
+      this.shotsFired = 0;
+      this.fireOnCooldown = true;
+      this.ui.showBanner('OVERHEAT — COOLING DOWN', '#ff9d5a');
+      this.registerManagedDelay(3000, () => {
+        this.fireOnCooldown = false;
+        this.ui.showBanner('READY', '#b7ffd2');
+      });
+    }
   }
 
   private applyBossDamage(amount: number, tint: number, label: string): void {
@@ -681,6 +704,54 @@ export class FinalBossBattleScene extends Phaser.Scene implements CustomMenuHost
     }
     this.trackManagedObject(flash);
     this.tweens.add({ targets: flash, scaleX: 1.35, scaleY: 1.35, alpha: 0, duration: 220, onComplete: () => flash.destroy() });
+  }
+
+  private fireBossProjectile(damage: number, accent: number, label: string, heavy: boolean): void {
+    this.player.shootPulse();
+    const startX = this.player.x + 38;
+    const startY = this.player.y - 22;
+    const sprite = this.add.image(startX, startY, heavy ? 'net-strike-cannon' : 'net-strike-bullet')
+      .setDepth(900)
+      .setBlendMode(Phaser.BlendModes.ADD);
+    const particles = this.add.particles(0, 0, 'net-strike-dot', {
+      speed: { min: 10, max: 50 },
+      lifespan: 180,
+      scale: { start: heavy ? 0.9 : 0.5, end: 0 },
+      alpha: { start: 0.9, end: 0 },
+      tint: [0xfff6a8, 0xffd55c],
+      emitting: false,
+      follow: sprite,
+      frequency: 18,
+    });
+    this.bossProjectiles.push({ sprite, particles, damage, accent, label, heavy, hasHit: false });
+  }
+
+  private updateBossProjectiles(delta: number): void {
+    const elapsed = delta / 1000;
+    const hitX = this.bossRoot.x - 120;
+
+    this.bossProjectiles = this.bossProjectiles.filter((p) => {
+      const bulletSpeed = p.heavy ? 980 : 1340;
+      p.sprite.x += bulletSpeed * elapsed;
+
+      if (!p.hasHit && p.sprite.x >= hitX) {
+        p.hasHit = true;
+        this.spawnBossParticles(p.sprite.x, p.sprite.y, 0xffe07c, 14);
+        this.applyBossDamage(p.damage, p.accent, p.label);
+        p.sprite.destroy();
+        p.particles.stop();
+        p.particles.destroy();
+        return false;
+      }
+
+      if (p.sprite.x > SCENE_WIDTH + 60) {
+        p.sprite.destroy();
+        p.particles.stop();
+        p.particles.destroy();
+        return false;
+      }
+      return true;
+    });
   }
 
   private openCustomMenu(): void {

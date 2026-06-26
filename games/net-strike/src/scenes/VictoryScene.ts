@@ -6,6 +6,9 @@ export class VictoryScene extends Phaser.Scene {
   }
 
   create(): void {
+    // Mark boss as defeated so world scene doesn't re-trigger boss encounter
+    this.registry.set('netStrikeBossDefeated', true);
+
     const { width, height } = this.scale;
     const cx = width / 2;
     const cy = height / 2;
