@@ -54,6 +54,7 @@ export class BattleScene extends Phaser.Scene implements CustomMenuHost {
   private fireOnCooldown = false;
   private returnSceneKey?: string;
   private encounterId?: string;
+  private sector = 0;
 
   constructor() {
     super('BattleScene');
@@ -62,6 +63,7 @@ export class BattleScene extends Phaser.Scene implements CustomMenuHost {
   create(data?: BattleSceneData): void {
     this.returnSceneKey = data?.returnSceneKey;
     this.encounterId = data?.encounterId;
+    this.sector = Math.min(9, (this.registry.get('netStrikeBattleCount') as number ?? 0));
     this.battleState = 'BATTLE_INTRO';
     this.gaugeValue = 0;
     this.combatFrozen = true;
@@ -76,7 +78,7 @@ export class BattleScene extends Phaser.Scene implements CustomMenuHost {
     this.grid.create();
 
     this.player = new PlayerCharacter(this, this.grid, { col: 1, row: 1 }, PLAYER_MAX_HP);
-    this.enemy = new EnemyCharacter(this, this.grid, { col: 4, row: 1 }, ENEMY_MAX_HP);
+    this.enemy = new EnemyCharacter(this, this.grid, { col: 4, row: 1 }, ENEMY_MAX_HP + this.sector * 30);
     this.player.alpha = 0;
     this.enemy.alpha = 0;
 
@@ -196,7 +198,7 @@ export class BattleScene extends Phaser.Scene implements CustomMenuHost {
     this.ui.updateState(this.battleState);
     this.enemyLoop?.destroy();
     this.enemyLoop = this.time.addEvent({
-      delay: 1500,
+      delay: Math.max(700, 1500 - this.sector * 85),
       loop: true,
       callback: () => this.runEnemyTurn(),
     });
@@ -418,7 +420,7 @@ export class BattleScene extends Phaser.Scene implements CustomMenuHost {
     if (this.battleState !== 'REALTIME_COMBAT' || this.enemyActionLocked || this.enemy.isMoving) {
       return;
     }
-    if (Phaser.Math.FloatBetween(0, 1) < 0.48) {
+    if (Phaser.Math.FloatBetween(0, 1) < 0.48 + this.sector * 0.025) {
       this.enemyTelegraphAttack();
       return;
     }
@@ -433,7 +435,7 @@ export class BattleScene extends Phaser.Scene implements CustomMenuHost {
       return;
     }
     const next = Phaser.Utils.Array.GetRandom(options);
-    this.enemy.dashTo(next, ENEMY_MOVE_MS);
+    this.enemy.dashTo(next, Math.max(40, ENEMY_MOVE_MS - this.sector * 6));
   }
 
   private enemyTelegraphAttack(): void {
@@ -454,7 +456,7 @@ export class BattleScene extends Phaser.Scene implements CustomMenuHost {
           onComplete: () => wave.destroy(),
         });
         if (this.player.coord.col === targetColumn) {
-          this.damageCharacter(this.player, 50, 6);
+          this.damageCharacter(this.player, 50 + this.sector * 6, 6);
         }
         this.enemyActionLocked = false;
       });
@@ -464,7 +466,7 @@ export class BattleScene extends Phaser.Scene implements CustomMenuHost {
     const targetRow = this.player.coord.row;
     const coords = this.grid.getRowTiles(targetRow).filter((coord) => coord.col < 3);
     this.grid.flashWarning(coords, 600, () => {
-      this.fireProjectile('enemy', targetRow, 40, 1120, false);
+      this.fireProjectile('enemy', targetRow, 40 + this.sector * 5, 1120 + this.sector * 50, false);
       this.enemyActionLocked = false;
     });
   }

@@ -1,9 +1,11 @@
 import Phaser from 'phaser';
 import { musicManager } from '../../../../src/music';
 import { playSplash } from '../../../../src/sfx';
+import { ArcadeBar } from '@shared/arcade-bar';
 
 export class SplashScene extends Phaser.Scene {
   private done = false;
+  private arcadeBar!: ArcadeBar;
 
   constructor() {
     super('NetStrikeSplash');
@@ -11,6 +13,8 @@ export class SplashScene extends Phaser.Scene {
 
   create(): void {
     this.done = false;
+    this.arcadeBar = new ArcadeBar();
+    this.events.once('shutdown', () => this.arcadeBar.destroy());
     const { width, height } = this.scale;
     const cx = width / 2;
     const cy = height / 2;
@@ -68,8 +72,8 @@ export class SplashScene extends Phaser.Scene {
     });
 
     this.time.delayedCall(4000, () => this.advance());
-    this.input.keyboard?.once('keydown', () => this.advance());
-    this.input.once('pointerdown', () => this.advance());
+    this.input.keyboard?.once('keydown', () => { if (!this.arcadeBar.hasModalOpen) this.advance(); });
+    this.input.once('pointerdown', () => { if (!this.arcadeBar.hasModalOpen) this.advance(); });
 
     try {
       const hasSplash = !!(this.cache?.audio?.exists?.('splash'));

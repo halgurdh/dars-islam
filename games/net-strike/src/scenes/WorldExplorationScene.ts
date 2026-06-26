@@ -19,42 +19,19 @@ type Zone = {
   height: number;
 };
 
-const BLOCKERS: Zone[] = [
+const BORDER_BLOCKERS: Zone[] = [
   { x: 0, y: 0, width: WORLD_WIDTH, height: 32 },
   { x: 0, y: WORLD_HEIGHT - 32, width: WORLD_WIDTH, height: 32 },
   { x: 0, y: 0, width: 32, height: WORLD_HEIGHT },
   { x: WORLD_WIDTH - 32, y: 0, width: 32, height: WORLD_HEIGHT },
-  // Original walls
-  { x: 288, y: 192, width: 224, height: 96 },
-  { x: 672, y: 96, width: 96, height: 256 },
-  { x: 976, y: 192, width: 288, height: 96 },
-  { x: 192, y: 608, width: 256, height: 96 },
-  { x: 704, y: 608, width: 192, height: 160 },
-  { x: 1136, y: 608, width: 192, height: 96 },
-  // Additional walls for more challenge
-  { x: 480, y: 64, width: 96, height: 64 },
-  { x: 1088, y: 64, width: 128, height: 64 },
-  { x: 96, y: 384, width: 96, height: 96 },
-  { x: 1408, y: 384, width: 96, height: 96 },
-  { x: 544, y: 464, width: 96, height: 64 },
-  { x: 864, y: 464, width: 96, height: 64 },
-  { x: 368, y: 768, width: 160, height: 64 },
-  { x: 1024, y: 768, width: 160, height: 64 },
 ];
 
-/** Candle positions */
-const CANDLES: { x: number; y: number }[] = [
-  { x: 240, y: 240 },
-  { x: 880, y: 160 },
-  { x: 1200, y: 256 },
-  { x: 240, y: 680 },
-  { x: 800, y: 720 },
-  { x: 1248, y: 672 },
-  { x: 448, y: 512 },
-  { x: 1376, y: 480 },
-  { x: 64, y: 480 },
-  { x: 1536, y: 240 },
-];
+const SPAWN_CORNERS = [
+  { x: 112, y: 112 },
+  { x: WORLD_WIDTH - 112, y: 112 },
+  { x: 112, y: WORLD_HEIGHT - 112 },
+  { x: WORLD_WIDTH - 112, y: WORLD_HEIGHT - 112 },
+] as const;
 
 export class WorldExplorationScene extends Phaser.Scene {
   private player!: Phaser.Physics.Arcade.Sprite;
@@ -71,8 +48,14 @@ export class WorldExplorationScene extends Phaser.Scene {
   private scanLines!: Phaser.GameObjects.TileSprite;
   private battleCount = 0;
   private readonly MAX_BATTLES_BEFORE_BOSS = 10;
-  private darknessGraphics!: Phaser.GameObjects.Graphics;
-  private lightCutout!: Phaser.GameObjects.Graphics;
+  private darknessRT!: Phaser.GameObjects.RenderTexture;
+  private circleBrush160!: Phaser.GameObjects.Graphics;
+  private circleBrush140!: Phaser.GameObjects.Graphics;
+  private circleBrush90!: Phaser.GameObjects.Graphics;
+  private worldBlockers: Zone[] = [];
+  private worldCandles: { x: number; y: number }[] = [];
+  private worldTerminalPos = { x: 1264, y: 456 };
+  private worldPlayerPos = { x: 112, y: 112 };
 
   constructor() {
     super('WorldExplorationScene');
@@ -81,6 +64,7 @@ export class WorldExplorationScene extends Phaser.Scene {
   create(): void {
     this.transitionLocked = false;
     this.battleCount = this.registry.get('netStrikeBattleCount') as number ?? 0;
+    this.generateWorldLayout();
     this.createWorld();
 
     const bossDefeated = this.registry.get('netStrikeBossDefeated') as boolean ?? false;
@@ -98,17 +82,28 @@ export class WorldExplorationScene extends Phaser.Scene {
     this.setupCamera();
     this.registerBattleListeners();
 
-    // Darkness: black overlay with ERASE blend cutouts for light areas
-    // Layer 1: black background (darkness)
-    this.darknessGraphics = this.add.graphics().setDepth(498);
-    this.darknessGraphics.fillStyle(0x000000, 0.88).fillRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+    // Off-screen circle brushes used with RenderTexture.erase() to cut light holes
+    this.circleBrush160 = this.make.graphics({ add: false });
+    this.circleBrush160.fillStyle(0xffffff, 1).fillCircle(80, 80, 80);
 
-    // Layer 2: light cutout atop the darkness using ERASE blend to punch holes
-    this.lightCutout = this.add.graphics().setDepth(499).setBlendMode(Phaser.BlendModes.ERASE);
+    this.circleBrush140 = this.make.graphics({ add: false });
+    this.circleBrush140.fillStyle(0xffffff, 1).fillCircle(70, 70, 70);
+
+    this.circleBrush90 = this.make.graphics({ add: false });
+    this.circleBrush90.fillStyle(0xffffff, 1).fillCircle(45, 45, 45);
+
+    // Darkness RenderTexture: filled black each frame, erased where lights are
+    this.darknessRT = this.add.renderTexture(0, 0, WORLD_WIDTH, WORLD_HEIGHT)
+      .setOrigin(0, 0)
+      .setDepth(498);
 
     this.createCandles();
 
-    if (bossDefeated) {
+    const pendingToast = this.registry.get('netStrikeToast') as { message: string; color: string } | undefined;
+    if (pendingToast) {
+      this.registry.remove('netStrikeToast');
+      this.showToast(pendingToast.message, pendingToast.color);
+    } else if (bossDefeated) {
       this.showToast('All threats eliminated. Grid secure.', '#baffc9');
     } else {
       this.showToast('Signal stable. Find the live terminal.', '#d7fff6');
@@ -131,24 +126,68 @@ export class WorldExplorationScene extends Phaser.Scene {
     const px = this.player.x;
     const py = this.player.y;
 
-    this.lightCutout.clear();
+    // Reset to full darkness each frame, then erase light areas
+    this.darknessRT.fill(0x000000, 0.88);
 
-    // Every white area drawn with ERASE blend will punch through the darkness
-    // Player light — largest visible circle
-    this.lightCutout.fillStyle(0xffffff, 1).fillCircle(px, py, 160);
+    this.darknessRT.erase(this.circleBrush160, px - 80, py - 80);
 
-    // Terminal light — so player can see destination beacon
     if (!this.encounterResolved) {
-      this.lightCutout.fillStyle(0xffffff, 0.8).fillCircle(this.terminal.x, this.terminal.y, 140);
+      this.darknessRT.erase(this.circleBrush140, this.terminal.x - 70, this.terminal.y - 70);
     }
 
-    // Candle lights
-    CANDLES.forEach((pos) => {
+    this.worldCandles.forEach((pos) => {
       const dist = Phaser.Math.Distance.Between(px, py, pos.x, pos.y);
       if (dist < 900) {
-        this.lightCutout.fillStyle(0xffffff, 0.6).fillCircle(pos.x, pos.y, 90);
+        this.darknessRT.erase(this.circleBrush90, pos.x - 45, pos.y - 45);
       }
     });
+  }
+
+  private generateWorldLayout(): void {
+    const GRID = 96;
+    const CLEAR_P = 230;
+    const CLEAR_T = 200;
+
+    // Pick player corner and diagonally opposite terminal corner
+    const pi = Phaser.Math.Between(0, 3);
+    const tc = SPAWN_CORNERS[(pi + 2) % 4];
+    const pc = SPAWN_CORNERS[pi];
+    this.worldPlayerPos = { x: pc.x, y: pc.y };
+    this.worldTerminalPos = {
+      x: Phaser.Math.Clamp(tc.x + Phaser.Math.Between(-160, 160), 150, WORLD_WIDTH - 150),
+      y: Phaser.Math.Clamp(tc.y + Phaser.Math.Between(-120, 120), 150, WORLD_HEIGHT - 150),
+    };
+
+    // Generate random internal walls
+    const blockers: Zone[] = [...BORDER_BLOCKERS];
+    const target = Phaser.Math.Between(9, 14);
+    for (let attempt = 0; attempt < 80 && blockers.length - 4 < target; attempt++) {
+      const isH  = Math.random() > 0.42;
+      const cols = Phaser.Math.Between(2, 4);
+      const rows = Phaser.Math.Between(1, 2);
+      const ww   = isH ? cols * GRID : rows * GRID;
+      const wh   = isH ? rows * GRID : cols * GRID;
+      const wx   = Phaser.Math.Between(2, Math.floor((WORLD_WIDTH  - ww) / GRID) - 1) * GRID;
+      const wy   = Phaser.Math.Between(2, Math.floor((WORLD_HEIGHT - wh) / GRID) - 1) * GRID;
+      const cx   = wx + ww / 2;
+      const cy   = wy + wh / 2;
+
+      if (
+        wx + ww > WORLD_WIDTH - 64 ||
+        wy + wh > WORLD_HEIGHT - 64 ||
+        Phaser.Math.Distance.Between(cx, cy, this.worldPlayerPos.x, this.worldPlayerPos.y) < CLEAR_P ||
+        Phaser.Math.Distance.Between(cx, cy, this.worldTerminalPos.x, this.worldTerminalPos.y) < CLEAR_T
+      ) continue;
+
+      blockers.push({ x: wx, y: wy, width: ww, height: wh });
+    }
+    this.worldBlockers = blockers;
+
+    // Random candles
+    this.worldCandles = Array.from({ length: 10 }, () => ({
+      x: Phaser.Math.Between(80, WORLD_WIDTH - 80),
+      y: Phaser.Math.Between(80, WORLD_HEIGHT - 80),
+    }));
   }
 
   private createWorld(): void {
@@ -172,7 +211,7 @@ export class WorldExplorationScene extends Phaser.Scene {
     this.drawRoad(1016, 128, 128, 720, 0x111923, 0xff6f9f);
 
     this.walls = this.physics.add.staticGroup();
-    BLOCKERS.forEach((zone, index) => this.createBlocker(zone, index));
+    this.worldBlockers.forEach((zone, index) => this.createBlocker(zone, index));
 
     this.scanLines = this.add.tileSprite(0, 0, WORLD_WIDTH, WORLD_HEIGHT, this.makeScanTexture())
       .setOrigin(0)
@@ -199,7 +238,7 @@ export class WorldExplorationScene extends Phaser.Scene {
       return;
     }
 
-    const panel = this.add.graphics().setDepth(12);
+    const panel = this.add.graphics().setDepth(55);
     const accent = index % 3 === 0 ? 0x54ffe0 : index % 3 === 1 ? 0xffce6f : 0xff6f9f;
     panel.fillStyle(0x10202a, 0.95).fillRoundedRect(zone.x, zone.y, zone.width, zone.height, 10);
     panel.fillStyle(accent, 0.1).fillRoundedRect(zone.x + 8, zone.y + 8, zone.width - 16, zone.height - 16, 8);
@@ -223,8 +262,10 @@ export class WorldExplorationScene extends Phaser.Scene {
   }
 
   private createPlayer(): void {
-    this.playerShadow = this.add.ellipse(160, 168, 42, 13, 0x000000, 0.36).setDepth(35);
-    this.player = this.physics.add.sprite(160, 160, 'player_cell_0')
+    const px = this.worldPlayerPos.x;
+    const py = this.worldPlayerPos.y;
+    this.playerShadow = this.add.ellipse(px, py + 8, 42, 13, 0x000000, 0.36).setDepth(35);
+    this.player = this.physics.add.sprite(px, py, 'player_cell_0')
       .setDepth(50)
       .setScale(0.36);
     this.syncPlayerOrigin();
@@ -245,12 +286,12 @@ export class WorldExplorationScene extends Phaser.Scene {
     }
     const width = this.player.texture.getSourceImage().width;
     const height = this.player.texture.getSourceImage().height;
-    body.setSize(34, 28);
-    body.setOffset(width / 2 - 17, height - 30);
+    body.setSize(34, height - 20);
+    body.setOffset(width / 2 - 17, 10);
   }
 
   private createCandles(): void {
-    CANDLES.forEach((pos) => {
+    this.worldCandles.forEach((pos) => {
       const base = this.add.graphics().setDepth(488);
       base.fillStyle(0x332211, 0.9).fillRect(pos.x - 3, pos.y - 8, 6, 14);
       base.fillStyle(0x665544, 0.8).fillRect(pos.x - 1, pos.y - 7, 2, 10);
@@ -268,8 +309,7 @@ export class WorldExplorationScene extends Phaser.Scene {
   }
 
   private createTerminalPlaceholder(): void {
-    const x = 1264;
-    const y = 456;
+    const { x, y } = this.worldTerminalPos;
     const base = this.add.graphics();
     base.fillStyle(0x08141a, 0.4).fillRoundedRect(-42, -58, 84, 116, 18);
     base.lineStyle(1, 0x284a4a, 0.3).strokeRoundedRect(-42, -58, 84, 116, 18);
@@ -278,8 +318,7 @@ export class WorldExplorationScene extends Phaser.Scene {
   }
 
   private createTerminal(): void {
-    const x = 1264;
-    const y = 456;
+    const { x, y } = this.worldTerminalPos;
     const glow = this.add.circle(0, 0, 68, 0x5dffe4, 0.14);
     const base = this.add.graphics();
     base.fillStyle(0x08141a, 1).fillRoundedRect(-42, -58, 84, 116, 18);
@@ -307,7 +346,7 @@ export class WorldExplorationScene extends Phaser.Scene {
       fontFamily: 'Trebuchet MS', fontSize: '17px', fontStyle: 'bold', color: '#f4fffb',
     }).setOrigin(0.5);
     this.prompt = this.add.container(this.terminal.x, this.terminal.y - 104, [bubble, label])
-      .setDepth(90).setVisible(false).setAlpha(0);
+      .setDepth(600).setVisible(false).setAlpha(0);
   }
 
   private setupInput(): void {
@@ -319,11 +358,18 @@ export class WorldExplorationScene extends Phaser.Scene {
   private setupCamera(): void {
     this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
     this.cameras.main.startFollow(this.player, true, 0.12, 0.12);
-    this.add.text(24, 22, 'ASTER GRID // SECTOR 01', {
+    const sector = String(this.battleCount + 1).padStart(2, '0');
+    const dx = this.worldTerminalPos.x - this.worldPlayerPos.x;
+    const dy = this.worldTerminalPos.y - this.worldPlayerPos.y;
+    const dirs: string[] = [];
+    if (Math.abs(dx) > 200) dirs.push(dx > 0 ? 'east' : 'west');
+    if (Math.abs(dy) > 150) dirs.push(dy > 0 ? 'south' : 'north');
+    const hint = `Terminal signal detected ${dirs.join('-') || 'nearby'}.`;
+    this.add.text(24, 22, `ASTER GRID // SECTOR ${sector}`, {
       fontFamily: 'Trebuchet MS', fontSize: '22px', fontStyle: 'bold', color: '#d7fff6',
       stroke: '#000000', strokeThickness: 4,
     }).setScrollFactor(0).setDepth(600);
-    this.add.text(24, 52, 'Terminal signal detected eastbound.', {
+    this.add.text(24, 52, hint, {
       fontFamily: 'Trebuchet MS', fontSize: '15px', color: '#9dc9be',
       stroke: '#000000', strokeThickness: 3,
     }).setScrollFactor(0).setDepth(600);
@@ -429,20 +475,16 @@ export class WorldExplorationScene extends Phaser.Scene {
       this.battleCount += 1;
       this.registry.set('netStrikeBattleCount', this.battleCount);
       const remaining = this.MAX_BATTLES_BEFORE_BOSS - this.battleCount;
-      if (remaining > 0) {
-        this.showToast(`Encounter purged. ${remaining} sectors remain.`, '#baffc9');
-      } else {
-        this.showToast('All sectors clear. Boss terminal unlocked!', '#ffe49f');
-      }
+      const msg = remaining > 0 ? `Encounter purged. ${remaining} sectors remain.` : 'All sectors clear. Boss terminal unlocked!';
+      const color = remaining > 0 ? '#baffc9' : '#ffe49f';
+      this.registry.set('netStrikeToast', { message: msg, color });
+      this.scene.start('WorldExplorationScene');
     }
-    this.transitionLocked = false;
-    this.scene.resume(this.scene.key);
   }
 
   private handleBattleLose(): void {
-    this.transitionLocked = false;
-    this.showToast('Connection interrupted. Re-establishing link...', '#ffb6d0');
-    this.scene.resume(this.scene.key);
+    this.registry.set('netStrikeToast', { message: 'Connection interrupted. Re-establishing link...', color: '#ffb6d0' });
+    this.scene.start('WorldExplorationScene');
   }
 
   private showToast(message: string, color: string): void {

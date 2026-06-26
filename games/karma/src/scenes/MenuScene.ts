@@ -1,13 +1,17 @@
 import Phaser from 'phaser';
 import { playClick } from '../../../../src/sfx';
+import { ArcadeBar } from '@shared/arcade-bar';
 
 export class MenuScene extends Phaser.Scene {
   private done = false;
+  private arcadeBar!: ArcadeBar;
 
   constructor() { super('KarmaMenu'); }
 
   create(): void {
     this.done = false;
+    this.arcadeBar = new ArcadeBar();
+    this.events.once('shutdown', () => this.arcadeBar.destroy());
     const { width: W, height: H } = this.scale;
     const cx = W / 2;
 
