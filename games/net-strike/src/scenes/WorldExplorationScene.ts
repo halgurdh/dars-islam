@@ -24,12 +24,36 @@ const BLOCKERS: Zone[] = [
   { x: 0, y: WORLD_HEIGHT - 32, width: WORLD_WIDTH, height: 32 },
   { x: 0, y: 0, width: 32, height: WORLD_HEIGHT },
   { x: WORLD_WIDTH - 32, y: 0, width: 32, height: WORLD_HEIGHT },
+  // Original walls
   { x: 288, y: 192, width: 224, height: 96 },
   { x: 672, y: 96, width: 96, height: 256 },
   { x: 976, y: 192, width: 288, height: 96 },
   { x: 192, y: 608, width: 256, height: 96 },
   { x: 704, y: 608, width: 192, height: 160 },
   { x: 1136, y: 608, width: 192, height: 96 },
+  // Additional walls for more challenge
+  { x: 480, y: 64, width: 96, height: 64 },
+  { x: 1088, y: 64, width: 128, height: 64 },
+  { x: 96, y: 384, width: 96, height: 96 },
+  { x: 1408, y: 384, width: 96, height: 96 },
+  { x: 544, y: 464, width: 96, height: 64 },
+  { x: 864, y: 464, width: 96, height: 64 },
+  { x: 368, y: 768, width: 160, height: 64 },
+  { x: 1024, y: 768, width: 160, height: 64 },
+];
+
+/** Candle positions */
+const CANDLES: { x: number; y: number }[] = [
+  { x: 240, y: 240 },
+  { x: 880, y: 160 },
+  { x: 1200, y: 256 },
+  { x: 240, y: 680 },
+  { x: 800, y: 720 },
+  { x: 1248, y: 672 },
+  { x: 448, y: 512 },
+  { x: 1376, y: 480 },
+  { x: 64, y: 480 },
+  { x: 1536, y: 240 },
 ];
 
 export class WorldExplorationScene extends Phaser.Scene {
@@ -45,9 +69,10 @@ export class WorldExplorationScene extends Phaser.Scene {
   private encounterResolved = false;
   private transitionLocked = false;
   private scanLines!: Phaser.GameObjects.TileSprite;
-  private dashTweenActive = false;
   private battleCount = 0;
   private readonly MAX_BATTLES_BEFORE_BOSS = 10;
+  private darknessGraphics!: Phaser.GameObjects.Graphics;
+  private lightCutout!: Phaser.GameObjects.Graphics;
 
   constructor() {
     super('WorldExplorationScene');
@@ -73,6 +98,16 @@ export class WorldExplorationScene extends Phaser.Scene {
     this.setupCamera();
     this.registerBattleListeners();
 
+    // Darkness: black overlay with ERASE blend cutouts for light areas
+    // Layer 1: black background (darkness)
+    this.darknessGraphics = this.add.graphics().setDepth(498);
+    this.darknessGraphics.fillStyle(0x000000, 0.88).fillRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
+
+    // Layer 2: light cutout atop the darkness using ERASE blend to punch holes
+    this.lightCutout = this.add.graphics().setDepth(499).setBlendMode(Phaser.BlendModes.ERASE);
+
+    this.createCandles();
+
     if (bossDefeated) {
       this.showToast('All threats eliminated. Grid secure.', '#baffc9');
     } else {
@@ -88,7 +123,32 @@ export class WorldExplorationScene extends Phaser.Scene {
 
     this.updateMovement(delta);
     this.updatePrompt();
+    this.updateLighting();
     this.playerShadow.setPosition(this.player.x, this.player.y + 4);
+  }
+
+  private updateLighting(): void {
+    const px = this.player.x;
+    const py = this.player.y;
+
+    this.lightCutout.clear();
+
+    // Every white area drawn with ERASE blend will punch through the darkness
+    // Player light — largest visible circle
+    this.lightCutout.fillStyle(0xffffff, 1).fillCircle(px, py, 160);
+
+    // Terminal light — so player can see destination beacon
+    if (!this.encounterResolved) {
+      this.lightCutout.fillStyle(0xffffff, 0.8).fillCircle(this.terminal.x, this.terminal.y, 140);
+    }
+
+    // Candle lights
+    CANDLES.forEach((pos) => {
+      const dist = Phaser.Math.Distance.Between(px, py, pos.x, pos.y);
+      if (dist < 900) {
+        this.lightCutout.fillStyle(0xffffff, 0.6).fillCircle(pos.x, pos.y, 90);
+      }
+    });
   }
 
   private createWorld(): void {
@@ -96,7 +156,7 @@ export class WorldExplorationScene extends Phaser.Scene {
     this.physics.world.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
     this.registry.set('netStrikeWorldBounds', { width: WORLD_WIDTH, height: WORLD_HEIGHT });
 
-    const bg = this.add.graphics();
+    const bg = this.add.graphics().setDepth(0);
     bg.fillGradientStyle(0x071014, 0x0e211c, 0x071014, 0x11161f, 1).fillRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
 
     for (let y = 0; y < WORLD_HEIGHT; y += TILE_SIZE) {
@@ -116,7 +176,7 @@ export class WorldExplorationScene extends Phaser.Scene {
 
     this.scanLines = this.add.tileSprite(0, 0, WORLD_WIDTH, WORLD_HEIGHT, this.makeScanTexture())
       .setOrigin(0)
-      .setAlpha(0.2)
+      .setAlpha(0.15)
       .setDepth(5);
   }
 
@@ -183,11 +243,28 @@ export class WorldExplorationScene extends Phaser.Scene {
     if (!body) {
       return;
     }
-
     const width = this.player.texture.getSourceImage().width;
     const height = this.player.texture.getSourceImage().height;
     body.setSize(34, 28);
     body.setOffset(width / 2 - 17, height - 30);
+  }
+
+  private createCandles(): void {
+    CANDLES.forEach((pos) => {
+      const base = this.add.graphics().setDepth(488);
+      base.fillStyle(0x332211, 0.9).fillRect(pos.x - 3, pos.y - 8, 6, 14);
+      base.fillStyle(0x665544, 0.8).fillRect(pos.x - 1, pos.y - 7, 2, 10);
+      const glow = this.add.circle(pos.x, pos.y, 6, 0xffd080, 0.35).setDepth(489);
+      const flame = this.add.circle(pos.x, pos.y - 7, 3, 0xffdd88, 0.7).setDepth(490);
+      this.tweens.add({
+        targets: glow, scaleX: 1.4, scaleY: 1.4, alpha: 0.2,
+        duration: 700 + Phaser.Math.Between(0, 300), yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+      });
+      this.tweens.add({
+        targets: flame, scaleX: 1.5, scaleY: 0.7, alpha: 0.5,
+        duration: 150 + Phaser.Math.Between(0, 80), yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+      });
+    });
   }
 
   private createTerminalPlaceholder(): void {
@@ -196,12 +273,7 @@ export class WorldExplorationScene extends Phaser.Scene {
     const base = this.add.graphics();
     base.fillStyle(0x08141a, 0.4).fillRoundedRect(-42, -58, 84, 116, 18);
     base.lineStyle(1, 0x284a4a, 0.3).strokeRoundedRect(-42, -58, 84, 116, 18);
-    const text = this.add.text(0, 0, 'OFFLINE', {
-      fontFamily: 'Trebuchet MS',
-      fontSize: '13px',
-      color: '#3d6a6a',
-    }).setOrigin(0.5);
-
+    const text = this.add.text(0, 0, 'OFFLINE', { fontFamily: 'Trebuchet MS', fontSize: '13px', color: '#3d6a6a' }).setOrigin(0.5);
     this.terminal = this.add.container(x, y, [base, text]).setDepth(44).setAlpha(0.6);
   }
 
@@ -218,14 +290,9 @@ export class WorldExplorationScene extends Phaser.Scene {
     const crystal = this.add.graphics();
     crystal.fillStyle(0xff5f9c, 0.95);
     crystal.beginPath();
-    crystal.moveTo(0, -86);
-    crystal.lineTo(28, -38);
-    crystal.lineTo(0, -4);
-    crystal.lineTo(-28, -38);
-    crystal.closePath();
-    crystal.fillPath();
+    crystal.moveTo(0, -86); crystal.lineTo(28, -38); crystal.lineTo(0, -4); crystal.lineTo(-28, -38);
+    crystal.closePath(); crystal.fillPath();
     crystal.lineStyle(2, 0xffffff, 0.78).strokePath();
-
     this.terminal = this.add.container(x, y, [glow, base, crystal]).setDepth(44);
     this.tweens.add({ targets: glow, scaleX: 1.22, scaleY: 1.22, alpha: 0.28, duration: 900, yoyo: true, repeat: -1 });
     this.tweens.add({ targets: crystal, y: '-=10', duration: 1100, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
@@ -237,16 +304,10 @@ export class WorldExplorationScene extends Phaser.Scene {
     bubble.lineStyle(2, 0x8dffef, 0.9).strokeRoundedRect(-92, -26, 184, 44, 14);
     bubble.fillStyle(0x071214, 0.94).fillTriangle(-12, 18, 0, 32, 12, 18);
     const label = this.add.text(0, -4, 'Press E to Jack In!', {
-      fontFamily: 'Trebuchet MS',
-      fontSize: '17px',
-      fontStyle: 'bold',
-      color: '#f4fffb',
+      fontFamily: 'Trebuchet MS', fontSize: '17px', fontStyle: 'bold', color: '#f4fffb',
     }).setOrigin(0.5);
-
     this.prompt = this.add.container(this.terminal.x, this.terminal.y - 104, [bubble, label])
-      .setDepth(90)
-      .setVisible(false)
-      .setAlpha(0);
+      .setDepth(90).setVisible(false).setAlpha(0);
   }
 
   private setupInput(): void {
@@ -258,22 +319,14 @@ export class WorldExplorationScene extends Phaser.Scene {
   private setupCamera(): void {
     this.cameras.main.setBounds(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
     this.cameras.main.startFollow(this.player, true, 0.12, 0.12);
-
-    const title = this.add.text(24, 22, 'ASTER GRID // SECTOR 01', {
-      fontFamily: 'Trebuchet MS',
-      fontSize: '22px',
-      fontStyle: 'bold',
-      color: '#d7fff6',
-      stroke: '#071014',
-      strokeThickness: 5,
-    }).setScrollFactor(0).setDepth(130);
-    title.setShadow(0, 0, '#54ffe0', 8);
-
+    this.add.text(24, 22, 'ASTER GRID // SECTOR 01', {
+      fontFamily: 'Trebuchet MS', fontSize: '22px', fontStyle: 'bold', color: '#d7fff6',
+      stroke: '#000000', strokeThickness: 4,
+    }).setScrollFactor(0).setDepth(600);
     this.add.text(24, 52, 'Terminal signal detected eastbound.', {
-      fontFamily: 'Trebuchet MS',
-      fontSize: '15px',
-      color: '#9dc9be',
-    }).setScrollFactor(0).setDepth(130);
+      fontFamily: 'Trebuchet MS', fontSize: '15px', color: '#9dc9be',
+      stroke: '#000000', strokeThickness: 3,
+    }).setScrollFactor(0).setDepth(600);
   }
 
   private updateMovement(_delta: number): void {
@@ -293,32 +346,10 @@ export class WorldExplorationScene extends Phaser.Scene {
       this.player.setFlipX(false);
     }
 
-    // Dash glitch animation (alpha pulse) when moving
-    if (moving && !this.dashTweenActive) {
-      this.dashTweenActive = true;
-      const flicker = (): void => {
-        if (this.scene.isActive()) {
-          this.tweens.add({
-            targets: this.player,
-            alpha: 0.55,
-            duration: 80,
-            yoyo: true,
-            onComplete: () => {
-              this.player.alpha = 1;
-              const v = this.player.body?.velocity ?? { x: 0, y: 0 };
-              const stillMoving = Math.abs(v.x) > 5 || Math.abs(v.y) > 5;
-              if (stillMoving && this.scene.isActive()) {
-                flicker();
-              } else {
-                this.dashTweenActive = false;
-              }
-            },
-          });
-        } else {
-          this.dashTweenActive = false;
-        }
-      };
-      flicker();
+    if (moving && this.player.anims.currentAnim?.key !== 'player_dash') {
+      this.player.play('player_dash');
+    } else if (!moving && this.player.anims.currentAnim?.key !== 'player_idle') {
+      this.player.play('player_idle');
     }
   }
 
@@ -355,24 +386,17 @@ export class WorldExplorationScene extends Phaser.Scene {
     const origin = this.cameras.main.worldView;
     for (let index = 0; index < 10; index += 1) {
       const stripe = this.add.rectangle(origin.x - 80, origin.y + index * 74, SCENE_WIDTH + 160, 18, index % 2 ? 0xff6fa5 : 0x54ffe0, 0.22)
-        .setOrigin(0)
-        .setDepth(160);
+        .setOrigin(0).setDepth(160);
       this.tweens.add({
-        targets: stripe,
-        x: stripe.x + 220,
-        alpha: 0,
-        duration: 380 + index * 18,
-        ease: 'Cubic.easeOut',
-        onComplete: () => stripe.destroy(),
+        targets: stripe, x: stripe.x + 220, alpha: 0,
+        duration: 380 + index * 18, ease: 'Cubic.easeOut', onComplete: () => stripe.destroy(),
       });
     }
 
     this.time.delayedCall(420, () => {
       if (this.battleCount >= this.MAX_BATTLES_BEFORE_BOSS) {
-        // Final boss battle
         this.scene.launch('FinalBossBattleScene', { returnSceneKey: this.scene.key, encounterId: this.terminalId });
       } else {
-        // Normal battle
         this.scene.launch('BattleScene', { returnSceneKey: this.scene.key, encounterId: `battle-${this.battleCount}` });
       }
       this.scene.pause();
@@ -402,7 +426,6 @@ export class WorldExplorationScene extends Phaser.Scene {
       this.registry.set('netStrikeRewards', [...(rewards ?? []), reward]);
       this.showToast(`Chip data archived: ${reward.name} ${reward.code}.`, '#baffc9');
     } else {
-      // Normal battle win - increment counter
       this.battleCount += 1;
       this.registry.set('netStrikeBattleCount', this.battleCount);
       const remaining = this.MAX_BATTLES_BEFORE_BOSS - this.battleCount;
@@ -417,7 +440,6 @@ export class WorldExplorationScene extends Phaser.Scene {
   }
 
   private handleBattleLose(): void {
-    // Retry the battle - just unlock and show a retry message
     this.transitionLocked = false;
     this.showToast('Connection interrupted. Re-establishing link...', '#ffb6d0');
     this.scene.resume(this.scene.key);
@@ -425,25 +447,13 @@ export class WorldExplorationScene extends Phaser.Scene {
 
   private showToast(message: string, color: string): void {
     const toast = this.add.text(SCENE_WIDTH / 2, 92, message, {
-      fontFamily: 'Trebuchet MS',
-      fontSize: '18px',
-      fontStyle: 'bold',
-      color,
-      stroke: '#071014',
-      strokeThickness: 5,
-      align: 'center',
-      wordWrap: { width: 560 },
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(170).setAlpha(0);
+      fontFamily: 'Trebuchet MS', fontSize: '18px', fontStyle: 'bold', color,
+      stroke: '#000000', strokeThickness: 5, align: 'center', wordWrap: { width: 560 },
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(600).setAlpha(0);
 
     this.tweens.add({
-      targets: toast,
-      alpha: 1,
-      y: 78,
-      duration: 180,
-      ease: 'Cubic.easeOut',
-      yoyo: true,
-      hold: 1350,
-      onComplete: () => toast.destroy(),
+      targets: toast, alpha: 1, y: 78, duration: 180, ease: 'Cubic.easeOut',
+      yoyo: true, hold: 1350, onComplete: () => toast.destroy(),
     });
   }
 
