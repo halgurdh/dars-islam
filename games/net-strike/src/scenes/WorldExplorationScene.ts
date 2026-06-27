@@ -35,6 +35,17 @@ const SPAWN_CORNERS = [
   { x: WORLD_WIDTH - 112, y: WORLD_HEIGHT - 112 },
 ] as const;
 
+const TERMINAL_CANDIDATES = [
+  { x: 320, y: 256 },
+  { x: 504, y: 736 },
+  { x: 720, y: 220 },
+  { x: 836, y: 764 },
+  { x: 1088, y: 276 },
+  { x: 1248, y: 680 },
+  { x: 1336, y: 412 },
+  { x: 944, y: 548 },
+] as const;
+
 export class WorldExplorationScene extends Phaser.Scene {
   private player!: Phaser.Physics.Arcade.Sprite;
   private playerShadow!: Phaser.GameObjects.Ellipse;
@@ -157,14 +168,22 @@ export class WorldExplorationScene extends Phaser.Scene {
     const CLEAR_P = 230;
     const CLEAR_T = 200;
 
-    // Pick player corner and diagonally opposite terminal corner
+    // Pick a player corner, then choose a terminal location that is not
+    // mostly straight above/below or left/right from that spawn.
     const pi = Phaser.Math.Between(0, 3);
-    const tc = SPAWN_CORNERS[(pi + 2) % 4];
     const pc = SPAWN_CORNERS[pi];
     this.worldPlayerPos = { x: pc.x, y: pc.y };
+
+    const terminalOptions = Phaser.Utils.Array.Shuffle([...TERMINAL_CANDIDATES]).filter((candidate) => {
+      const dx = Math.abs(candidate.x - this.worldPlayerPos.x);
+      const dy = Math.abs(candidate.y - this.worldPlayerPos.y);
+      return dx >= 260 && dy >= 220 && Phaser.Math.Distance.Between(candidate.x, candidate.y, this.worldPlayerPos.x, this.worldPlayerPos.y) >= 700;
+    });
+
+    const pickedTerminal = terminalOptions[0] ?? TERMINAL_CANDIDATES[0];
     this.worldTerminalPos = {
-      x: Phaser.Math.Clamp(tc.x + Phaser.Math.Between(-160, 160), 150, WORLD_WIDTH - 150),
-      y: Phaser.Math.Clamp(tc.y + Phaser.Math.Between(-120, 120), 150, WORLD_HEIGHT - 150),
+      x: Phaser.Math.Clamp(pickedTerminal.x + Phaser.Math.Between(-56, 56), 150, WORLD_WIDTH - 150),
+      y: Phaser.Math.Clamp(pickedTerminal.y + Phaser.Math.Between(-56, 56), 150, WORLD_HEIGHT - 150),
     };
 
     // Generate random internal walls
@@ -372,10 +391,12 @@ export class WorldExplorationScene extends Phaser.Scene {
     const sector = String(this.battleCount + 1).padStart(2, '0');
     const dx = this.worldTerminalPos.x - this.worldPlayerPos.x;
     const dy = this.worldTerminalPos.y - this.worldPlayerPos.y;
-    const dirs: string[] = [];
-    if (Math.abs(dx) > 200) dirs.push(dx > 0 ? 'east' : 'west');
-    if (Math.abs(dy) > 150) dirs.push(dy > 0 ? 'south' : 'north');
-    const hint = `Terminal signal detected ${dirs.join('-') || 'nearby'}.`;
+    const distance = Phaser.Math.Distance.Between(this.worldTerminalPos.x, this.worldTerminalPos.y, this.worldPlayerPos.x, this.worldPlayerPos.y);
+    const hint = distance > 900
+      ? 'Deep signal detected. Search beyond the first lanes.'
+      : Math.abs(dx) > Math.abs(dy)
+        ? 'Signal drift detected across the side lanes.'
+        : 'Signal drift detected past the upper and lower lanes.';
     const sectorText = this.add.text(24, 22, `ASTER GRID // SECTOR ${sector}`, {
       fontFamily: 'Trebuchet MS', fontSize: '22px', fontStyle: 'bold', color: '#d7fff6',
       stroke: '#000000', strokeThickness: 4,

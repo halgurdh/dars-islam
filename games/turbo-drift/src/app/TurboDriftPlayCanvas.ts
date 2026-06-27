@@ -16,85 +16,16 @@ import { ArcadeStore } from '@shared/arcade-store';
 import { WORLD, UPGRADE_TIERS, BUMPER_OPTIONS, HOOD_OPTIONS, SPOILER_OPTIONS } from '../constants';
 import { createPhysicsState, stepPhysics, speedKmh, type PhysicsState } from '../car/CarPhysics';
 import { generateCarBodyMesh } from '../pipeline/ManifoldCarPipeline';
+import { loadGlbEntity } from '../loaders/GlbAssetLoader';
 import { buildCarMesh, spinWheels, type CarMeshResult } from '../car/PlayCanvasCarMesh';
 import { GameState } from '../systems/GameState';
 import { gameFlow, type FlowHooks } from '../systems/GameFlowMachine';
 import { turboMusic } from '../systems/MusicStateMachine';
 import type { CarConfig, CustomizablePart, RaceInput } from '../types';
 
-// ---------------------------------------------------------------------------
-// Watercolor composite post-effect (WebGPU / WGSL)
-// ---------------------------------------------------------------------------
-
-class WatercolorPostEffect extends pc.PostEffect {
-  private readonly shader: pc.Shader;
-  private time = 0;
-
-  constructor(device: pc.GraphicsDevice) {
-    super(device);
-    const vert = /* wgsl */ `
-      attribute vertex_position: vec2f;
-      varying vUv: vec2f;
-      @vertex fn vertexMain(input: VertexInput) -> VertexOutput {
-        var o: VertexOutput;
-        o.position = vec4f(input.vertex_position, 0.5, 1.0);
-        o.vUv = input.vertex_position * 0.5 + vec2f(0.5);
-        return o;
-      }`;
-    const frag = /* wgsl */ `
-      varying vUv: vec2f;
-      var uColorBuffer: texture_2d<f32>;
-      var uColorBufferSampler: sampler;
-      uniform uResolution: vec2f;
-      uniform uTime: f32;
-      fn hash21(p: vec2f) -> f32 {
-        let q = fract(p * vec2f(123.34, 456.21));
-        return fract(q.x * q.y * (q.x + q.y));
-      }
-      fn noise2(p: vec2f) -> f32 {
-        let i = floor(p); let f = fract(p);
-        let u = f * f * (3.0 - 2.0 * f);
-        return mix(mix(hash21(i), hash21(i+vec2f(1,0)), u.x),
-                   mix(hash21(i+vec2f(0,1)), hash21(i+vec2f(1,1)), u.x), u.y);
-      }
-      fn paper(p: vec2f) -> f32 {
-        var v = 0.0; var amp = 0.55; var freq = 1.0;
-        for (var i=0;i<4;i=i+1){v+=noise2(p*freq)*amp;freq*=2.17;amp*=0.5;}
-        return v;
-      }
-      @fragment fn fragmentMain(input: FragmentInput) -> FragmentOutput {
-        var o: FragmentOutput;
-        let uv = input.vUv;
-        let tex = 1.0 / uniform.uResolution;
-        let base  = textureSample(uColorBuffer, uColorBufferSampler, uv).rgb;
-        let blur  = (textureSample(uColorBuffer,uColorBufferSampler,uv+vec2f(tex.x,0)).rgb
-                   + textureSample(uColorBuffer,uColorBufferSampler,uv-vec2f(tex.x,0)).rgb
-                   + textureSample(uColorBuffer,uColorBufferSampler,uv+vec2f(0,tex.y)).rgb
-                   + textureSample(uColorBuffer,uColorBufferSampler,uv-vec2f(0,tex.y)).rgb);
-        let snap   = textureSample(uColorBuffer,uColorBufferSampler,
-                       floor(uv*uniform.uResolution/1.35)*1.35/uniform.uResolution).rgb;
-        let grain  = paper(uv*uniform.uResolution*0.06+vec2f(uniform.uTime*0.03,-uniform.uTime*0.02));
-        let vig    = smoothstep(0.98,0.24,distance(uv,vec2f(0.5)));
-        let lifted = mix(snap, blur*0.18, 0.08) * (0.96+grain*0.05);
-        let tone   = floor(lifted*7.0)/7.0;
-        o.color    = vec4f(tone + vec3f(0.01,0.004,-0.002)*vig, 1.0);
-        return o;
-      }`;
-    this.shader = pc.createShaderFromCode(device, vert, frag, 'td-watercolor', {
-      vertex_position: pc.SEMANTIC_POSITION,
-    }, false, { shaderLanguage: pc.SHADERLANGUAGE_WGSL, fragmentOutputTypes: 'vec4' });
-  }
-
-  setTime(t: number): void { this.time = t; }
-
-  render(input: pc.RenderTarget, output: pc.RenderTarget, rect?: pc.Vec4): void {
-    const cb = input.colorBuffer;
-    this.device.scope.resolve('uColorBuffer').setValue(cb);
-    this.device.scope.resolve('uResolution').setValue([cb.width, cb.height]);
-    this.device.scope.resolve('uTime').setValue(this.time);
-    this.drawQuad(output ?? null, this.shader, rect);
-  }
-}
+// WatercolorPostEffect removed: pc.createShaderFromCode is deprecated in
+// PlayCanvas 2.x, and the WGSL UV mapping (vUv.y = pos.y*0.5+0.5) inverts
+// the render target in WebGPU (top-left texel origin), flipping the world.
 
 // ---------------------------------------------------------------------------
 // Small helpers
@@ -485,7 +416,6 @@ const CSS = `
 class TurboDriftPlayCanvas {
   private app!: pc.Application;
   private camera!: pc.Entity;
-  private postEffect!: WatercolorPostEffect;
   private garageRoot!: pc.Entity;
   private raceRoot!: pc.Entity;
 
@@ -573,6 +503,8 @@ class TurboDriftPlayCanvas {
     this.buildRaceScene();
     this.buildDomUI(overlay);
 
+    this.setLoaderProgress(90, 'Loading 3D assets…');
+    await this.tryLoadGlbAssets();
     this.setLoaderProgress(100, 'Ready!');
     await new Promise<void>(r => setTimeout(r, 320));
     this.loaderEl.classList.add('td-hidden');
@@ -638,11 +570,6 @@ class TurboDriftPlayCanvas {
     this.camera.setPosition(0, 6, 14);
     this.app.root.addChild(this.camera);
 
-    try {
-      this.postEffect = new WatercolorPostEffect(graphicsDevice);
-      this.camera.camera?.postEffects.addEffect(this.postEffect);
-    } catch { /* WebGL2 fallback: no WGSL post-effect */ }
-
     this.addGlobalLighting();
   }
 
@@ -668,6 +595,72 @@ class TurboDriftPlayCanvas {
     });
     rim.setEulerAngles(-15, 200, 0);
     this.app.root.addChild(rim);
+  }
+
+  // ── GLB asset loading ─────────────────────────────────────────────────────
+
+  private async tryLoadGlbAssets(): Promise<void> {
+    const base      = import.meta.env.BASE_URL;
+    const bucketBase = 'https://huggingface.co/buckets/cdgbrands/Hunyuan3D-2.1-bucket/resolve';
+
+    // Prefer local file (dev / bundled), fall back to HF bucket (CDN).
+    const glbUrl = (name: string) => {
+      // loadGlbEntity returns null on 404, so trying local first is safe.
+      return `${base}assets/models/${name}`;
+    };
+    const glbBucketUrl = (name: string) => `${bucketBase}/${name}`;
+
+    const loadWithFallback = async (name: string): Promise<pc.Entity | null> => {
+      const local = await loadGlbEntity(this.app, glbUrl(name));
+      if (local) return local;
+      return loadGlbEntity(this.app, glbBucketUrl(name));
+    };
+
+    // Car GLB — parented to carResult.root so it follows physics transforms.
+    // Procedural children are disabled when the GLB loads successfully.
+    const carEnt = await loadWithFallback('car.glb');
+    if (carEnt && this.carResult) {
+      for (const child of [...this.carResult.root.children]) {
+        child.enabled = false;
+      }
+      // GLB car scale may differ; 1:1 assumes Rodin output is in metres.
+      // Adjust setLocalScale here if the car appears too large/small.
+      carEnt.setLocalPosition(0, 0, 0);
+      carEnt.setLocalScale(1, 1, 1);
+      this.carResult.root.addChild(carEnt);
+      console.log('[GLB] car.glb loaded');
+    }
+
+    // Grandstand GLB — placed at both sides of the oval
+    const gs = await loadWithFallback('grandstand.glb');
+    if (gs && this.raceRoot) {
+      gs.setLocalPosition(0, 0, WORLD.trackRadiusZ + 18);
+      gs.setLocalScale(5, 5, 5);
+      this.raceRoot.addChild(gs);
+
+      const gs2 = gs.clone() as pc.Entity;
+      gs2.setLocalPosition(0, 0, -(WORLD.trackRadiusZ + 18));
+      gs2.setEulerAngles(0, 180, 0);
+      this.raceRoot.addChild(gs2);
+      console.log('[GLB] grandstand.glb loaded');
+    }
+
+    // Tree GLB — 24 instances around the track perimeter
+    const treeTemplate = await loadWithFallback('tree.glb');
+    if (treeTemplate && this.raceRoot) {
+      const count = 24;
+      const rx = WORLD.trackRadiusX + 16;
+      const rz = WORLD.trackRadiusZ + 12;
+      for (let i = 0; i < count; i++) {
+        const θ = (i / count) * Math.PI * 2;
+        const t = i === 0 ? treeTemplate : (treeTemplate.clone() as pc.Entity);
+        t.setLocalPosition(Math.cos(θ) * rx, 0, Math.sin(θ) * rz);
+        const s = 2.8 + (i % 3) * 0.7;
+        t.setLocalScale(s, s, s);
+        this.raceRoot.addChild(t);
+      }
+      console.log('[GLB] tree.glb loaded (×24)');
+    }
   }
 
   // ── Garage scene ──────────────────────────────────────────────────────────
@@ -1233,8 +1226,8 @@ class TurboDriftPlayCanvas {
     return {
       throttle:  (k.has('ArrowUp')   || k.has('KeyW') || t.throttle) ? 1 : 0,
       brake:     k.has('ArrowDown') || k.has('KeyS')  || t.brake,
-      steer:     (k.has('ArrowLeft') || k.has('KeyA') || t.left)  ? -1
-               : (k.has('ArrowRight')|| k.has('KeyD') || t.right) ?  1 : 0,
+      steer:     (k.has('ArrowLeft') || k.has('KeyA') || t.left)  ?  1
+               : (k.has('ArrowRight')|| k.has('KeyD') || t.right) ? -1 : 0,
       handbrake: k.has('Space') || t.drift,
     };
   }
@@ -1328,7 +1321,6 @@ class TurboDriftPlayCanvas {
 
   private update(dt: number): void {
     this.time += dt;
-    if (this.postEffect) this.postEffect.setTime(this.time);
 
     const state = gameFlow.currentState;
     const inRace = state === 'race_active' || state === 'race_countdown' || state === 'race_finished';

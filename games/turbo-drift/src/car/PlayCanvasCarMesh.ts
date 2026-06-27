@@ -264,6 +264,50 @@ function buildSpoiler(style: SpoilerStyle, bodyColor: pc.Color, L: number, W: nu
 }
 
 // ---------------------------------------------------------------------------
+// Primitive-based car body — hull + cabin + details, no Manifold needed
+// ---------------------------------------------------------------------------
+
+function addBodyPrimitives(
+  root: pc.Entity,
+  W: number, H: number, L: number,
+  cabinW: number, cabinH: number, cabinL: number, cabinOffZ: number,
+  bodyColor: pc.Color,
+): void {
+  const bMat  = bodyMat(bodyColor);
+  const darkMat  = bodyMat(darken(bodyColor, 0.72));
+  const vDark    = bodyMat(new pc.Color(0.07, 0.08, 0.12));
+  const outColor = new pc.Color(0.07, 0.05, 0.02);
+  const oMat = outlineMat(outColor);
+
+  // Main hull
+  addBox(root, 'hull',    0, 0, 0, W, H, L, bMat);
+  addBox(root, 'hullOut', 0, 0, 0, W*1.045, H*1.06, L*1.02, oMat, false);
+
+  // Cabin
+  addBox(root, 'cabin',    0, H/2+cabinH/2, cabinOffZ, cabinW, cabinH, cabinL, bMat);
+  addBox(root, 'cabinOut', 0, H/2+cabinH/2, cabinOffZ, cabinW*1.06, cabinH*1.07, cabinL*1.03, oMat, false);
+
+  // Front nose drop (lower than main hull, creates a sloping nose look)
+  addBox(root, 'nose',  0, -H*0.22, -(L/2-0.22), W*0.80, H*0.56, 0.44, darkMat);
+
+  // Rear deck (hatchback lower rear, creates boot silhouette)
+  addBox(root, 'deck',  0, -H*0.15, (L/2-0.24), W*0.86, H*0.68, 0.48, darkMat);
+
+  // Side skirts (below door line)
+  for (const [sx, sfx] of [[-1, 'L'], [1, 'R']] as [number, string][]) {
+    addBox(root, `skirt${sfx}`, sx*(W/2+0.045), -H*0.28, -L*0.02, 0.09, H*0.44, L*0.66, vDark, false);
+  }
+
+  // Wheel arch lips — slight protrusion around each wheel
+  const archW = 0.095, archH2 = H*0.22, archLen = 0.78;
+  for (const [az, afx] of [[-(L*0.32), 'F'], [L*0.34, 'R']] as [number, string][]) {
+    for (const [ax, alx] of [[-1, 'L'], [1, 'R']] as [number, string][]) {
+      addBox(root, `arch${afx}${alx}`, ax*(W/2+archW/2-0.01), -H*0.1, az, archW, archH2, archLen, vDark, false);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Main builder — call after Manifold pipeline resolves
 // ---------------------------------------------------------------------------
 
@@ -278,16 +322,20 @@ export function buildCarMesh(device: pc.GraphicsDevice, config: CarConfig, bodyD
   const cabinH = isSedan ? 0.55 : 0.48;
   const cabinL = isSedan ? 2.4  : 2.1;
   const cabinOffZ = isSedan ? -0.1 : -0.05;
+  const cabinW = W * 0.86;
 
   const root = new pc.Entity('car');
 
-  // ── Manifold body + outline ───────────────────────────────────────────────
-  const bMat = bodyMat(bodyColor);
-  const bodyEntity = buildBodyMeshEntity(device, bodyData, bMat, 'car-body');
-  root.addChild(bodyEntity);
-
-  const outlineEntity = buildOutlineEntity(device, bodyData, new pc.Color(0.12, 0.08, 0.05));
-  root.addChild(outlineEntity);
+  // ── Body: Manifold mesh when valid; primitive fallback otherwise ───────────
+  // Manifold body has many vertices; the flat-box fallback has exactly 24 (72 floats).
+  const isManifoldMesh = bodyData.positions.length > 200;
+  if (isManifoldMesh) {
+    const bMat = bodyMat(bodyColor);
+    root.addChild(buildBodyMeshEntity(device, bodyData, bMat, 'car-body'));
+    root.addChild(buildOutlineEntity(device, bodyData, new pc.Color(0.12, 0.08, 0.05)));
+  } else {
+    addBodyPrimitives(root, W, H, L, cabinW, cabinH, cabinL, cabinOffZ, bodyColor);
+  }
 
   // ── Cabin glass strips (side windows) ────────────────────────────────────
   const gMat = glassMat(new pc.Color(0.5, 0.68, 0.9));

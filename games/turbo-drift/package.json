@@ -7,16 +7,20 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate-models": "tsx src/scripts/generate-models.ts",
+    "generate-models:view-api": "tsx src/scripts/generate-models.ts --view-api"
   },
   "dependencies": {
-    "playcanvas": "^2.12.3",
+    "@gltf-transform/core": "^4.1.0",
+    "@gltf-transform/functions": "^4.1.0",
     "manifold-3d": "^3.0.0",
     "meshoptimizer": "^0.20.0",
-    "@gltf-transform/core": "^4.1.0",
-    "@gltf-transform/functions": "^4.1.0"
+    "playcanvas": "^2.12.3"
   },
   "devDependencies": {
+    "@gradio/client": "^2.3.0",
+    "@huggingface/hub": "^2.13.2",
     "typescript": "^5.4.5",
     "vite": "^5.2.11",
     "vite-plugin-pwa": "^1.3.0"

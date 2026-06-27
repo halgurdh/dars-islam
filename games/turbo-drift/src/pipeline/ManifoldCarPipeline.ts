@@ -32,16 +32,20 @@ interface ManifoldShape {
   translate(xyz: [number, number, number]): ManifoldShape;
   scale(xyz: [number, number, number]): ManifoldShape;
   rotate(xyz: [number, number, number]): ManifoldShape;
-  getMesh(): ManifoldMesh;
+  getMesh(normalIdx?: number): ManifoldMesh;
 }
 
 interface ManifoldStatic {
-  cube(size: [number, number, number], center?: boolean): ManifoldShape;
-  sphere(radius: number, segments?: number): ManifoldShape;
-  cylinder(height: number, radiusLow: number, radiusHigh?: number, segments?: number): ManifoldShape;
+  cube(size: [number, number, number] | number, center?: boolean): ManifoldShape;
+  sphere(radius: number, circularSegments?: number): ManifoldShape;
+  // cylinder height runs along Z axis; radiusHigh defaults to radiusLow
+  cylinder(height: number, radiusLow: number, radiusHigh?: number, circularSegments?: number, center?: boolean): ManifoldShape;
 }
 
-type ManifoldModule = { Manifold: ManifoldStatic };
+type ManifoldModule = {
+  Manifold: ManifoldStatic;
+  setup(): void;
+};
 
 // ---------------------------------------------------------------------------
 // Singleton WASM loader
@@ -53,7 +57,10 @@ async function getManifold(): Promise<ManifoldModule> {
   if (manifoldWasm) return manifoldWasm;
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const factory = (await import('manifold-3d')).default as () => Promise<ManifoldModule>;
-  manifoldWasm = await factory();
+  const wasm = await factory();
+  // setup() must be called before using any static Manifold methods (manifold-3d 3.x)
+  wasm.setup();
+  manifoldWasm = wasm;
   return manifoldWasm;
 }
 
@@ -219,11 +226,13 @@ export async function generateCarBodyMesh(carClass: CarClass): Promise<CarBodyMe
     const wheelZF = L / 2 - 0.72;
     const wheelZR = -(L / 2 - 0.72);
 
+    // Cylinder axis is Z in manifold-3d. rotate([0,90,0]) maps Z→X so the
+    // cylinder pierces the body laterally (wheel-arch direction).
     const arch = Manifold.cylinder(archH, archR, archR, 28);
-    const archFL = arch.rotate([0, 0, 90]).translate([-W / 2, 0, wheelZF]);
-    const archFR = arch.rotate([0, 0, 90]).translate([ W / 2, 0, wheelZF]);
-    const archRL = arch.rotate([0, 0, 90]).translate([-W / 2, 0, wheelZR]);
-    const archRR = arch.rotate([0, 0, 90]).translate([ W / 2, 0, wheelZR]);
+    const archFL = arch.rotate([0, 90, 0]).translate([-W / 2, 0, wheelZF]);
+    const archFR = arch.rotate([0, 90, 0]).translate([ W / 2, 0, wheelZF]);
+    const archRL = arch.rotate([0, 90, 0]).translate([-W / 2, 0, wheelZR]);
+    const archRR = arch.rotate([0, 90, 0]).translate([ W / 2, 0, wheelZR]);
 
     const carSolid = bodyShape
       .add(cabin)
