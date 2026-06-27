@@ -2,23 +2,19 @@
 /**
  * generate-models
  *
- * 1. Generates GLB assets via the 3D AI Studio API (Hunyuan3D 3.5).
- * 2. Saves them locally to public/assets/models/.
- * 3. Uploads them to the HuggingFace bucket cdgbrands/Hunyuan3D-2.1-bucket.
+ * Calls your own Hunyuan3D-2.1 server to generate GLB assets, then:
+ *   1. Saves them locally  → public/assets/models/
+ *   2. Uploads to HF bucket → cdgbrands/Hunyuan3D-2.1-bucket
  *
- * Token requirements (fine-grained at huggingface.co/settings/tokens):
- *   - Repositories → Read   (whoami / token validation)
- *   - Repositories → Write  (upload to bucket)
+ * Root .env keys needed:
+ *   HUNYUAN_URL=http://localhost:8081   (default if omitted)
+ *   HUGGINGFACE_API_KEY=hf_xxx          (for bucket upload)
  *
- * API key source (3D AI Studio):
- *   https://www.3daistudio.com → Dashboard → API Keys
+ * Start your Hunyuan3D API server first:
+ *   python api_server.py --port 8081
  *
- * Both keys are read from the root .env:
- *   HUGGINGFACE_API_KEY=hf_xxx
- *   THREEDAI_API_KEY=xxx
- *
- * Usage:
- *   npm run generate-models           (from games/turbo-drift/)
+ * Then run:
+ *   npm run generate-models  (from games/turbo-drift/)
  */
 
 import { uploadFile } from '@huggingface/hub';
@@ -53,198 +49,206 @@ loadEnv();
 // Config
 // ---------------------------------------------------------------------------
 
-const HF_TOKEN      = process.env.HUGGINGFACE_API_KEY ?? process.env.HF_TOKEN ?? '';
-const THREEDAI_KEY  = process.env.THREEDAI_API_KEY    ?? '';
-const BUCKET        = 'cdgbrands/Hunyuan3D-2.1-bucket';
-const THREEDAI_BASE = 'https://api.3daistudio.com';
-const OUT_DIR       = join(__dirname, '../../public/assets/models');
+const HUNYUAN_URL = (process.env.HUNYUAN_URL ?? 'http://localhost:8081').replace(/\/$/, '');
+const HF_TOKEN    = process.env.HUGGINGFACE_API_KEY ?? process.env.HF_TOKEN ?? '';
+const BUCKET      = 'cdgbrands/Hunyuan3D-2.1-bucket';
+const OUT_DIR     = join(__dirname, '../../public/assets/models');
+const VIEW_API    = process.argv.includes('--view-api');
+const PROBE_PATHS = ['/', '/health', '/info', '/config', '/gradio_api/info', '/gradio_api/openapi.json'] as const;
 
-// Public download URL for a file in the bucket
-const bucketUrl = (path: string) =>
-  `https://huggingface.co/buckets/${BUCKET}/resolve/${path}`;
-
-interface ModelSpec { filename: string; prompt: string; faceCount: number }
+interface ModelSpec {
+  filename:  string;
+  prompt:    string;
+  steps:     number;
+  faceCount: number;
+  seed:      number;
+}
 
 const MODELS: ModelSpec[] = [
   {
-    filename: 'car',
+    filename:  'car',
+    steps:     50,
     faceCount: 30_000,
+    seed:      42,
     prompt:
       'Low-poly arcade race car, futuristic sleek design, aerodynamic body with smooth curves, ' +
       'wide racing stance, sport rear spoiler, neon accent stripe along the side, ' +
       'glossy metallic paint, four visible racing tires, front bumper with air intakes, ' +
-      'small side mirrors, game-ready clean geometry, car centered at origin facing +Z, ' +
-      'no background, transparent floor',
+      'small side mirrors, game-ready clean geometry, car centered at origin facing +Z',
   },
   {
-    filename: 'grandstand',
+    filename:  'grandstand',
+    steps:     50,
     faceCount: 20_000,
+    seed:      99,
     prompt:
-      'Futuristic night-time racing circuit grandstand, low-poly game asset, ' +
-      'stepped concrete seating rows rising from front to back, thin metal roof canopy ' +
-      'with a glowing neon strip light underneath, colorful team banners on the front railing, ' +
-      'clean boxy geometry, no spectators, isolated 3D asset, no background',
+      'Futuristic night-time racing circuit grandstand, low-poly, ' +
+      'stepped concrete seating rows, thin metal roof canopy with neon strip underneath, ' +
+      'colorful banners on front railing, no spectators, isolated asset',
   },
   {
-    filename: 'tree',
+    filename:  'tree',
+    steps:     30,
     faceCount: 8_000,
+    seed:      7,
     prompt:
-      'Stylized low-poly palm tree, game asset, slightly curved thick trunk, ' +
-      '6 green fronds at the top, night-time neon race track decoration, ' +
-      'tree base at origin, no background',
+      'Stylized low-poly palm tree, slightly curved trunk, 6 fronds at top, ' +
+      'night-time race track decoration, base at origin',
   },
 ];
 
 // ---------------------------------------------------------------------------
-// Preflight checks
+// Hunyuan3D local server
 // ---------------------------------------------------------------------------
 
-async function validateHfToken(token: string): Promise<string> {
-  const res  = await fetch('https://huggingface.co/api/whoami', {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const json = await res.json() as { name?: string; error?: string };
-  if (!res.ok || json.error) {
-    throw new Error(
-      'HuggingFace token is invalid or expired.\n' +
-      '  → Renew at https://huggingface.co/settings/tokens\n' +
-      '  → Fine-grained token needs: Repositories → Read + Write\n' +
-      '  → Update HUGGINGFACE_API_KEY in root .env',
-    );
-  }
-  return json.name ?? '(unknown)';
-}
-
-// ---------------------------------------------------------------------------
-// 3D AI Studio (Hunyuan3D 3.5) generation
-// ---------------------------------------------------------------------------
-
-interface SubmitResp   { task_id: string }
-interface StatusResult { asset_url?: string; asset?: string }
-interface StatusResp   { status: 'FINISHED' | 'IN_PROGRESS' | 'FAILED'; progress?: number; results?: StatusResult[]; failure_reason?: string }
-
-const threedaiHeaders = {
-  Authorization: `Bearer ${THREEDAI_KEY}`,
-  'Content-Type': 'application/json',
+type ProbeResult = {
+  path: string;
+  ok: boolean;
+  status?: number;
+  contentType?: string | null;
+  snippet?: string;
+  error?: string;
 };
 
-async function submitGeneration(spec: ModelSpec): Promise<string> {
-  const res = await fetch(`${THREEDAI_BASE}/v1/3d-models/tencent/generate/pro/`, {
-    method: 'POST',
-    headers: threedaiHeaders,
-    body: JSON.stringify({ model: '3.5', prompt: spec.prompt, enable_pbr: true, face_count: spec.faceCount }),
-  });
-  if (!res.ok) throw new Error(`Submit ${res.status}: ${await res.text()}`);
-  return ((await res.json()) as SubmitResp).task_id;
-}
-
-async function pollUntilDone(taskId: string): Promise<string> {
-  const spin    = ['⠋','⠙','⠹','⠸','⠼','⠴','⠦','⠧','⠇','⠏'];
-  const deadline = Date.now() + 15 * 60_000;
-  let tick = 0;
-
-  while (Date.now() < deadline) {
-    await sleep(6_000);
-    const res  = await fetch(`${THREEDAI_BASE}/v1/generation-request/${taskId}/status/`, { headers: threedaiHeaders });
-    if (!res.ok) throw new Error(`Status ${res.status}`);
-    const json = await res.json() as StatusResp;
-
-    const pct = json.progress != null ? ` ${json.progress}%` : '';
-    process.stdout.write(`\r  ${spin[tick++ % spin.length]} ${json.status}${pct}   `);
-
-    if (json.status === 'FAILED') {
-      process.stdout.write('\n');
-      throw new Error(`Generation failed: ${json.failure_reason ?? 'unknown'}`);
-    }
-    if (json.status === 'FINISHED') {
-      process.stdout.write('\n');
-      const r = json.results?.[0];
-      const url = r?.asset_url ?? r?.asset;
-      if (!url) throw new Error('Finished but no asset URL');
-      return url;
-    }
+async function probeEndpoint(path: string): Promise<ProbeResult> {
+  try {
+    const res = await fetch(`${HUNYUAN_URL}${path}`, { signal: AbortSignal.timeout(4000) });
+    const contentType = res.headers.get('content-type');
+    const isText = contentType?.includes('json') || contentType?.includes('text') || contentType?.includes('html');
+    const snippet = isText ? (await res.text()).slice(0, 180).replace(/\s+/g, ' ') : undefined;
+    return { path, ok: res.ok, status: res.status, contentType, snippet };
+  } catch (error) {
+    return {
+      path,
+      ok: false,
+      error: error instanceof Error ? error.message : String(error),
+    };
   }
-  throw new Error('Timed out waiting for Hunyuan3D');
+}
+
+async function checkServer(): Promise<void> {
+  const probes = await Promise.all(PROBE_PATHS.map((path) => probeEndpoint(path)));
+  const healthy = probes.find((probe) => probe.ok);
+  if (healthy) return;
+
+  const noOverride = !process.env.HUNYUAN_URL;
+  const details = probes
+    .map((probe) => probe.error
+      ? `  - ${probe.path} → ${probe.error}`
+      : `  - ${probe.path} → HTTP ${probe.status ?? 'unknown'}`)
+    .join('\n');
+
+  throw new Error(
+    `Hunyuan3D server not reachable at ${HUNYUAN_URL}\n` +
+    (noOverride ? '  → No HUNYUAN_URL found in .env, so the default localhost:8081 was used.\n' : '') +
+    `  → Start it with:  python api_server.py --port 8081\n` +
+    `  → Or set HUNYUAN_URL in .env if it runs on a different port\n` +
+    `  → Probe results:\n${details}`,
+  );
+}
+
+async function viewApi(): Promise<void> {
+  console.log(`\nHunyuan3D server probe: ${HUNYUAN_URL}\n`);
+  const probes = await Promise.all(PROBE_PATHS.map((path) => probeEndpoint(path)));
+  for (const probe of probes) {
+    if (probe.error) {
+      console.log(`- ${probe.path} :: ERROR ${probe.error}`);
+      continue;
+    }
+    const type = probe.contentType ? ` :: ${probe.contentType}` : '';
+    const body = probe.snippet ? `\n    ${probe.snippet}` : '';
+    console.log(`- ${probe.path} :: HTTP ${probe.status}${type}${body}`);
+  }
+}
+
+async function generate(spec: ModelSpec): Promise<Buffer> {
+  // Sync endpoint — returns binary GLB directly when done.
+  // Hunyuan3D-2.1 local server accepts JSON with prompt for text-to-3D.
+  const res = await fetch(`${HUNYUAN_URL}/generate`, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      prompt:               spec.prompt,
+      image:                null,   // null = text-to-3D (requires --enable_t23d)
+      remove_background:    false,
+      texture:              true,
+      seed:                 spec.seed,
+      octree_resolution:    256,
+      num_inference_steps:  spec.steps,
+      guidance_scale:       5.0,
+      num_chunks:           8_000,
+      face_count:           spec.faceCount,
+      type:                 'glb',
+    }),
+    signal: AbortSignal.timeout(20 * 60_000), // 20 min
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Generate ${res.status}: ${body.slice(0, 200)}`);
+  }
+
+  return Buffer.from(await res.arrayBuffer());
 }
 
 // ---------------------------------------------------------------------------
-// Bucket upload
+// HF bucket upload (optional — skipped if no HF token)
 // ---------------------------------------------------------------------------
 
-async function uploadToBucket(buf: Buffer, remotePath: string): Promise<void> {
+async function uploadToBucket(buf: Buffer, filename: string): Promise<void> {
   await uploadFile({
-    repo: { type: 'bucket', name: BUCKET },
+    repo:        { type: 'bucket', name: BUCKET },
     accessToken: HF_TOKEN,
     file: {
-      path: remotePath,
+      path:    filename,
       content: new Blob([buf], { type: 'model/gltf-binary' }),
     },
   });
 }
 
 // ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function sleep(ms: number): Promise<void> { return new Promise(r => setTimeout(r, ms)); }
-
-// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
 async function main(): Promise<void> {
-  // Preflight
-  if (!HF_TOKEN) {
-    throw new Error('HUGGINGFACE_API_KEY not found in .env\n  → Add it to the root .env file');
-  }
-  if (!THREEDAI_KEY) {
-    throw new Error(
-      'THREEDAI_API_KEY not found in .env\n' +
-      '  → Get a key at https://www.3daistudio.com → Dashboard → API Keys\n' +
-      '  → Add THREEDAI_API_KEY=xxx to the root .env file',
-    );
+  if (VIEW_API) {
+    await viewApi();
+    process.exit(0);
   }
 
-  console.log('\nValidating HuggingFace token…');
-  const username = await validateHfToken(HF_TOKEN);
-  console.log(`  Authenticated as: ${username}`);
+  console.log(`\nHunyuan3D server: ${HUNYUAN_URL}`);
+  await checkServer();
+  console.log('  Server OK\n');
 
   mkdirSync(OUT_DIR, { recursive: true });
-  console.log(`Local output: ${OUT_DIR}`);
-  console.log(`Bucket: https://huggingface.co/buckets/${BUCKET}\n`);
+
+  if (!HF_TOKEN) {
+    console.log('  Note: HUGGINGFACE_API_KEY not set — skipping bucket upload.\n');
+  }
 
   for (const spec of MODELS) {
     console.log(`▶  ${spec.filename}.glb`);
+    console.log(`   Prompt: "${spec.prompt.slice(0, 70)}…"`);
 
-    // 1. Generate
-    console.log('   Submitting to Hunyuan3D 3.5…');
-    const taskId = await submitGeneration(spec);
-    console.log(`   Task: ${taskId}`);
-    process.stdout.write('   Progress: ');
-    const assetUrl = await pollUntilDone(taskId);
+    const t0  = Date.now();
+    const buf = await generate(spec);
+    const secs = ((Date.now() - t0) / 1000).toFixed(1);
+    console.log(`   Generated in ${secs} s  (${(buf.length / 1024).toFixed(1)} KB)`);
 
-    // 2. Download GLB
-    console.log('   Downloading…');
-    const glbRes = await fetch(assetUrl);
-    if (!glbRes.ok) throw new Error(`GLB fetch ${glbRes.status}`);
-    const buf = Buffer.from(await glbRes.arrayBuffer());
-    console.log(`   Size: ${(buf.length / 1024).toFixed(1)} KB`);
-
-    // 3. Save locally
+    // Save locally
     const localPath = join(OUT_DIR, `${spec.filename}.glb`);
     writeFileSync(localPath, buf);
     console.log(`   Local: ${localPath}`);
 
-    // 4. Upload to HF bucket
-    console.log(`   Uploading to bucket…`);
-    await uploadToBucket(buf, `${spec.filename}.glb`);
-    console.log(`   Bucket: ${bucketUrl(`${spec.filename}.glb`)}`);
+    // Upload to bucket
+    if (HF_TOKEN) {
+      await uploadToBucket(buf, `${spec.filename}.glb`);
+      console.log(`   Bucket: https://huggingface.co/buckets/${BUCKET}/resolve/${spec.filename}.glb`);
+    }
     console.log();
   }
 
-  console.log('✓  All models generated and uploaded.');
-  console.log('   Restart the dev server to serve the local models.');
-  console.log(`   Bucket CDN: https://huggingface.co/buckets/${BUCKET}`);
+  console.log('✓  Done — restart the dev server to serve the new models.');
   process.exit(0);
 }
 
