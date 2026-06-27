@@ -136,6 +136,7 @@ export class SplashScene extends Phaser.Scene {
     if (this.done) return;
     this.done = true;
     this.autoTimer.remove();
+    void musicManager.init();
     this.input.keyboard?.removeAllListeners();
     this.input.removeAllListeners();
 

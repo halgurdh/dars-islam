@@ -135,6 +135,7 @@ export class TouchControls {
     this.scene.input.off('pointerdown', this.handleDown, this);
     this.scene.input.off('pointermove', this.handleMove, this);
     this.scene.input.off('pointerup',   this.handleUp,   this);
+    this.scene.input.keyboard?.off('keydown', this.handleKey, this);
     for (const obj of this.allGfx) {
       if ((obj as Phaser.GameObjects.GameObject & { scene?: unknown }).scene) {
         obj.destroy();
@@ -152,6 +153,11 @@ export class TouchControls {
     this.scene.input.on('pointerdown', this.handleDown, this);
     this.scene.input.on('pointermove', this.handleMove, this);
     this.scene.input.on('pointerup',   this.handleUp,   this);
+    this.scene.input.keyboard?.on('keydown', this.handleKey, this);
+  }
+
+  private handleKey(): void {
+    if (this.hintPanel?.visible) this.fadeOutHint();
   }
 
   private handleDown(ptr: Phaser.Input.Pointer): void {
@@ -162,6 +168,11 @@ export class TouchControls {
 
     const { x, y } = ptr;
 
+    // Button zones must be checked first — they overlap the joystick area
+    this.onButtonZone = this.inZone(x, y);
+    if (this.onButtonZone) return;
+
+    // Joystick drag zone (bottom-left), only when no button was hit
     if (this.mode === 'world' && x < 260 && y > 510) {
       this.joystickPID = ptr.id;
       this.joystickBX  = x;
@@ -171,13 +182,10 @@ export class TouchControls {
       return;
     }
 
-    this.onButtonZone = this.inZone(x, y);
-    if (!this.onButtonZone) {
-      this.gestureActive    = true;
-      this.gestureStartX    = x;
-      this.gestureStartY    = y;
-      this.gestureStartTime = ptr.downTime;
-    }
+    this.gestureActive    = true;
+    this.gestureStartX    = x;
+    this.gestureStartY    = y;
+    this.gestureStartTime = ptr.downTime;
   }
 
   private handleMove(ptr: Phaser.Input.Pointer): void {

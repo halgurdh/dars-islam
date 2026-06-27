@@ -7,39 +7,189 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Turbo Drift" />
-    <meta name="theme-color" content="#07080f" />
+    <meta name="theme-color" content="#060814" />
     <link rel="manifest" href="manifest.json" />
     <title>Turbo Drift</title>
     <style>
+      :root {
+        color-scheme: dark;
+        --neon: #00d4ff;
+        --neon2: #ff00cc;
+        --bg: #060814;
+      }
       html,
       body {
         width: 100%;
         height: 100%;
         margin: 0;
         overflow: hidden;
-        background: #07080f;
-        font-family: "Segoe UI", system-ui, sans-serif;
+        background: radial-gradient(circle at top, #0f1a3a 0%, #060814 60%);
+        font-family: Inter, "Segoe UI", system-ui, sans-serif;
       }
-      #game {
+      * {
+        box-sizing: border-box;
+      }
+      #app {
         position: fixed;
         inset: 0;
         width: 100vw;
         height: 100vh;
         height: 100dvh;
         overflow: hidden;
+        touch-action: none;
       }
-      #game > canvas {
+      #app > canvas {
         position: absolute !important;
         inset: 0 !important;
         margin: 0 !important;
       }
-      canvas {
-        display: block;
+      .hud {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 14px;
+      }
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      .stack {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .panel {
+        pointer-events: auto;
+        background: rgba(6, 10, 22, 0.72);
+        border: 1px solid rgba(0, 190, 255, 0.18);
+        border-radius: 16px;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 0 0.5px rgba(0, 180, 255, 0.08) inset;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 14px;
+        border-radius: 999px;
+        background: rgba(0, 212, 255, 0.08);
+        border: 1px solid rgba(0, 212, 255, 0.15);
+        color: #e8f6ff;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+      }
+      .button {
+        appearance: none;
+        border: 1px solid rgba(0, 212, 255, 0.25);
+        border-radius: 14px;
+        background: linear-gradient(180deg, rgba(0, 140, 200, 0.9) 0%, rgba(0, 80, 160, 0.9) 100%);
+        color: white;
+        padding: 12px 16px;
+        font: inherit;
+        font-weight: 700;
+        box-shadow: 0 8px 20px rgba(0, 100, 200, 0.35), 0 0 12px rgba(0, 200, 255, 0.15) inset;
+        cursor: pointer;
+        transition: transform 0.08s, box-shadow 0.08s;
+      }
+      .button:active {
+        transform: translateY(1px);
+        box-shadow: 0 4px 10px rgba(0, 100, 200, 0.25);
+      }
+      .button.secondary {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.1);
+        box-shadow: none;
+      }
+      .button.secondary:active {
+        background: rgba(0, 212, 255, 0.12);
+      }
+      .garage-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(270px, 0.95fr);
+        gap: 16px;
+        width: min(980px, 100%);
+      }
+      /* Race touch controls */
+      .controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        width: 100%;
+        padding: 0 4px 8px;
+        pointer-events: none;
+      }
+      .ctrl-pad {
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+        pointer-events: none;
+      }
+      .ctrl-btn {
+        appearance: none;
+        border: none;
+        border-radius: 50%;
+        width: 72px;
+        height: 72px;
+        font-size: 26px;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255, 255, 255, 0.95);
+        font-weight: 900;
+        pointer-events: auto;
+        touch-action: none;
+        cursor: pointer;
+        user-select: none;
+        -webkit-user-select: none;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+        border: 1.5px solid rgba(255, 255, 255, 0.14);
+        transition: transform 0.06s, opacity 0.06s;
+      }
+      .ctrl-btn:active {
+        transform: scale(0.87);
+        opacity: 0.78;
+      }
+      .ctrl-btn.steer {
+        background: rgba(20, 40, 100, 0.82);
+        border-color: rgba(0, 180, 255, 0.3);
+      }
+      .ctrl-btn.go {
+        background: rgba(10, 130, 55, 0.9);
+        border-color: rgba(0, 255, 100, 0.35);
+        width: 88px;
+        height: 88px;
+        font-size: 32px;
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55), 0 0 18px rgba(0, 255, 80, 0.18) inset;
+      }
+      .ctrl-btn.brake {
+        background: rgba(130, 18, 18, 0.88);
+        border-color: rgba(255, 60, 60, 0.3);
+      }
+      .ctrl-btn.drift {
+        background: rgba(120, 70, 8, 0.88);
+        border-color: rgba(255, 160, 0, 0.3);
+        font-size: 20px;
+        letter-spacing: -0.02em;
+      }
+      @media (max-width: 900px) {
+        .garage-layout {
+          grid-template-columns: 1fr;
+        }
       }
     </style>
   </head>
   <body>
-    <div id="game"></div>
+    <div id="app"></div>
     <script type="module" src="./src/main.ts"></script>
   </body>
 </html>

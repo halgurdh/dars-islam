@@ -52,7 +52,10 @@ class TurboMusicStateMachine {
     try {
       this.audioContext = new AudioContext();
       if (this.audioContext.state === 'suspended') {
-        await this.audioContext.resume();
+        // Self-register an unlock handler so music resumes on first user gesture.
+        const unlock = () => { void this.audioContext?.resume(); };
+        document.addEventListener('pointerdown', unlock, { once: true });
+        document.addEventListener('touchstart', unlock, { once: true, passive: true });
       }
 
       const buffers = await Promise.all(

@@ -39,13 +39,26 @@ class MusicManager {
   private _postInit:       (() => void) | null          = null;
 
   /**
-   * Call once on the first user gesture (browser autoplay policy).
-   * Loads all layers and starts them in sync. Safe to call multiple times.
+   * Call on the first user gesture (browser autoplay policy).
+   * Safe to call multiple times — re-entry resumes a suspended context.
    */
   async init(): Promise<void> {
-    if (this.ac) return;
+    if (this.ac) {
+      // Re-called (e.g. from a gesture after init ran from a timer): resume if suspended.
+      if (this.ac.state === 'suspended') {
+        try { await this.ac.resume(); } catch {}
+      }
+      return;
+    }
     try {
       this.ac = new AudioContext();
+      // If browser created the context suspended (no prior gesture), register a
+      // self-unlock handler so music resumes on the next user touch/click.
+      if (this.ac.state === 'suspended') {
+        const unlock = () => { void this.ac?.resume(); };
+        document.addEventListener('pointerdown', unlock, { once: true });
+        document.addEventListener('touchstart', unlock, { once: true, passive: true });
+      }
       const buffers = await Promise.all(
         LAYER_FILES.map(async (path) => {
           const res = await fetch(path);
