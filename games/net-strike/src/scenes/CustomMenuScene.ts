@@ -53,7 +53,8 @@ export class CustomMenuScene extends Phaser.Scene {
     this.cardVisuals = [];
     this.cursorIndex = 0;
     this.isClosing = false;
-    this.showControlHud = ((this.registry.get('netStrikeBattleCount') as number | undefined) ?? 0) === 0;
+    this.showControlHud = this.battleKey === 'FinalBossBattleScene'
+      || (((this.registry.get('netStrikeBattleCount') as number | undefined) ?? 0) === 0);
 
     this.cursors = this.input.keyboard!.createCursorKeys();
     this.wasd = this.input.keyboard!.addKeys('W,A,S,D') as Record<'W' | 'A' | 'S' | 'D', Phaser.Input.Keyboard.Key>;
