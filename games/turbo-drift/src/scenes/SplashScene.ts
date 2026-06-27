@@ -9,6 +9,7 @@ export class SplashScene extends Phaser.Scene {
   }
 
   create(): void {
+    console.info('[Turbo Drift][Splash] create');
     this.done = false;
     const { width, height } = this.scale;
     const cx = width / 2;
@@ -87,6 +88,7 @@ export class SplashScene extends Phaser.Scene {
       return;
     }
     this.done = true;
+    console.info('[Turbo Drift][Splash] advance', { userInitiated });
     if (userInitiated) {
       if (this.cache.audio.exists('splash')) {
         this.sound.play('splash', { volume: 0.65 });

@@ -56,7 +56,9 @@ export class GarageScene extends Scene3D {
   private previewCar: THREE.Group | null = null;
   private previewPlatform: THREE.Mesh | null = null;
   private previewBackdrop: THREE.Group | null = null;
+  private previewBeacon: THREE.Mesh | null = null;
   private previewYaw = Math.PI * 0.72;
+  private previewReady = false;
 
   constructor() {
     super('Garage');
@@ -89,9 +91,9 @@ export class GarageScene extends Scene3D {
       this.disposePreview();
     });
 
-    this.setup3DPreview();
     this.buildOverlay();
     this.refresh();
+    void this.bootstrap3DPreview();
   }
 
   update(_: number, delta: number): void {
@@ -109,15 +111,26 @@ export class GarageScene extends Scene3D {
     }
   }
 
+  private async bootstrap3DPreview(): Promise<void> {
+    const thirdScene = this as GarageThird;
+    const third = thirdScene.third as GarageThird['third'] & { warpSpeed: (...args: string[]) => Promise<void> };
+    await third.warpSpeed('-ground', '-sky');
+
+    third.renderer.shadowMap.enabled = false;
+    this.previewReady = true;
+    this.setup3DPreview();
+    this.refresh();
+  }
+
   private setup3DPreview(): void {
     const thirdScene = this as GarageThird;
-    thirdScene.third.renderer.shadowMap.enabled = false;
+    thirdScene.cameras.main.setBackgroundColor('rgba(0,0,0,0)');
     thirdScene.third.scene.background = new THREE.Color(0x07080f);
 
     const ambient = new THREE.AmbientLight(0xffffff, 0.82);
-    const key = new THREE.DirectionalLight(0xffffff, 1.25);
+    const key = new THREE.DirectionalLight(0xffffff, 1.35);
     key.position.set(6, 10, 10);
-    const rim = new THREE.DirectionalLight(0x6bd6ff, 0.55);
+    const rim = new THREE.DirectionalLight(0x6bd6ff, 0.72);
     rim.position.set(-8, 5, -8);
     thirdScene.third.scene.add(ambient, key, rim);
 
@@ -128,6 +141,13 @@ export class GarageScene extends Scene3D {
     platform.position.set(0, -0.42, 0);
     thirdScene.third.scene.add(platform);
     this.previewPlatform = platform;
+
+    const floor = new THREE.Mesh(
+      new THREE.BoxGeometry(18, 0.08, 18),
+      new THREE.MeshBasicMaterial({ color: 0x05070b }),
+    );
+    floor.position.set(0, -0.66, 0);
+    thirdScene.third.scene.add(floor);
 
     const ring = new THREE.Mesh(
       new THREE.TorusGeometry(5.1, 0.08, 8, 32),
@@ -156,9 +176,17 @@ export class GarageScene extends Scene3D {
     thirdScene.third.scene.add(arch);
     this.previewBackdrop = arch;
 
+    const beacon = new THREE.Mesh(
+      new THREE.BoxGeometry(0.42, 5.2, 0.42),
+      new THREE.MeshBasicMaterial({ color: 0xff6b35 }),
+    );
+    beacon.position.set(-3.8, 1.8, 0);
+    thirdScene.third.scene.add(beacon);
+    this.previewBeacon = beacon;
+
     const camera = thirdScene.third.camera as THREE.PerspectiveCamera;
-    camera.position.set(0, 2.5, 8.6);
-    camera.lookAt(0, 0.7, 0);
+    camera.position.set(0, 2.15, 6.4);
+    camera.lookAt(0, 0.8, 0);
 
     this.rebuildPreviewCar();
   }
@@ -166,9 +194,9 @@ export class GarageScene extends Scene3D {
   private buildOverlay(): void {
     const { width, height } = this.scale;
 
-    this.add.rectangle(width / 2, height / 2, width, height, 0x05070b, 0.32);
-    this.add.rectangle(246, height * 0.5, 364, height * 0.76, 0x101827, 0.74).setStrokeStyle(2, 0x2f4d72, 0.92);
-    this.add.rectangle(width - 270, height * 0.5, 476, height * 0.76, 0x0d1320, 0.78).setStrokeStyle(2, 0x28374b, 0.92);
+    this.add.rectangle(width / 2, height / 2, width, height, 0x05070b, 0.12);
+    this.add.rectangle(242, height * 0.5, 330, height * 0.72, 0x101827, 0.48).setStrokeStyle(2, 0x2f4d72, 0.82);
+    this.add.rectangle(width - 258, height * 0.5, 438, height * 0.72, 0x0d1320, 0.52).setStrokeStyle(2, 0x28374b, 0.82);
 
     this.add.text(72, 52, 'TURBO DRIFT GARAGE', {
       fontFamily: 'Trebuchet MS, Segoe UI, sans-serif',
@@ -177,6 +205,15 @@ export class GarageScene extends Scene3D {
       color: '#f6f8ff',
       stroke: '#05070b',
       strokeThickness: 6,
+    });
+
+    this.add.text(72, 92, '3D PREVIEW ACTIVE', {
+      fontFamily: 'Trebuchet MS, Segoe UI, sans-serif',
+      fontSize: '16px',
+      fontStyle: 'bold',
+      color: '#8ed4ff',
+      stroke: '#05070b',
+      strokeThickness: 4,
     });
 
     this.infoText = this.add.text(72, 102, '', {
@@ -281,6 +318,9 @@ export class GarageScene extends Scene3D {
   }
 
   private rebuildPreviewCar(): void {
+    if (!this.previewReady) {
+      return;
+    }
     const thirdScene = this as Partial<GarageThird>;
     if (!thirdScene.third) {
       return;
@@ -309,10 +349,15 @@ export class GarageScene extends Scene3D {
     if (scene && this.previewBackdrop) {
       scene.remove(this.previewBackdrop);
     }
+    if (scene && this.previewBeacon) {
+      scene.remove(this.previewBeacon);
+    }
 
     this.previewCar = null;
     this.previewPlatform = null;
     this.previewBackdrop = null;
+    this.previewBeacon = null;
+    this.previewReady = false;
   }
 
   private animatePreview(delta: number): void {

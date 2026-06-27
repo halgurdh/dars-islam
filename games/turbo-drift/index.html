@@ -21,9 +21,17 @@
         font-family: "Segoe UI", system-ui, sans-serif;
       }
       #game {
+        position: fixed;
+        inset: 0;
         width: 100vw;
         height: 100vh;
         height: 100dvh;
+        overflow: hidden;
+      }
+      #game > canvas {
+        position: absolute !important;
+        inset: 0 !important;
+        margin: 0 !important;
       }
       canvas {
         display: block;

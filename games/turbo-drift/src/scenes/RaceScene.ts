@@ -40,6 +40,7 @@ export class RaceScene extends Scene3D {
   private finishing = false;
   private countdownText!: Phaser.GameObjects.Text;
   private driftActive = false;
+  private sceneReady = false;
 
   constructor() {
     super('Race');
@@ -62,40 +63,18 @@ export class RaceScene extends Scene3D {
       onRaceFinished: () => this.finishRace(),
       onReturnToGarage: () => this.exitToGarage(false),
     });
-
-    const thirdScene = this as ThirdScene;
-    thirdScene.third.warpSpeed('-ground', '-sky');
-    thirdScene.third.renderer.shadowMap.enabled = false;
-    thirdScene.third.scene.background = new THREE.Color(0x07080f);
-
-    const ambient = new THREE.AmbientLight(0xffffff, 0.6);
-    const sun = new THREE.DirectionalLight(0xffffff, 1.2);
-    sun.position.set(16, 28, 20);
-    thirdScene.third.scene.add(ambient, sun);
-
-    this.buildTrack(thirdScene.third);
-    this.carMesh = CarMesh.build(this.config);
-    thirdScene.third.scene.add(this.carMesh);
-    this.carPhysics = new CarPhysics(thirdScene.third, this.carMesh, this.config.stats);
-
-    const camera = thirdScene.third.camera as THREE.PerspectiveCamera;
-    camera.position.set(0, 7.5, 10.5);
-
     this.createHud();
     this.bindInput();
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       gameFlow.clearHooks();
     });
-
-    this.raceStartMs = this.time.now;
-    this.lapStartMs = this.time.now;
-    this.cameras.main.fadeIn(220, 0, 0, 0);
+    void this.bootstrapRaceScene();
   }
 
   update(_: number, delta: number): void {
     gameFlow.update(delta);
 
-    if (this.finishing || gameFlow.currentState === 'race_countdown') {
+    if (!this.sceneReady || this.finishing || gameFlow.currentState === 'race_countdown') {
       return;
     }
 
@@ -169,6 +148,31 @@ export class RaceScene extends Scene3D {
       space: Phaser.Input.Keyboard.KeyCodes.SPACE,
       esc: Phaser.Input.Keyboard.KeyCodes.ESC,
     }) as KeySet;
+  }
+
+  private async bootstrapRaceScene(): Promise<void> {
+    const thirdScene = this as ThirdScene;
+    await thirdScene.third.warpSpeed('-ground', '-sky');
+    thirdScene.third.renderer.shadowMap.enabled = false;
+    thirdScene.third.scene.background = new THREE.Color(0x07080f);
+
+    const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+    const sun = new THREE.DirectionalLight(0xffffff, 1.2);
+    sun.position.set(16, 28, 20);
+    thirdScene.third.scene.add(ambient, sun);
+
+    this.buildTrack(thirdScene.third);
+    this.carMesh = CarMesh.build(this.config);
+    thirdScene.third.scene.add(this.carMesh);
+    this.carPhysics = new CarPhysics(thirdScene.third, this.carMesh, this.config.stats);
+
+    const camera = thirdScene.third.camera as THREE.PerspectiveCamera;
+    camera.position.set(0, 7.5, 10.5);
+
+    this.sceneReady = true;
+    this.raceStartMs = this.time.now;
+    this.lapStartMs = this.time.now;
+    this.cameras.main.fadeIn(220, 0, 0, 0);
   }
 
   private readInput(): RaceInput {
