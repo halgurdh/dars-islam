@@ -18,6 +18,8 @@ import { createPhysicsState, stepPhysics, speedKmh, type PhysicsState } from '..
 import { generateCarBodyMesh } from '../pipeline/ManifoldCarPipeline';
 import { loadGlbEntity } from '../loaders/GlbAssetLoader';
 import { buildCarMesh, spinWheels, type CarMeshResult } from '../car/PlayCanvasCarMesh';
+import { fetchOsmTrack, type TrackData } from '../world/OsmTrackLoader';
+import { buildRoadEntity, buildKerbEntity, buildCentreLineEntity, buildFinishArch } from '../world/RoadMeshBuilder';
 import { GameState } from '../systems/GameState';
 import { gameFlow, type FlowHooks } from '../systems/GameFlowMachine';
 import { turboMusic } from '../systems/MusicStateMachine';
@@ -419,6 +421,10 @@ class TurboDriftPlayCanvas {
   private garageRoot!: pc.Entity;
   private raceRoot!: pc.Entity;
 
+  private ovalRoot!: pc.Entity;
+  private osmTrack: TrackData | null = null;
+  private osmFinishPrevSign = 0;
+
   private carResult: CarMeshResult | null = null;
   private physics: PhysicsState = createPhysicsState(0, -22, Math.PI / 2);
   private raceInput: RaceInput = { throttle: 0, brake: false, steer: 0, handbrake: false };
@@ -502,6 +508,9 @@ class TurboDriftPlayCanvas {
     this.buildGarageScene();
     this.buildRaceScene();
     this.buildDomUI(overlay);
+
+    this.setLoaderProgress(85, 'Fetching OSM track…');
+    await this.tryLoadOsmTrack();
 
     this.setLoaderProgress(90, 'Loading 3D assets…');
     await this.tryLoadGlbAssets();
@@ -631,35 +640,75 @@ class TurboDriftPlayCanvas {
       console.log('[GLB] car.glb loaded');
     }
 
-    // Grandstand GLB — placed at both sides of the oval
+    // Grandstand GLB
     const gs = await loadWithFallback('grandstand.glb');
     if (gs && this.raceRoot) {
-      gs.setLocalPosition(0, 0, WORLD.trackRadiusZ + 18);
-      gs.setLocalScale(5, 5, 5);
-      this.raceRoot.addChild(gs);
-
-      const gs2 = gs.clone() as pc.Entity;
-      gs2.setLocalPosition(0, 0, -(WORLD.trackRadiusZ + 18));
-      gs2.setEulerAngles(0, 180, 0);
-      this.raceRoot.addChild(gs2);
+      if (this.osmTrack) {
+        // Place grandstands every ~500 m along the OSM track outer edge
+        this.placeAlongTrack(gs, this.osmTrack.centerline, 500, 26, 6);
+      } else {
+        gs.setLocalPosition(0, 0, WORLD.trackRadiusZ + 18);
+        gs.setLocalScale(5, 5, 5);
+        this.raceRoot.addChild(gs);
+        const gs2 = gs.clone() as pc.Entity;
+        gs2.setLocalPosition(0, 0, -(WORLD.trackRadiusZ + 18));
+        gs2.setEulerAngles(0, 180, 0);
+        this.raceRoot.addChild(gs2);
+      }
       console.log('[GLB] grandstand.glb loaded');
     }
 
-    // Tree GLB — 24 instances around the track perimeter
+    // Tree GLB
     const treeTemplate = await loadWithFallback('tree.glb');
     if (treeTemplate && this.raceRoot) {
-      const count = 24;
-      const rx = WORLD.trackRadiusX + 16;
-      const rz = WORLD.trackRadiusZ + 12;
-      for (let i = 0; i < count; i++) {
-        const θ = (i / count) * Math.PI * 2;
-        const t = i === 0 ? treeTemplate : (treeTemplate.clone() as pc.Entity);
-        t.setLocalPosition(Math.cos(θ) * rx, 0, Math.sin(θ) * rz);
-        const s = 2.8 + (i % 3) * 0.7;
-        t.setLocalScale(s, s, s);
-        this.raceRoot.addChild(t);
+      if (this.osmTrack) {
+        // Place trees every ~40 m along the OSM track outer edge
+        this.placeAlongTrack(treeTemplate, this.osmTrack.centerline, 40, 22, 3.5);
+      } else {
+        const count = 24;
+        const rx = WORLD.trackRadiusX + 16;
+        const rz = WORLD.trackRadiusZ + 12;
+        for (let i = 0; i < count; i++) {
+          const θ = (i / count) * Math.PI * 2;
+          const t = i === 0 ? treeTemplate : (treeTemplate.clone() as pc.Entity);
+          t.setLocalPosition(Math.cos(θ) * rx, 0, Math.sin(θ) * rz);
+          const s = 2.8 + (i % 3) * 0.7;
+          t.setLocalScale(s, s, s);
+          this.raceRoot.addChild(t);
+        }
       }
-      console.log('[GLB] tree.glb loaded (×24)');
+      console.log('[GLB] tree.glb loaded');
+    }
+  }
+
+  // ── OSM placement helper ─────────────────────────────────────────────────
+
+  private placeAlongTrack(
+    template:   pc.Entity,
+    centerline: Array<[number, number]>,
+    stepM:      number,
+    offsetM:    number,
+    scale:      number,
+  ): void {
+    let acc = 0;
+    let first = true;
+    for (let i = 1; i < centerline.length; i++) {
+      const [x0, z0] = centerline[i - 1];
+      const [x1, z1] = centerline[i];
+      const dx = x1 - x0, dz = z1 - z0;
+      const len = Math.sqrt(dx * dx + dz * dz);
+      if (len < 0.1) continue;
+      acc += len;
+      if (acc < stepM) continue;
+      acc = 0;
+
+      const px = -dz / len, pz = dx / len; // perpendicular left
+      const ent = first ? template : (template.clone() as pc.Entity);
+      first = false;
+      const s = scale * (0.9 + (i % 3) * 0.15);
+      ent.setLocalPosition(x0 + px * offsetM, 0, z0 + pz * offsetM);
+      ent.setLocalScale(s, s, s);
+      this.raceRoot.addChild(ent);
     }
   }
 
@@ -765,9 +814,9 @@ class TurboDriftPlayCanvas {
     this.raceRoot.enabled = false;
     this.app.root.addChild(this.raceRoot);
 
-    const rx = WORLD.trackRadiusX, rz = WORLD.trackRadiusZ;
-    const seg = WORLD.segmentCount;
     const TWO_PI = Math.PI * 2;
+
+    // ── Shared environment (always visible regardless of track mode) ─────────
 
     const gndMat = new pc.StandardMaterial();
     gndMat.diffuse = new pc.Color(0.04, 0.04, 0.07); gndMat.update();
@@ -777,7 +826,6 @@ class TurboDriftPlayCanvas {
     ground.setLocalScale(520, 1, 520);
     this.raceRoot.addChild(ground);
 
-    // Stars
     const starMat = new pc.StandardMaterial();
     starMat.diffuse = new pc.Color(1,1,1); starMat.emissive = new pc.Color(1,1,1);
     starMat.emissiveIntensity = 4; starMat.useLighting = false; starMat.update();
@@ -790,6 +838,25 @@ class TurboDriftPlayCanvas {
       star.setLocalScale(0.5+Math.random()*1.2, 0.5+Math.random()*1.2, 0.5+Math.random()*1.2);
       this.raceRoot.addChild(star);
     }
+
+    const raceAmb = new pc.Entity('raceAmb');
+    raceAmb.addComponent('light', {
+      type: 'omni',
+      color: new pc.Color(0.05,0.08,0.22),
+      intensity: 1.5,
+      range: 120,
+      castShadows: false,
+    });
+    raceAmb.setLocalPosition(0, 30, 0);
+    this.raceRoot.addChild(raceAmb);
+
+    // ── Oval track (disabled when OSM loads) ─────────────────────────────────
+
+    this.ovalRoot = new pc.Entity('oval');
+    this.raceRoot.addChild(this.ovalRoot);
+
+    const rx = WORLD.trackRadiusX, rz = WORLD.trackRadiusZ;
+    const seg = WORLD.segmentCount;
 
     const roadMatA = new pc.StandardMaterial();
     roadMatA.diffuse = new pc.Color(0.08,0.09,0.16); roadMatA.useMetalness = true; roadMatA.metalness = 0.08; roadMatA.gloss = 0.12; roadMatA.update();
@@ -809,7 +876,7 @@ class TurboDriftPlayCanvas {
       seg3d.setLocalPosition(p.x, 0, p.z);
       seg3d.setLocalScale(8, 0.18, 12);
       seg3d.lookAt(pN);
-      this.raceRoot.addChild(seg3d);
+      this.ovalRoot.addChild(seg3d);
 
       for (const side of [-1, 1]) {
         const edge = new pc.Entity(`edge${i}_${side}`);
@@ -818,7 +885,7 @@ class TurboDriftPlayCanvas {
         edge.setLocalScale(0.3, 0.22, 11.5);
         edge.lookAt(pN);
         edge.translateLocal(side*3.6, 0, 0);
-        this.raceRoot.addChild(edge);
+        this.ovalRoot.addChild(edge);
       }
 
       if (i%2===0) {
@@ -827,18 +894,17 @@ class TurboDriftPlayCanvas {
         dash.setLocalPosition(p.x, 0.015, p.z);
         dash.setLocalScale(0.2, 0.22, 4.5);
         dash.lookAt(pN);
-        this.raceRoot.addChild(dash);
+        this.ovalRoot.addChild(dash);
       }
     }
 
-    // Finish line + arch
     const finMat = new pc.StandardMaterial();
     finMat.diffuse = new pc.Color(1,1,1); finMat.emissive = new pc.Color(1,1,1); finMat.emissiveIntensity = 0.6; finMat.update();
     const finLine = new pc.Entity('fin');
     finLine.addComponent('render', { type: 'box', material: finMat });
     finLine.setLocalPosition(0, 0.01, -rz);
     finLine.setLocalScale(8.2, 0.22, 1.4);
-    this.raceRoot.addChild(finLine);
+    this.ovalRoot.addChild(finLine);
 
     const archMat = new pc.StandardMaterial();
     archMat.diffuse = new pc.Color(0,0.83,1); archMat.emissive = new pc.Color(0,0.83,1); archMat.emissiveIntensity = 1.4; archMat.useLighting = false; archMat.update();
@@ -851,10 +917,9 @@ class TurboDriftPlayCanvas {
       ap.addComponent('render', { type: 'box', material: archMat });
       ap.setLocalPosition(sx,sy,sz);
       ap.setLocalScale(ex,ey,ez);
-      this.raceRoot.addChild(ap);
+      this.ovalRoot.addChild(ap);
     }
 
-    // Inner curbs
     const innerRx = rx-4.8, innerRz = rz-4.8;
     for (let i = 0; i < seg; i++) {
       const t=(i/seg)*TWO_PI, t1=((i+1)/seg)*TWO_PI;
@@ -866,10 +931,9 @@ class TurboDriftPlayCanvas {
       curb.setLocalPosition(p.x,0.1,p.z);
       curb.setLocalScale(2.4,0.2,2.2);
       curb.lookAt(new pc.Vec3(pN.x,0.1,pN.z));
-      this.raceRoot.addChild(curb);
+      this.ovalRoot.addChild(curb);
     }
 
-    // Outer barriers
     const outerRx = rx+5.2, outerRz = rz+5.2;
     for (let i = 0; i < seg; i++) {
       const t=(i/seg)*TWO_PI, t1=((i+1)/seg)*TWO_PI;
@@ -881,10 +945,9 @@ class TurboDriftPlayCanvas {
       bar.setLocalPosition(p.x,0.55,p.z);
       bar.setLocalScale(2.5,1.1,2.2);
       bar.lookAt(new pc.Vec3(pN.x,0.55,pN.z));
-      this.raceRoot.addChild(bar);
+      this.ovalRoot.addChild(bar);
     }
 
-    // Buildings
     for (let i = 0; i < 14; i++) {
       const angle=(i/14)*TWO_PI, bldgR=outerRx+14+(i%3)*4;
       const bx=Math.cos(angle)*bldgR, bz=Math.sin(angle)*bldgR;
@@ -895,7 +958,7 @@ class TurboDriftPlayCanvas {
       bldg.addComponent('render', { type: 'box', material: bm });
       bldg.setLocalPosition(bx,bh/2,bz);
       bldg.setLocalScale(3.5+i%3,bh,3.5+i%2);
-      this.raceRoot.addChild(bldg);
+      this.ovalRoot.addChild(bldg);
       if (i%2===0) {
         const isBlue=i%4===0;
         const wc=isBlue ? new pc.Color(0,0.83,1) : new pc.Color(1,0,0.8);
@@ -906,11 +969,10 @@ class TurboDriftPlayCanvas {
         win.setLocalPosition(bx,bh*0.5,bz);
         win.setLocalScale(3.2,bh*0.55,0.12);
         win.lookAt(new pc.Vec3(0,bh*0.5,0));
-        this.raceRoot.addChild(win);
+        this.ovalRoot.addChild(win);
       }
     }
 
-    // Pine trees
     const trunkMat = new pc.StandardMaterial();
     trunkMat.diffuse = new pc.Color(0.22,0.16,0.1); trunkMat.update();
     const topMat = new pc.StandardMaterial();
@@ -923,25 +985,46 @@ class TurboDriftPlayCanvas {
       trunk.addComponent('render', { type: 'cylinder', material: trunkMat });
       trunk.setLocalPosition(tx,ts*0.5,tz);
       trunk.setLocalScale(ts*0.18,ts*1.1,ts*0.18);
-      this.raceRoot.addChild(trunk);
+      this.ovalRoot.addChild(trunk);
       const top=new pc.Entity(`tt${i}`);
       top.addComponent('render', { type: 'cone', material: topMat });
       top.setLocalPosition(tx,ts*1.1+ts*1.2,tz);
       top.setLocalScale(ts*0.8,ts*2.4,ts*0.8);
-      this.raceRoot.addChild(top);
+      this.ovalRoot.addChild(top);
     }
+  }
 
-    // Race omni fill light — string type!
-    const raceAmb = new pc.Entity('raceAmb');
-    raceAmb.addComponent('light', {
-      type: 'omni',
-      color: new pc.Color(0.05,0.08,0.22),
-      intensity: 1.5,
-      range: 120,
-      castShadows: false,
-    });
-    raceAmb.setLocalPosition(0, 30, 0);
-    this.raceRoot.addChild(raceAmb);
+  // ── OSM track loading ─────────────────────────────────────────────────────
+
+  private async tryLoadOsmTrack(): Promise<void> {
+    try {
+      const track = await fetchOsmTrack();
+      this.osmTrack = track;
+      this.ovalRoot.enabled = false;
+
+      // Scale ground to cover real-world circuit (~2 km radius)
+      const gnd = this.raceRoot.findByName('ground') as pc.Entity | null;
+      if (gnd) gnd.setLocalScale(20_000, 1, 20_000);
+
+      // Reduce fog density for larger world
+      const scene = this.app.scene as pc.Scene & { fog?: { density?: number } };
+      if (scene.fog) scene.fog.density = 0.0008;
+
+      // Increase camera far clip for km-scale circuit
+      if (this.camera.camera) this.camera.camera.farClip = 3000;
+
+      this.raceRoot.addChild(buildRoadEntity(this.app, track.centerline));
+      this.raceRoot.addChild(buildKerbEntity(this.app, track.centerline, 1));
+      this.raceRoot.addChild(buildKerbEntity(this.app, track.centerline, -1));
+      this.raceRoot.addChild(buildCentreLineEntity(this.app, track.centerline));
+      this.raceRoot.addChild(buildFinishArch(
+        track.startX, track.startZ, track.startHeading,
+      ));
+
+      console.log(`[OSM] ${track.name} loaded — ${(track.lengthM / 1000).toFixed(2)} km`);
+    } catch (err) {
+      console.warn('[OSM] Failed — using procedural oval:', err instanceof Error ? err.message : err);
+    }
   }
 
   // ── DOM UI ────────────────────────────────────────────────────────────────
@@ -1288,7 +1371,20 @@ class TurboDriftPlayCanvas {
     this.hudEl.style.display = 'block';
     this.finishEl.style.display = 'none';
     this.touchEl.style.display = 'block';
-    this.physics = createPhysicsState(0, -22, Math.PI / 2);
+
+    if (this.osmTrack) {
+      // Place car slightly behind the OSM finish line
+      const { startX, startZ, startHeading } = this.osmTrack;
+      this.physics = createPhysicsState(
+        startX - Math.sin(startHeading) * 12,
+        startZ - Math.cos(startHeading) * 12,
+        startHeading,
+      );
+      this.osmFinishPrevSign = -1;
+    } else {
+      this.physics = createPhysicsState(0, -22, Math.PI / 2);
+    }
+
     this.lapCount = 0;
     this.lapStartTime = 0;
     this.lastGateCrossTime = -10;
@@ -1404,27 +1500,47 @@ class TurboDriftPlayCanvas {
     pop.addEventListener('animationend', () => pop.remove());
   }
 
+  private completeLap(): void {
+    const lapMs = this.lapStartTime > 0 ? performance.now() - this.lapStartTime : 0;
+    if (this.lapCount < WORLD.lapsToWin) {
+      const payout = Math.round(clamp(225 + Math.max(0, 90 - lapMs / 1000) * 4, 0, 375));
+      ArcadeStore.addCoins(payout);
+      this.raceEarnedCoins += payout;
+      this.spawnCoinPop(payout);
+      if (lapMs > 0) { GameState.setBestLap(lapMs); this.lastLapMs = lapMs; }
+    }
+    this.lapCount++;
+    this.lapStartTime = performance.now();
+    gameFlow.send('lap_complete', this.lapCount);
+  }
+
   private checkLapGate(): void {
     const { x, z } = this.physics;
     const now = performance.now() / 1000;
+
+    if (this.osmTrack) {
+      // Signed-distance crossing of the start/finish line
+      const { startX, startZ, startHeading } = this.osmTrack;
+      const nx = Math.sin(startHeading), nz = Math.cos(startHeading);
+      const dx = x - startX, dz = z - startZ;
+      const signed  = dx * nx + dz * nz;       // positive = ahead of line
+      const lateral = Math.abs(-dx * nz + dz * nx); // distance from line axis
+      const curSign = signed >= 0 ? 1 : -1;
+
+      // Count lap when crossing forward (−→+) within road width, after min interval
+      if (lateral < 14 && curSign > 0 && this.osmFinishPrevSign < 0
+          && (now - this.lastGateCrossTime) > 8) {
+        this.lastGateCrossTime = now;
+        this.completeLap();
+      }
+      this.osmFinishPrevSign = curSign;
+      return;
+    }
+
+    // Oval mode: hardcoded finish gate at z ≈ −24
     if (z < -23.2 && Math.abs(x) < 7 && (now - this.lastGateCrossTime) > 3) {
       this.lastGateCrossTime = now;
-      const lapMs = this.lapStartTime > 0 ? performance.now() - this.lapStartTime : 0;
-
-      if (this.lapCount < WORLD.lapsToWin) {
-        const payout = Math.round(clamp(225 + Math.max(0, 90 - lapMs/1000) * 4, 0, 375));
-        ArcadeStore.addCoins(payout);
-        this.raceEarnedCoins += payout;
-        this.spawnCoinPop(payout);
-        if (lapMs > 0) {
-          GameState.setBestLap(lapMs);
-          this.lastLapMs = lapMs;
-        }
-      }
-
-      this.lapCount++;
-      this.lapStartTime = performance.now();
-      gameFlow.send('lap_complete', this.lapCount);
+      this.completeLap();
     }
   }
 

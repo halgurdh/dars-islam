@@ -195,6 +195,14 @@ Copy the webhook signing secret → set as STRIPE_WEBHOOK_SECRET in api/_config.
 git clone https://github.com/Tencent-Hunyuan/Hunyuan3D-2.1.git
 cd Hunyuan3D-2.1
 
+conda activate hunyuan3d
+cd C:\Projects\Hunyuan3D-2.1\hy3dpaint\custom_rasterizer
+
+# Run a clean build with no isolation needed anymore
+pip install --no-build-isolation -e .
+
+# github info:
+
 pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu124
 pip install -r requirements.txt
 cd hy3dpaint/custom_rasterizer
@@ -205,3 +213,21 @@ bash compile_mesh_painter.sh
 cd ../..
 
 python api_server.py --port 8081
+
+For generating the models — the script is ready, it just needs your local Hunyuan3D server running. To start it from the weights in your bucket:
+
+
+# 1. Clone the repo (if not done)
+git clone https://github.com/tencent/Hunyuan3D-2 C:\Hunyuan3D
+
+# 2. Download weights from your bucket (huggingface-cli or snapshot_download)
+huggingface-cli download cdgbrands/Hunyuan3D-2.1-bucket --repo-type=dataset --local-dir C:\Hunyuan3D\weights
+
+# 3. Start the API server on port 8081
+cd C:\Hunyuan3D
+python api_server.py --port 8081 --enable_t23d
+
+# 4. Back in the game directory, run generation
+cd C:\Projects\minitoon.games\games\turbo-drift
+npm run generate-models
+The script uses HUNYUAN_URL=http://localhost:8081 by default. Add HUNYUAN_URL=http://your-port to the root .env if it runs on a different port.
