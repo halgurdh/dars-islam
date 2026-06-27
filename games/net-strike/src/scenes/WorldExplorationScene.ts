@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { CHIP_LIBRARY, SCENE_WIDTH } from '../constants';
 import { getSlicedFrameOrigin } from '../spriteSlices';
+import { TouchControls } from '../systems/TouchControls';
 import type { ChipDefinition } from '../types';
 import { ArcadeBar } from '@shared/arcade-bar';
 
@@ -41,6 +42,7 @@ export class WorldExplorationScene extends Phaser.Scene {
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasd!: Record<'W' | 'A' | 'S' | 'D', Phaser.Input.Keyboard.Key>;
   private jackInKey!: Phaser.Input.Keyboard.Key;
+  private touch!: TouchControls;
   private prompt!: Phaser.GameObjects.Container;
   private terminal!: Phaser.GameObjects.Container;
   private terminalId = 'alpha-terminal';
@@ -66,7 +68,10 @@ export class WorldExplorationScene extends Phaser.Scene {
   create(): void {
     this.transitionLocked = false;
     this.arcadeBar = new ArcadeBar();
-    this.events.once('shutdown', () => this.arcadeBar.destroy());
+    this.events.once('shutdown', () => {
+      this.arcadeBar.destroy();
+      this.touch?.destroy();
+    });
     this.battleCount = this.registry.get('netStrikeBattleCount') as number ?? 0;
     this.generateWorldLayout();
     this.createWorld();
@@ -346,8 +351,8 @@ export class WorldExplorationScene extends Phaser.Scene {
     bubble.fillStyle(0x071214, 0.94).fillRoundedRect(-92, -26, 184, 44, 14);
     bubble.lineStyle(2, 0x8dffef, 0.9).strokeRoundedRect(-92, -26, 184, 44, 14);
     bubble.fillStyle(0x071214, 0.94).fillTriangle(-12, 18, 0, 32, 12, 18);
-    const label = this.add.text(0, -4, 'Press E to Jack In!', {
-      fontFamily: 'Trebuchet MS', fontSize: '17px', fontStyle: 'bold', color: '#f4fffb',
+    const label = this.add.text(0, -4, 'Press E / JACK IN to Jack In!', {
+      fontFamily: 'Trebuchet MS', fontSize: '15px', fontStyle: 'bold', color: '#f4fffb',
     }).setOrigin(0.5);
     this.prompt = this.add.container(this.terminal.x, this.terminal.y - 104, [bubble, label])
       .setDepth(600).setVisible(false).setAlpha(0);
@@ -357,6 +362,8 @@ export class WorldExplorationScene extends Phaser.Scene {
     this.cursors = this.input.keyboard!.createCursorKeys();
     this.wasd = this.input.keyboard!.addKeys('W,A,S,D') as Record<'W' | 'A' | 'S' | 'D', Phaser.Input.Keyboard.Key>;
     this.jackInKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.E);
+    this.touch = new TouchControls(this, 'world');
+    this.time.delayedCall(600, () => this.touch.showHint());
   }
 
   private setupCamera(): void {
@@ -383,8 +390,8 @@ export class WorldExplorationScene extends Phaser.Scene {
   }
 
   private updateMovement(_delta: number): void {
-    const moveX = (this.cursors.left.isDown || this.wasd.A.isDown ? -1 : 0) + (this.cursors.right.isDown || this.wasd.D.isDown ? 1 : 0);
-    const moveY = (this.cursors.up.isDown || this.wasd.W.isDown ? -1 : 0) + (this.cursors.down.isDown || this.wasd.S.isDown ? 1 : 0);
+    const moveX = (this.cursors.left.isDown || this.wasd.A.isDown ? -1 : 0) + (this.cursors.right.isDown || this.wasd.D.isDown ? 1 : 0) + this.touch.dpadX;
+    const moveY = (this.cursors.up.isDown || this.wasd.W.isDown ? -1 : 0) + (this.cursors.down.isDown || this.wasd.S.isDown ? 1 : 0) + this.touch.dpadY;
     const vector = new Phaser.Math.Vector2(moveX, moveY);
     const moving = vector.lengthSq() > 0;
 
@@ -409,13 +416,14 @@ export class WorldExplorationScene extends Phaser.Scene {
   private updatePrompt(): void {
     const nearTerminal = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.terminal.x, this.terminal.y) <= 104;
     this.prompt.setPosition(this.terminal.x, this.terminal.y - 112);
+    this.touch.setJackInButtonVisible(nearTerminal && !this.encounterResolved);
 
     if (nearTerminal && !this.encounterResolved) {
       if (!this.prompt.visible) {
         this.prompt.setVisible(true);
         this.tweens.add({ targets: this.prompt, alpha: 1, y: this.prompt.y - 8, duration: 160, ease: 'Cubic.easeOut' });
       }
-      if (Phaser.Input.Keyboard.JustDown(this.jackInKey)) {
+      if (Phaser.Input.Keyboard.JustDown(this.jackInKey) || this.touch.consumeJackIn()) {
         this.startEncounter();
       }
       return;

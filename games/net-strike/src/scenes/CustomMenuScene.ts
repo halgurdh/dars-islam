@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { SCENE_HEIGHT, SCENE_WIDTH } from '../constants';
+import { TouchControls } from '../systems/TouchControls';
 import type { ChipDefinition, ChipIconShape, CustomMenuHost } from '../types';
 
 const MENU_WIDTH = 800;
@@ -35,6 +36,7 @@ export class CustomMenuScene extends Phaser.Scene {
   private spaceKey!: Phaser.Input.Keyboard.Key;
   private enterKey!: Phaser.Input.Keyboard.Key;
   private escKey!: Phaser.Input.Keyboard.Key;
+  private touch!: TouchControls;
   private isClosing = false;
 
   constructor() {
@@ -57,6 +59,10 @@ export class CustomMenuScene extends Phaser.Scene {
     this.enterKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
     this.escKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
 
+    this.touch = new TouchControls(this, 'menu');
+    this.touch.onCardTap = (x, y) => this.handleCardTap(x, y);
+    this.time.delayedCall(300, () => this.touch.showHint());
+
     this.buildLayout();
     this.renderMenu();
     this.animateIn();
@@ -64,6 +70,13 @@ export class CustomMenuScene extends Phaser.Scene {
 
   update(): void {
     if (this.isClosing) {
+      return;
+    }
+
+    const nav = this.touch.consumeMenuNav();
+    if (nav !== null) {
+      this.cursorIndex = Phaser.Math.Wrap(this.cursorIndex + nav, 0, this.hand.length);
+      this.renderMenu();
       return;
     }
 
@@ -84,14 +97,14 @@ export class CustomMenuScene extends Phaser.Scene {
       return;
     }
 
-    if (Phaser.Input.Keyboard.JustDown(this.enterKey) && this.selectedIndices.length > 0) {
+    if ((Phaser.Input.Keyboard.JustDown(this.enterKey) || this.touch.consumeConfirm()) && this.selectedIndices.length > 0) {
       const selectedChips = this.selectedIndices.map((index) => this.hand[index]);
       this.battleScene.loadChips(selectedChips);
       this.closeMenu(true);
       return;
     }
 
-    if (Phaser.Input.Keyboard.JustDown(this.escKey)) {
+    if (Phaser.Input.Keyboard.JustDown(this.escKey) || this.touch.consumeCancel()) {
       this.closeMenu(false);
     }
   }
@@ -165,9 +178,9 @@ export class CustomMenuScene extends Phaser.Scene {
     }
 
     this.cardsLayer = this.add.container(0, 0);
-    this.hintText = this.add.text(cx, panelY + MENU_HEIGHT - 30, 'ARROWS: MOVE   SPACE: SELECT   ENTER: CONFIRM   ESC: CANCEL', {
+    this.hintText = this.add.text(cx, panelY + MENU_HEIGHT - 30, 'ARROWS/SWIPE: Navigate  ·  SPACE/TAP: Select  ·  ENTER/✓: Confirm  ·  ESC/✗: Cancel', {
       fontFamily: 'Segoe UI',
-      fontSize: '15px',
+      fontSize: '13px',
       fontStyle: 'bold',
       color: '#82b7d8',
     }).setOrigin(0.5);
@@ -432,11 +445,26 @@ export class CustomMenuScene extends Phaser.Scene {
     this.tweens.add({ targets: this.root, alpha: 1, y: 0, duration: 240, ease: 'Cubic.easeOut' });
   }
 
+  private handleCardTap(x: number, y: number): void {
+    if (this.isClosing || this.cardVisuals.length === 0) return;
+    let closest = -1;
+    let minDist = CARD_WIDTH * 0.75;
+    this.cardVisuals.forEach((v, i) => {
+      const dist = Math.abs(x - v.x) + Math.abs(y - v.y);
+      if (dist < minDist) { minDist = dist; closest = i; }
+    });
+    if (closest >= 0) {
+      this.cursorIndex = closest;
+      this.toggleSelection(closest);
+    }
+  }
+
   private closeMenu(confirmed: boolean): void {
     if (this.isClosing) {
       return;
     }
     this.isClosing = true;
+    this.touch?.destroy();
     this.battleScene.exitCustomMenu(confirmed);
 
     this.tweens.add({

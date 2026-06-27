@@ -13,6 +13,7 @@ import {
 import { EnemyCharacter, PlayerCharacter } from '../entities/Character';
 import { ChipManager } from '../systems/ChipManager';
 import { GridSystem } from '../systems/GridSystem';
+import { TouchControls } from '../systems/TouchControls';
 import { UIManager } from '../systems/UIManager';
 import type { BattleState, ChipDefinition, CustomMenuHost, GridCoord, GridOwner } from '../types';
 
@@ -43,6 +44,7 @@ export class BattleScene extends Phaser.Scene implements CustomMenuHost {
   private wasd!: Record<'W' | 'A' | 'S' | 'D', Phaser.Input.Keyboard.Key>;
   private enterKey!: Phaser.Input.Keyboard.Key;
   private spaceKey!: Phaser.Input.Keyboard.Key;
+  private touch!: TouchControls;
   private gaugeValue = 0;
   private currentHand: ChipDefinition[] = [];
   private projectiles: Projectile[] = [];
@@ -90,6 +92,7 @@ export class BattleScene extends Phaser.Scene implements CustomMenuHost {
     this.createHudLabels();
 
     this.events.once('shutdown', () => {
+      this.touch?.destroy();
       this.enemyLoop?.destroy();
       this.areaGrabTimer?.destroy();
       if (this.scene.isActive('CustomMenuScene')) {
@@ -102,6 +105,7 @@ export class BattleScene extends Phaser.Scene implements CustomMenuHost {
       this.time.delayedCall(320, () => {
         this.startRealtimeCombat();
         this.ui.showBanner('BATTLE ROUTINE, SET!', '#baf4ff');
+        this.touch.showHint();
       });
     });
   }
@@ -160,9 +164,9 @@ export class BattleScene extends Phaser.Scene implements CustomMenuHost {
     const lane = this.add.graphics();
     lane.fillStyle(0x0a1322, 0.84).fillRoundedRect(170, 196, 944, 344, 36);
     lane.lineStyle(2, 0x284666, 0.7).strokeRoundedRect(170, 196, 944, 344, 36);
-    this.add.text(182, 560, 'ARROWS / WASD MOVE    SPACE FIRE / USE CHIP    ENTER CUSTOM', {
+    this.add.text(182, 560, 'ARROWS/SWIPE MOVE  ·  SPACE/TAP FIRE  ·  ENTER/DBL-TAP CUSTOM', {
       fontFamily: 'Segoe UI',
-      fontSize: '18px',
+      fontSize: '17px',
       color: '#8db7dd',
       fontStyle: 'bold',
     });
@@ -190,6 +194,7 @@ export class BattleScene extends Phaser.Scene implements CustomMenuHost {
     this.spaceKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     this.input.keyboard!.once('keydown', () => musicManager.init());
     this.input.once('pointerdown', () => musicManager.init());
+    this.touch = new TouchControls(this, 'battle');
   }
 
   private startRealtimeCombat(): void {
@@ -205,11 +210,13 @@ export class BattleScene extends Phaser.Scene implements CustomMenuHost {
   }
 
   private handleCombatInput(): void {
+    this.touch.setCustomButtonActive(this.gaugeValue >= CUSTOM_GAUGE_MAX);
+
     if (this.combatFrozen || this.player.isMoving) {
       return;
     }
 
-    if (Phaser.Input.Keyboard.JustDown(this.enterKey) && this.gaugeValue >= CUSTOM_GAUGE_MAX) {
+    if ((Phaser.Input.Keyboard.JustDown(this.enterKey) || this.touch.consumeDoubleTap()) && this.gaugeValue >= CUSTOM_GAUGE_MAX) {
       this.openCustomMenu();
       return;
     }
@@ -226,12 +233,14 @@ export class BattleScene extends Phaser.Scene implements CustomMenuHost {
       return;
     }
 
-    if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
+    if (Phaser.Input.Keyboard.JustDown(this.spaceKey) || this.touch.consumeTap()) {
       this.firePlayerAction();
     }
   }
 
   private consumeMovementInput(): GridCoord | null {
+    const swipe = this.touch.consumeSwipe();
+    if (swipe) return swipe;
     if (Phaser.Input.Keyboard.JustDown(this.cursors.left) || Phaser.Input.Keyboard.JustDown(this.wasd.A)) {
       return { col: -1, row: 0 };
     }
