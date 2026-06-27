@@ -147,13 +147,13 @@ export default defineConfig(({ mode }) => {
           start_url: GAME_BASE,
           icons: [
             {
-              src: '/games/rogue-flush/assets/icons/icon-192.png',
-              sizes: '192x192',
+              src: '/games/rogue-flush/assets/icons/icon-512.png',
+              sizes: '512x512',
               type: 'image/png',
             },
             {
-              src: '/games/rogue-flush/assets/icons/icon-512.png',
-              sizes: '512x512',
+              src: '/games/rogue-flush/assets/icons/icon-192.png',
+              sizes: '192x192',
               type: 'image/png',
             },
             {

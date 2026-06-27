@@ -1,10 +1,5 @@
-import { TurboDriftApp } from './app/TurboDriftApp';
+import { bootstrapTurboDrift } from './app/TurboDriftPlayCanvas';
 
-const root = document.getElementById('app');
-
-if (!root) {
-  throw new Error('Turbo Drift root element #app is missing');
-}
-
-const app = new TurboDriftApp(root);
-app.init();
+bootstrapTurboDrift().catch((error: unknown) => {
+  console.error('Failed to start Turbo Drift', error);
+});

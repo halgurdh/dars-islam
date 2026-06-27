@@ -1,5 +1,18 @@
 import { defineConfig } from 'vite';
 import path from 'path';
+import { getGamePortMap, WRAPPER_PORT } from '../scripts/dev-ports.mjs';
+
+const gamePorts = getGamePortMap();
+const gameProxyEntries = Object.fromEntries(
+  Object.entries(gamePorts).map(([game, port]) => [
+    `/games/${game}`,
+    {
+      target: `http://localhost:${port}`,
+      changeOrigin: true,
+      secure: false,
+    },
+  ]),
+);
 
 export default defineConfig({
   base: '/',
@@ -16,7 +29,7 @@ export default defineConfig({
   },
 
   server: {
-    port: 5173,
+    port: WRAPPER_PORT,
     host: true,
     open: true,
     proxy: {
@@ -26,27 +39,7 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
-      // Forward requests under /games/board-rush to the board-rush dev server
-      '/games/board-rush': {
-        target: 'http://localhost:5174',
-        changeOrigin: true,
-        secure: false,
-      },
-      '/games/karma': {
-        target: 'http://localhost:5176',
-        changeOrigin: true,
-        secure: false,
-      },
-      '/games/rogue-flush': {
-        target: 'http://localhost:5175',
-        changeOrigin: true,
-        secure: false,
-      },
-      '/games/net-strike': {
-        target: 'http://localhost:5177',
-        changeOrigin: true,
-        secure: false,
-      },
+      ...gameProxyEntries,
     },
   },
 });

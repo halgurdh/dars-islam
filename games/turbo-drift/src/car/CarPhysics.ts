@@ -1,67 +1,65 @@
-import * as THREE from 'three';
 import type { CarStats, RaceInput } from '../types';
 
-const DEFAULT_START = new THREE.Vector3(0, 0.72, -(24 - 2));
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value));
+export interface PhysicsState {
+  x: number;
+  z: number;
+  heading: number; // radians — sin(heading)=fwdX, cos(heading)=fwdZ
+  speed: number;   // m/s
+  velX: number;
+  velZ: number;
+  driftFactor: number; // 0–1
 }
 
-export class CarPhysics {
-  private readonly velocity = new THREE.Vector3();
-  private readonly forward = new THREE.Vector3();
-  private readonly right = new THREE.Vector3();
-  private heading = Math.PI;
+export function createPhysicsState(startX = 0, startZ = 22, startHeading = Math.PI * 0.5): PhysicsState {
+  return { x: startX, z: startZ, heading: startHeading, speed: 0, velX: 0, velZ: 0, driftFactor: 0 };
+}
 
-  constructor(private readonly carGroup: THREE.Group, private readonly stats: CarStats) {
-    this.reset();
+export function stepPhysics(
+  state: PhysicsState,
+  input: RaceInput,
+  stats: CarStats,
+  dt: number,
+): PhysicsState {
+  const maxSpeedMs = stats.topSpeed / 3.6;
+  const isDrift = input.handbrake && state.speed > 3;
+
+  const driftFactor = isDrift
+    ? Math.min(state.driftFactor + dt * 3, 1)
+    : Math.max(state.driftFactor - dt * 2, 0);
+
+  const steerInput = isDrift ? input.steer * 1.6 : input.steer;
+  const steerStrength = stats.handling * (0.9 + state.speed * 0.05);
+  const speedFactor = Math.min(state.speed / 4, 1);
+  const headingDelta = steerInput * steerStrength * dt * speedFactor;
+  const heading = state.heading + headingDelta;
+
+  let speed = state.speed;
+  if (input.throttle > 0 && speed < maxSpeedMs) {
+    speed += input.throttle * stats.acceleration * 8.8 * dt;
   }
+  speed = Math.min(speed, maxSpeedMs);
+  const drag = input.brake ? 0.94 : 0.985;
+  speed *= Math.pow(drag, dt * 60);
+  speed = Math.max(0, speed);
 
-  reset(position: THREE.Vector3 = DEFAULT_START, heading = Math.PI): void {
-    this.velocity.set(0, 0, 0);
-    this.heading = heading;
-    this.carGroup.position.copy(position);
-    this.carGroup.rotation.set(0, heading, 0);
-  }
+  const fwdX = Math.sin(heading);
+  const fwdZ = Math.cos(heading);
+  const friction = isDrift ? 0.28 : 0.62;
+  const frictionLerp = Math.min(friction * dt * 60, 1);
+  const velX = state.velX + (fwdX * speed - state.velX) * frictionLerp;
+  const velZ = state.velZ + (fwdZ * speed - state.velZ) * frictionLerp;
 
-  update(deltaMs: number, input: RaceInput): void {
-    const dt = Math.min(deltaMs / 1000, 0.05);
-    const speed = this.velocity.length();
-    const steerStrength = clamp(input.steer * this.stats.handling * (0.9 + speed * 0.05), -2.4, 2.4);
+  return {
+    x: state.x + velX * dt,
+    z: state.z + velZ * dt,
+    heading,
+    speed,
+    velX,
+    velZ,
+    driftFactor,
+  };
+}
 
-    this.heading += steerStrength * dt;
-    this.forward.set(-Math.sin(this.heading), 0, -Math.cos(this.heading));
-    this.right.set(Math.cos(this.heading), 0, -Math.sin(this.heading));
-
-    const forwardSpeed = this.velocity.dot(this.forward) + input.throttle * this.stats.acceleration * 8.8 * dt;
-    const sidewaysSpeed = this.velocity.dot(this.right) * (input.handbrake ? 0.28 : 0.62);
-    const drag = input.brake ? 0.94 : 0.985;
-
-    const maxSpeed = this.stats.topSpeed / 3.6;
-    const boundedForward = clamp(forwardSpeed * drag, -maxSpeed * 0.35, maxSpeed);
-
-    this.velocity.copy(this.forward).multiplyScalar(boundedForward);
-    this.velocity.addScaledVector(this.right, sidewaysSpeed);
-    this.velocity.multiplyScalar(1 - dt * 0.15);
-
-    if (this.velocity.length() > maxSpeed) {
-      this.velocity.setLength(maxSpeed);
-    }
-
-    this.carGroup.rotation.y = this.heading;
-    this.carGroup.position.addScaledVector(this.velocity, dt);
-    this.carGroup.position.y = 0.72;
-  }
-
-  getSpeedKph(): number {
-    return this.velocity.length() * 3.6;
-  }
-
-  getPosition(): THREE.Vector3 {
-    return this.carGroup.position;
-  }
-
-  getHeading(): number {
-    return this.heading;
-  }
+export function speedKmh(state: PhysicsState): number {
+  return state.speed * 3.6;
 }

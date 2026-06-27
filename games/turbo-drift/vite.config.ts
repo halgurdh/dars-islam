@@ -124,8 +124,14 @@ export default defineConfig(({ mode }) => {
       chunkSizeWarningLimit: 2000,
     },
 
+    // Prevent Vite from pre-bundling WASM packages — they must be served raw
+    // so the browser can use WebAssembly.instantiateStreaming with the correct MIME type.
+    optimizeDeps: {
+      exclude: ['manifold-3d', 'meshoptimizer'],
+    },
+
     server: {
-      port: 5176,
+      port: 5178,
       host: true,
       open: true,
     },
@@ -147,13 +153,13 @@ export default defineConfig(({ mode }) => {
           start_url: GAME_BASE,
           icons: [
             {
-              src: '/games/turbo-drift/assets/icons/icon-192.png',
-              sizes: '192x192',
+              src: '/games/turbo-drift/assets/icons/icon-512.png',
+              sizes: '512x512',
               type: 'image/png',
             },
             {
-              src: '/games/turbo-drift/assets/icons/icon-512.png',
-              sizes: '512x512',
+              src: '/games/turbo-drift/assets/icons/icon-192.png',
+              sizes: '192x192',
               type: 'image/png',
             },
             {

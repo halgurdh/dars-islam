@@ -10,7 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "three": "0.156.1"
+    "playcanvas": "^2.12.3",
+    "manifold-3d": "^3.0.0",
+    "meshoptimizer": "^0.20.0",
+    "@gltf-transform/core": "^4.1.0",
+    "@gltf-transform/functions": "^4.1.0"
   },
   "devDependencies": {
     "typescript": "^5.4.5",
