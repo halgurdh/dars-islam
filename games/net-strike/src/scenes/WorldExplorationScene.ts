@@ -177,7 +177,8 @@ export class WorldExplorationScene extends Phaser.Scene {
     const terminalOptions = Phaser.Utils.Array.Shuffle([...TERMINAL_CANDIDATES]).filter((candidate) => {
       const dx = Math.abs(candidate.x - this.worldPlayerPos.x);
       const dy = Math.abs(candidate.y - this.worldPlayerPos.y);
-      return dx >= 260 && dy >= 220 && Phaser.Math.Distance.Between(candidate.x, candidate.y, this.worldPlayerPos.x, this.worldPlayerPos.y) >= 700;
+      const axisRatio = Math.max(dx, dy) / Math.max(1, Math.min(dx, dy));
+      return dx >= 360 && dy >= 300 && axisRatio <= 2.15 && Phaser.Math.Distance.Between(candidate.x, candidate.y, this.worldPlayerPos.x, this.worldPlayerPos.y) >= 760;
     });
 
     const pickedTerminal = terminalOptions[0] ?? TERMINAL_CANDIDATES[0];
@@ -209,6 +210,7 @@ export class WorldExplorationScene extends Phaser.Scene {
 
       blockers.push({ x: wx, y: wy, width: ww, height: wh });
     }
+    this.addRouteBaffles(blockers);
     this.worldBlockers = blockers;
 
     // Random candles
@@ -216,6 +218,67 @@ export class WorldExplorationScene extends Phaser.Scene {
       x: Phaser.Math.Between(80, WORLD_WIDTH - 80),
       y: Phaser.Math.Between(80, WORLD_HEIGHT - 80),
     }));
+  }
+
+  private addRouteBaffles(blockers: Zone[]): void {
+    const dx = this.worldTerminalPos.x - this.worldPlayerPos.x;
+    const dy = this.worldTerminalPos.y - this.worldPlayerPos.y;
+    const horizontalRoute = Math.abs(dx) >= Math.abs(dy);
+    const stepCount = 3;
+
+    for (let index = 1; index <= stepCount; index += 1) {
+      const t = index / (stepCount + 1);
+      const routeX = Phaser.Math.Linear(this.worldPlayerPos.x, this.worldTerminalPos.x, t);
+      const routeY = Phaser.Math.Linear(this.worldPlayerPos.y, this.worldTerminalPos.y, t);
+
+      if (horizontalRoute) {
+        this.addVerticalBaffle(blockers, routeX, routeY, index);
+      } else {
+        this.addHorizontalBaffle(blockers, routeX, routeY, index);
+      }
+    }
+  }
+
+  private addVerticalBaffle(blockers: Zone[], routeX: number, routeY: number, index: number): void {
+    const x = Phaser.Math.Snap.To(Phaser.Math.Clamp(routeX, 320, WORLD_WIDTH - 320), TILE_SIZE);
+    const gapY = Phaser.Math.Snap.To(
+      Phaser.Math.Clamp(routeY + (index % 2 === 0 ? -240 : 240), 176, WORLD_HEIGHT - 176),
+      TILE_SIZE,
+    );
+    const topY = 32;
+    const topHeight = Math.max(0, gapY - 96 - topY);
+    const bottomY = gapY + 96;
+    const bottomHeight = Math.max(0, WORLD_HEIGHT - 32 - bottomY);
+
+    this.addBaffleSegment(blockers, { x, y: topY, width: 64, height: topHeight });
+    this.addBaffleSegment(blockers, { x, y: bottomY, width: 64, height: bottomHeight });
+  }
+
+  private addHorizontalBaffle(blockers: Zone[], routeX: number, routeY: number, index: number): void {
+    const y = Phaser.Math.Snap.To(Phaser.Math.Clamp(routeY, 224, WORLD_HEIGHT - 224), TILE_SIZE);
+    const gapX = Phaser.Math.Snap.To(
+      Phaser.Math.Clamp(routeX + (index % 2 === 0 ? -320 : 320), 176, WORLD_WIDTH - 176),
+      TILE_SIZE,
+    );
+    const leftX = 32;
+    const leftWidth = Math.max(0, gapX - 112 - leftX);
+    const rightX = gapX + 112;
+    const rightWidth = Math.max(0, WORLD_WIDTH - 32 - rightX);
+
+    this.addBaffleSegment(blockers, { x: leftX, y, width: leftWidth, height: 64 });
+    this.addBaffleSegment(blockers, { x: rightX, y, width: rightWidth, height: 64 });
+  }
+
+  private addBaffleSegment(blockers: Zone[], zone: Zone): void {
+    if (
+      zone.width < 96 ||
+      zone.height < 64 ||
+      Phaser.Math.Distance.Between(zone.x + zone.width / 2, zone.y + zone.height / 2, this.worldPlayerPos.x, this.worldPlayerPos.y) < 220 ||
+      Phaser.Math.Distance.Between(zone.x + zone.width / 2, zone.y + zone.height / 2, this.worldTerminalPos.x, this.worldTerminalPos.y) < 220
+    ) {
+      return;
+    }
+    blockers.push(zone);
   }
 
   private createWorld(): void {
