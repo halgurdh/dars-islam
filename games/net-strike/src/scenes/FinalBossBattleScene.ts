@@ -124,7 +124,6 @@ export class FinalBossBattleScene extends Phaser.Scene implements CustomMenuHost
         this.playerTurnLocked = false;
         this.ui.updateState(this.battleState);
         this.ui.showBanner('FINAL BOSS ONLINE', '#ffc4d7');
-        this.touch.showHint();
         this.startBossLoop();
       });
     });
@@ -181,13 +180,6 @@ export class FinalBossBattleScene extends Phaser.Scene implements CustomMenuHost
     const lane = this.add.graphics();
     lane.fillStyle(0x08111b, 0.92).fillRoundedRect(170, 196, 944, 344, 42);
     lane.lineStyle(2, 0x284666, 0.7).strokeRoundedRect(170, 196, 944, 344, 42);
-
-    this.add.text(182, 560, 'ARROWS/SWIPE MOVE  ·  SPACE/TAP FIRE  ·  ENTER/DBL-TAP CUSTOM', {
-      fontFamily: 'Segoe UI',
-      fontSize: '17px',
-      color: '#8db7dd',
-      fontStyle: 'bold',
-    });
 
     this.arenaTint = this.add.rectangle(0, 0, SCENE_WIDTH, SCENE_HEIGHT, 0x5f0817, 0)
       .setOrigin(0)

@@ -105,7 +105,9 @@ export class BattleScene extends Phaser.Scene implements CustomMenuHost {
       this.time.delayedCall(320, () => {
         this.startRealtimeCombat();
         this.ui.showBanner('BATTLE ROUTINE, SET!', '#baf4ff');
-        this.touch.showHint();
+        if (this.sector === 0) {
+          this.touch.showHint();
+        }
       });
     });
   }
@@ -164,12 +166,14 @@ export class BattleScene extends Phaser.Scene implements CustomMenuHost {
     const lane = this.add.graphics();
     lane.fillStyle(0x0a1322, 0.84).fillRoundedRect(170, 196, 944, 344, 36);
     lane.lineStyle(2, 0x284666, 0.7).strokeRoundedRect(170, 196, 944, 344, 36);
-    this.add.text(182, 560, 'ARROWS/SWIPE MOVE  ·  SPACE/TAP FIRE  ·  ENTER/DBL-TAP CUSTOM', {
-      fontFamily: 'Segoe UI',
-      fontSize: '17px',
-      color: '#8db7dd',
-      fontStyle: 'bold',
-    });
+    if (this.sector === 0) {
+      this.add.text(182, 560, 'ARROWS/SWIPE MOVE  ·  SPACE/TAP FIRE  ·  ENTER/DBL-TAP CUSTOM', {
+        fontFamily: 'Segoe UI',
+        fontSize: '17px',
+        color: '#8db7dd',
+        fontStyle: 'bold',
+      });
+    }
   }
 
   private createHudLabels(): void {

@@ -445,7 +445,9 @@ export class WorldExplorationScene extends Phaser.Scene {
     this.wasd = this.input.keyboard!.addKeys('W,A,S,D') as Record<'W' | 'A' | 'S' | 'D', Phaser.Input.Keyboard.Key>;
     this.jackInKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.E);
     this.touch = new TouchControls(this, 'world');
-    this.time.delayedCall(600, () => this.touch.showHint());
+    if (this.battleCount === 0) {
+      this.time.delayedCall(600, () => this.touch.showHint());
+    }
   }
 
   private setupCamera(): void {

@@ -38,6 +38,7 @@ export class CustomMenuScene extends Phaser.Scene {
   private escKey!: Phaser.Input.Keyboard.Key;
   private touch!: TouchControls;
   private isClosing = false;
+  private showControlHud = false;
 
   constructor() {
     super('CustomMenuScene');
@@ -52,6 +53,7 @@ export class CustomMenuScene extends Phaser.Scene {
     this.cardVisuals = [];
     this.cursorIndex = 0;
     this.isClosing = false;
+    this.showControlHud = ((this.registry.get('netStrikeBattleCount') as number | undefined) ?? 0) === 0;
 
     this.cursors = this.input.keyboard!.createCursorKeys();
     this.wasd = this.input.keyboard!.addKeys('W,A,S,D') as Record<'W' | 'A' | 'S' | 'D', Phaser.Input.Keyboard.Key>;
@@ -61,7 +63,9 @@ export class CustomMenuScene extends Phaser.Scene {
 
     this.touch = new TouchControls(this, 'menu');
     this.touch.onCardTap = (x, y) => this.handleCardTap(x, y);
-    this.time.delayedCall(300, () => this.touch.showHint());
+    if (this.showControlHud) {
+      this.time.delayedCall(300, () => this.touch.showHint());
+    }
 
     this.buildLayout();
     this.renderMenu();
@@ -183,7 +187,7 @@ export class CustomMenuScene extends Phaser.Scene {
       fontSize: '13px',
       fontStyle: 'bold',
       color: '#82b7d8',
-    }).setOrigin(0.5);
+    }).setOrigin(0.5).setVisible(this.showControlHud);
 
     this.root.add([panelGlow, title, subtitle, this.statusText, queueTitle, this.queueLayer, this.cardsLayer, this.hintText]);
   }
