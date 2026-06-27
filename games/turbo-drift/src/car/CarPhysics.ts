@@ -70,9 +70,10 @@ export class CarPhysics {
     this.carGroup.position.addScaledVector(this.velocity, seconds);
     this.carGroup.position.y = 0.75;
 
-    this.body?.applyForce?.(this.forward.x * acceleration * 8000, 0, this.forward.z * acceleration * 8000);
-    this.body?.setLinearVelocity?.(this.velocity.x, 0, this.velocity.z);
-    this.body?.setAngularVelocity?.(0, -input.steer * this.stats.handling * speedFactor, 0);
+    if (this.body) {
+      this.body.setLinearVelocity?.(this.velocity.x, 0, this.velocity.z);
+      this.body.setAngularVelocity?.(0, -input.steer * this.stats.handling * speedFactor, 0);
+    }
   }
 
   getSpeedKph(): number {

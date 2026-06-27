@@ -20,8 +20,13 @@ function box(
   depth: number,
   color: number,
   position: THREE.Vector3Tuple,
+  geometryDetail: number = 1,
 ): THREE.Mesh {
-  const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), toon(color));
+  const geometry =
+    geometryDetail > 1
+      ? new THREE.BoxGeometry(width, height, depth, geometryDetail, geometryDetail, geometryDetail)
+      : new THREE.BoxGeometry(width, height, depth);
+  const mesh = new THREE.Mesh(geometry, toon(color));
   mesh.name = name;
   mesh.position.set(position[0], position[1], position[2]);
   return mesh;
@@ -123,8 +128,11 @@ export const CarMesh = {
     const root = new THREE.Group();
     root.name = 'turboDriftCar';
 
-    root.add(box('chassis', dims.width, dims.height, dims.length, config.customization.bodyColor, [0, 0, 0]));
-    root.add(box('cabin', dims.width * 0.78, dims.cabinHeight, 2, darker(config.customization.bodyColor, 0.66), [0, 0.55, 0.34]));
+    root.add(box('chassis', dims.width, dims.height, dims.length, config.customization.bodyColor, [0, 0, 0], 8));
+    root.add(box('cabin', dims.width * 0.78, dims.cabinHeight, 2, darker(config.customization.bodyColor, 0.66), [0, 0.55, 0.34], 4));
+    root.add(box('nose', dims.width * 0.64, 0.34, 1.04, darker(config.customization.bodyColor, 0.84), [0, 0.08, -dims.length * 0.47], 3));
+    root.add(box('tail', dims.width * 0.68, 0.3, 0.92, darker(config.customization.bodyColor, 0.7), [0, 0.1, dims.length * 0.44], 3));
+    root.add(box('roofScoop', dims.width * 0.34, 0.12, 0.6, darker(config.customization.bodyColor, 0.58), [0, 1.06, 0.05], 3));
 
     const wheelX = dims.width / 2 + 0.08;
     const frontZ = -dims.length * 0.32;
@@ -139,7 +147,7 @@ export const CarMesh = {
     root.add(makeSpoiler(config.customization.spoiler, config));
 
     const neon = new THREE.Mesh(
-      new THREE.BoxGeometry(dims.width * 0.88, 0.04, dims.length * 0.9),
+      new THREE.BoxGeometry(dims.width * 0.88, 0.04, dims.length * 0.9, 4, 1, 4),
       new THREE.MeshBasicMaterial({ color: config.customization.neonColor }),
     );
     neon.name = 'neonStrip';

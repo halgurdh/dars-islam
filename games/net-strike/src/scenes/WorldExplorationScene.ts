@@ -92,13 +92,13 @@ export class WorldExplorationScene extends Phaser.Scene {
     this.registerBattleListeners();
 
     // Off-screen circle brushes used with RenderTexture.erase() to cut light holes
-    this.circleBrush160 = this.make.graphics({ add: false });
+    this.circleBrush160 = this.make.graphics({}, false);
     this.circleBrush160.fillStyle(0xffffff, 1).fillCircle(80, 80, 80);
 
-    this.circleBrush140 = this.make.graphics({ add: false });
+    this.circleBrush140 = this.make.graphics({}, false);
     this.circleBrush140.fillStyle(0xffffff, 1).fillCircle(70, 70, 70);
 
-    this.circleBrush90 = this.make.graphics({ add: false });
+    this.circleBrush90 = this.make.graphics({}, false);
     this.circleBrush90.fillStyle(0xffffff, 1).fillCircle(45, 45, 45);
 
     // Darkness RenderTexture: filled black each frame, erased where lights are

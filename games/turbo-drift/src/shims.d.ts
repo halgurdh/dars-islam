@@ -60,7 +60,14 @@ declare module 'three' {
   }
 
   export class BoxGeometry {
-    constructor(width: number, height: number, depth: number);
+    constructor(
+      width: number,
+      height: number,
+      depth: number,
+      widthSegments?: number,
+      heightSegments?: number,
+      depthSegments?: number,
+    );
   }
 
   export class CylinderGeometry {

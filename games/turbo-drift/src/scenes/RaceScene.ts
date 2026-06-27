@@ -41,6 +41,7 @@ export class RaceScene extends Scene3D {
   private countdownText!: Phaser.GameObjects.Text;
   private driftActive = false;
   private sceneReady = false;
+  private inputDebugCooldown = 0;
 
   constructor() {
     super('Race');
@@ -102,6 +103,28 @@ export class RaceScene extends Scene3D {
     if (Phaser.Input.Keyboard.JustDown(this.keys.esc)) {
       gameFlow.send('cancel_race');
     }
+
+    this.inputDebugCooldown += delta;
+    if (this.inputDebugCooldown >= 500) {
+      this.inputDebugCooldown = 0;
+      const pos = this.carPhysics.getPosition();
+      const cam = (this as ThirdScene).third.camera as THREE.PerspectiveCamera;
+      console.info('[Turbo Drift][Race] state', {
+        speedKph: Math.round(this.carPhysics.getSpeedKph()),
+        car: { x: Number(pos.x.toFixed(2)), y: Number(pos.y.toFixed(2)), z: Number(pos.z.toFixed(2)) },
+        camera: {
+          x: Number(cam.position.x.toFixed(2)),
+          y: Number(cam.position.y.toFixed(2)),
+          z: Number(cam.position.z.toFixed(2)),
+        },
+        input: {
+          throttle: input.throttle,
+          brake: input.brake,
+          steer: input.steer,
+          handbrake: input.handbrake,
+        },
+      });
+    }
   }
 
   private createHud(): void {
@@ -152,7 +175,9 @@ export class RaceScene extends Scene3D {
 
   private async bootstrapRaceScene(): Promise<void> {
     const thirdScene = this as ThirdScene;
+    console.info('[Turbo Drift][Race] bootstrap start');
     await thirdScene.third.warpSpeed('-ground', '-sky');
+    console.info('[Turbo Drift][Race] warpSpeed ready');
     thirdScene.third.renderer.shadowMap.enabled = false;
     thirdScene.third.scene.background = new THREE.Color(0x07080f);
 
@@ -165,6 +190,13 @@ export class RaceScene extends Scene3D {
     this.carMesh = CarMesh.build(this.config);
     thirdScene.third.scene.add(this.carMesh);
     this.carPhysics = new CarPhysics(thirdScene.third, this.carMesh, this.config.stats);
+    console.info('[Turbo Drift][Race] car ready', {
+      startPosition: {
+        x: this.carMesh.position.x,
+        y: this.carMesh.position.y,
+        z: this.carMesh.position.z,
+      },
+    });
 
     const camera = thirdScene.third.camera as THREE.PerspectiveCamera;
     camera.position.set(0, 7.5, 10.5);
@@ -173,6 +205,7 @@ export class RaceScene extends Scene3D {
     this.raceStartMs = this.time.now;
     this.lapStartMs = this.time.now;
     this.cameras.main.fadeIn(220, 0, 0, 0);
+    console.info('[Turbo Drift][Race] bootstrap complete');
   }
 
   private readInput(): RaceInput {
