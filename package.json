@@ -9,6 +9,8 @@
     "build": "node scripts/build.mjs",
     "preview": "vite preview --outDir dist",
     "clean": "node -e \"const fs=require('fs');['dist','dist-pwa','games/*/dist'].forEach(d=>fs.rmSync(d,{recursive:true,force:true}))\"",
+    "generate:turbo-drift-models": "npm --workspace @turbo-drift/game run generate-models",
+    "generate:turbo-drift-models:view-api": "npm --workspace @turbo-drift/game run generate-models:view-api",
     "electron:dev": "node scripts/build.mjs && electron .",
     "electron:build": "node scripts/build.mjs && electron-builder --win --x64",
     "deploy:sftp": "node scripts/deploy-sftp.mjs",

@@ -2,13 +2,19 @@
 /**
  * generate-models
  *
- * Calls your own Hunyuan3D-2.1 server to generate GLB assets, then:
- *   1. Saves them locally  → public/assets/models/
- *   2. Uploads to HF bucket → cdgbrands/Hunyuan3D-2.1-bucket
+ * Generates every GLB asset currently required by Turbo Drift:
+ *   - car.glb
+ *   - grandstand.glb
+ *   - tree.glb
+ *
+ * Reads reference images from:
+ *   public/assets/model-inputs/
+ *
+ * Saves them locally to:
+ *   public/assets/models/
  *
  * Root .env keys needed:
  *   HUNYUAN_URL=http://localhost:8081   (default if omitted)
- *   HUGGINGFACE_API_KEY=hf_xxx          (for bucket upload)
  *
  * Start your Hunyuan3D API server first:
  *   python api_server.py --port 8081
@@ -17,9 +23,8 @@
  *   npm run generate-models  (from games/turbo-drift/)
  */
 
-import { uploadFile } from '@huggingface/hub';
 import { writeFileSync, mkdirSync, readFileSync, existsSync } from 'fs';
-import { join, dirname } from 'path';
+import { join, dirname, extname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -49,53 +54,252 @@ loadEnv();
 // Config
 // ---------------------------------------------------------------------------
 
-const HUNYUAN_URL = (process.env.HUNYUAN_URL ?? 'http://localhost:8081').replace(/\/$/, '');
-const HF_TOKEN    = process.env.HUGGINGFACE_API_KEY ?? process.env.HF_TOKEN ?? '';
-const BUCKET      = 'cdgbrands/Hunyuan3D-2.1-bucket';
+const DEFAULT_HUNYUAN_URL = 'http://localhost:8081';
+const HUNYUAN_URL = (process.env.HUNYUAN_URL ?? DEFAULT_HUNYUAN_URL).replace(/\/$/, '');
 const OUT_DIR     = join(__dirname, '../../public/assets/models');
+const INPUT_DIR   = join(__dirname, '../../public/assets/model-inputs');
 const VIEW_API    = process.argv.includes('--view-api');
+const FORCE_REGEN = process.argv.includes('--force');
 const PROBE_PATHS = ['/', '/health', '/info', '/config', '/gradio_api/info', '/gradio_api/openapi.json'] as const;
+const SUPPORTED_INPUT_EXTS = ['.png', '.jpg', '.jpeg', '.webp'] as const;
 
 interface ModelSpec {
   filename:  string;
   prompt:    string;
+  notes:     string;
   steps:     number;
   faceCount: number;
   seed:      number;
+  texture:   boolean;
+  required:  boolean;
 }
+
+const REQUIRED_MODEL_FILENAMES = [
+  'car',
+  'grandstand',
+  'tree',
+] as const;
 
 const MODELS: ModelSpec[] = [
   {
     filename:  'car',
-    steps:     50,
-    faceCount: 30_000,
-    seed:      42,
     prompt:
-      'Low-poly arcade race car, futuristic sleek design, aerodynamic body with smooth curves, ' +
+      'Arcade race car, futuristic sleek design, aerodynamic body with smooth curves, ' +
       'wide racing stance, sport rear spoiler, neon accent stripe along the side, ' +
       'glossy metallic paint, four visible racing tires, front bumper with air intakes, ' +
-      'small side mirrors, game-ready clean geometry, car centered at origin facing +Z',
+      'small side mirrors, clean game-ready geometry, car centered at origin facing +Z',
+    steps:     15,
+    faceCount: 30_000,
+    seed:      42,
+    texture:   true,
+    required:  true,
+    notes:
+      'Use a clean side/front 3/4 reference of the arcade race car on a plain background.',
   },
   {
     filename:  'grandstand',
-    steps:     50,
+    prompt:
+      'Futuristic night-time racing circuit grandstand, stepped concrete seating rows, ' +
+      'thin metal roof canopy with neon strip underneath, colorful banners on front railing, ' +
+      'no spectators, isolated asset',
+    steps:     12,
     faceCount: 20_000,
     seed:      99,
-    prompt:
-      'Futuristic night-time racing circuit grandstand, low-poly, ' +
-      'stepped concrete seating rows, thin metal roof canopy with neon strip underneath, ' +
-      'colorful banners on front railing, no spectators, isolated asset',
+    texture:   true,
+    required:  true,
+    notes:
+      'Use an isolated grandstand reference image with the full structure visible.',
   },
   {
     filename:  'tree',
-    steps:     30,
+    prompt:
+      'Stylized trackside palm tree, slightly curved trunk, six fronds at top, ' +
+      'night-time race track decoration, base at origin, isolated asset',
+    steps:     10,
     faceCount: 8_000,
     seed:      7,
+    texture:   true,
+    required:  true,
+    notes:
+      'Use an isolated trackside tree reference image on a simple background.',
+  },
+  {
+    filename:  'tower-block',
     prompt:
-      'Stylized low-poly palm tree, slightly curved trunk, 6 fronds at top, ' +
-      'night-time race track decoration, base at origin',
+      'Chunky racing-district tower block, mid-rise apartment building with strong silhouette, ' +
+      'balconies, window bands, rooftop units, isolated asset',
+    steps:     12,
+    faceCount: 22_000,
+    seed:      120,
+    texture:   true,
+    required:  false,
+    notes:
+      'Use a clear reference of a chunky racing-district tower block or apartment building on a plain background.',
+  },
+  {
+    filename:  'pit-building',
+    prompt:
+      'Pit building facade for an arcade racing circuit, paddock garage doors, windows, signage, ' +
+      'control room volume, isolated asset',
+    steps:     12,
+    faceCount: 24_000,
+    seed:      121,
+    texture:   true,
+    required:  false,
+    notes:
+      'Use a reference of a pit building or paddock garage facade with doors, windows, and signage visible.',
+  },
+  {
+    filename:  'track-gate',
+    prompt:
+      'Start-finish gantry for a racing circuit, bold support columns, overhead sign bridge, ' +
+      'clean silhouette, isolated asset',
+    steps:     10,
+    faceCount: 12_000,
+    seed:      122,
+    texture:   true,
+    required:  false,
+    notes:
+      'Use a reference of a start-finish gantry or track entry gate with the whole silhouette visible.',
+  },
+  {
+    filename:  'billboard',
+    prompt:
+      'Roadside racing billboard with support frame, bold rectangular panel, metal braces, isolated asset',
+    steps:     8,
+    faceCount: 6_000,
+    seed:      123,
+    texture:   true,
+    required:  false,
+    notes:
+      'Use a reference of a roadside racing billboard with supports and panel fully visible.',
+  },
+  {
+    filename:  'lamp-post',
+    prompt:
+      'Trackside lamp post with floodlight head, tall slim mast, sturdy base, isolated asset',
+    steps:     8,
+    faceCount: 5_000,
+    seed:      124,
+    texture:   true,
+    required:  false,
+    notes:
+      'Use a reference of a trackside lamp post or floodlight mast on a clean background.',
+  },
+  {
+    filename:  'barrier-stack',
+    prompt:
+      'Stacked tire barrier cluster for a racing circuit, layered protective wall, isolated asset',
+    steps:     8,
+    faceCount: 7_000,
+    seed:      125,
+    texture:   true,
+    required:  false,
+    notes:
+      'Use a reference of stacked tire barriers or safety blocks with the full cluster isolated.',
+  },
+  {
+    filename:  'tunnel-module',
+    prompt:
+      'Road tunnel portal module for an arcade racing track, enclosed overpass section, ' +
+      'concrete shell, bold silhouette, isolated asset',
+    steps:     10,
+    faceCount: 16_000,
+    seed:      126,
+    texture:   true,
+    required:  false,
+    notes:
+      'Use a reference of a road tunnel portal or enclosed overpass section, isolated and fully framed.',
   },
 ];
+
+function validateModelCoverage(): void {
+  const expected = new Set(REQUIRED_MODEL_FILENAMES);
+  const actual = new Set(MODELS.filter((model) => model.required).map((model) => model.filename));
+
+  const missing = [...expected].filter((name) => !actual.has(name));
+
+  if (!missing.length) return;
+
+  throw new Error(`Turbo Drift required model manifest is out of sync: missing specs: ${missing.join(', ')}`);
+}
+
+function validateHunyuanUrl(): void {
+  let parsed: URL;
+  try {
+    parsed = new URL(HUNYUAN_URL);
+  } catch {
+    throw new Error(
+      `Invalid HUNYUAN_URL: ${HUNYUAN_URL}\n` +
+      `  → Expected something like ${DEFAULT_HUNYUAN_URL}`,
+    );
+  }
+
+  const isHttp = parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  if (!isHttp) {
+    throw new Error(
+      `Unsupported HUNYUAN_URL protocol: ${parsed.protocol}\n` +
+      `  → Expected http:// or https://, for example ${DEFAULT_HUNYUAN_URL}`,
+    );
+  }
+
+  const pathname = parsed.pathname.replace(/\/+$/, '');
+  const looksLikeBucket =
+    parsed.hostname === 'huggingface.co' ||
+    pathname.includes('/buckets/') ||
+    pathname.includes('/resolve');
+
+  if (looksLikeBucket) {
+    throw new Error(
+      `HUNYUAN_URL points to a file bucket, not a local Hunyuan API server: ${HUNYUAN_URL}\n` +
+      `  → Set HUNYUAN_URL=${DEFAULT_HUNYUAN_URL}\n` +
+      `  → Current .env contains a Hugging Face bucket URL, which cannot handle POST /generate`,
+    );
+  }
+}
+
+function findInputImagePath(filename: string): string | null {
+  for (const ext of SUPPORTED_INPUT_EXTS) {
+    const fullPath = join(INPUT_DIR, `${filename}${ext}`);
+    if (existsSync(fullPath)) return fullPath;
+  }
+  return null;
+}
+
+function listExpectedInputPaths(): string {
+  return MODELS
+    .map((model) => `${model.filename}{${SUPPORTED_INPUT_EXTS.join(',')}}${model.required ? '  [required]' : '  [optional]'}`)
+    .join('\n    ');
+}
+
+function getImageBase64(filename: string): string | null {
+  const imagePath = findInputImagePath(filename);
+  if (!imagePath) {
+    return null;
+  }
+
+  const image = readFileSync(imagePath);
+  const ext = extname(imagePath).toLowerCase();
+  if (!SUPPORTED_INPUT_EXTS.includes(ext as typeof SUPPORTED_INPUT_EXTS[number])) {
+    throw new Error(`Unsupported input image format for ${imagePath}`);
+  }
+
+  return image.toString('base64');
+}
+
+function getModelsToGenerate(): ModelSpec[] {
+  const required = MODELS.filter((model) => model.required);
+  const optional = MODELS.filter((model) => !model.required && findInputImagePath(model.filename));
+  return [...required, ...optional];
+}
+
+function getModelOutputPath(filename: string): string {
+  return join(OUT_DIR, `${filename}.glb`);
+}
+
+function modelAlreadyExists(filename: string): boolean {
+  return existsSync(getModelOutputPath(filename));
+}
 
 // ---------------------------------------------------------------------------
 // Hunyuan3D local server
@@ -110,9 +314,48 @@ type ProbeResult = {
   error?: string;
 };
 
+const GENERATE_MAX_ATTEMPTS = 4;
+const GENERATE_RETRY_DELAYS_MS = [3000, 6000, 12000] as const;
+const STATUS_POLL_INTERVAL_MS = 5000;
+const STATUS_POLL_TIMEOUT_MS = 40 * 60_000;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isTransientHighTrafficError(status: number, body: string): boolean {
+  return status === 404 &&
+    body.includes('NETWORK ERROR DUE TO HIGH TRAFFIC') &&
+    body.includes('"error_code":1');
+}
+
+type GenerationTaskResponse = {
+  uid: string;
+};
+
+type GenerationStatusResponse = {
+  status: string;
+  model_base64?: string | null;
+  message?: string | null;
+};
+
+async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: number): Promise<Response> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      fetch(url, init),
+      new Promise<Response>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`Request timed out after ${timeoutMs} ms: ${url}`)), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
 async function probeEndpoint(path: string): Promise<ProbeResult> {
   try {
-    const res = await fetch(`${HUNYUAN_URL}${path}`, { signal: AbortSignal.timeout(4000) });
+    const res = await fetchWithTimeout(`${HUNYUAN_URL}${path}`, {}, 4000);
     const contentType = res.headers.get('content-type');
     const isText = contentType?.includes('json') || contentType?.includes('text') || contentType?.includes('html');
     const snippet = isText ? (await res.text()).slice(0, 180).replace(/\s+/g, ' ') : undefined;
@@ -162,48 +405,85 @@ async function viewApi(): Promise<void> {
 }
 
 async function generate(spec: ModelSpec): Promise<Buffer> {
-  // Sync endpoint — returns binary GLB directly when done.
-  // Hunyuan3D-2.1 local server accepts JSON with prompt for text-to-3D.
-  const res = await fetch(`${HUNYUAN_URL}/generate`, {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      prompt:               spec.prompt,
-      image:                null,   // null = text-to-3D (requires --enable_t23d)
-      remove_background:    false,
-      texture:              true,
-      seed:                 spec.seed,
-      octree_resolution:    256,
-      num_inference_steps:  spec.steps,
-      guidance_scale:       5.0,
-      num_chunks:           8_000,
-      face_count:           spec.faceCount,
-      type:                 'glb',
-    }),
-    signal: AbortSignal.timeout(20 * 60_000), // 20 min
-  });
+  const imageBase64 = getImageBase64(spec.filename);
+  const payload = {
+    image:                imageBase64,
+    prompt:               spec.prompt,
+    caption:              spec.prompt,
+    remove_background:    false,
+    texture:              spec.texture,
+    seed:                 spec.seed,
+    octree_resolution:    256,
+    num_inference_steps:  spec.steps,
+    guidance_scale:       5.0,
+    num_chunks:           8_000,
+    face_count:           spec.faceCount,
+    type:                 'glb',
+  };
 
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`Generate ${res.status}: ${body.slice(0, 200)}`);
+  for (let attempt = 1; attempt <= GENERATE_MAX_ATTEMPTS; attempt += 1) {
+    const sendRes = await fetchWithTimeout(`${HUNYUAN_URL}/send`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }, 20 * 60_000);
+
+    if (!sendRes.ok) {
+      const body = await sendRes.text();
+      if (attempt < GENERATE_MAX_ATTEMPTS && isTransientHighTrafficError(sendRes.status, body)) {
+        const delayMs = GENERATE_RETRY_DELAYS_MS[attempt - 1] ?? GENERATE_RETRY_DELAYS_MS[GENERATE_RETRY_DELAYS_MS.length - 1];
+        console.log(`   Backend busy (attempt ${attempt}/${GENERATE_MAX_ATTEMPTS}); retrying in ${(delayMs / 1000).toFixed(0)} s`);
+        await sleep(delayMs);
+        continue;
+      }
+
+      throw new Error(`Send ${sendRes.status}: ${body.slice(0, 500)}`);
+    }
+
+    const task = await sendRes.json() as GenerationTaskResponse;
+    if (!task.uid) {
+      throw new Error('Send did not return a task uid');
+    }
+
+    console.log(`   Task: ${task.uid}`);
+    const startedAt = Date.now();
+
+    while (Date.now() - startedAt < STATUS_POLL_TIMEOUT_MS) {
+      await sleep(STATUS_POLL_INTERVAL_MS);
+
+      const statusRes = await fetchWithTimeout(`${HUNYUAN_URL}/status/${task.uid}`, {}, 30_000);
+      if (!statusRes.ok) {
+        const body = await statusRes.text();
+        throw new Error(`Status ${statusRes.status}: ${body.slice(0, 500)}`);
+      }
+
+      const status = await statusRes.json() as GenerationStatusResponse;
+      if (status.status === 'completed') {
+        if (!status.model_base64) {
+          throw new Error(`Status completed without model payload for task ${task.uid}`);
+        }
+        return Buffer.from(status.model_base64, 'base64');
+      }
+
+      if (status.status === 'error') {
+        const message = status.message ?? 'Unknown generation error';
+        if (attempt < GENERATE_MAX_ATTEMPTS && isTransientHighTrafficError(404, message)) {
+          const delayMs = GENERATE_RETRY_DELAYS_MS[attempt - 1] ?? GENERATE_RETRY_DELAYS_MS[GENERATE_RETRY_DELAYS_MS.length - 1];
+          console.log(`   Backend busy after task start (attempt ${attempt}/${GENERATE_MAX_ATTEMPTS}); retrying in ${(delayMs / 1000).toFixed(0)} s`);
+          await sleep(delayMs);
+          break;
+        }
+        throw new Error(`Generation error for task ${task.uid}: ${message}`);
+      }
+
+      console.log(`   Status: ${status.status}`);
+    }
+
+    if (Date.now() - startedAt >= STATUS_POLL_TIMEOUT_MS) {
+      throw new Error(`Generation timed out after ${(STATUS_POLL_TIMEOUT_MS / 60000).toFixed(0)} minutes for task ${task.uid}`);
+    }
   }
-
-  return Buffer.from(await res.arrayBuffer());
-}
-
-// ---------------------------------------------------------------------------
-// HF bucket upload (optional — skipped if no HF token)
-// ---------------------------------------------------------------------------
-
-async function uploadToBucket(buf: Buffer, filename: string): Promise<void> {
-  await uploadFile({
-    repo:        { type: 'bucket', name: BUCKET },
-    accessToken: HF_TOKEN,
-    file: {
-      path:    filename,
-      content: new Blob([buf], { type: 'model/gltf-binary' }),
-    },
-  });
+  throw new Error('Generate failed after retries');
 }
 
 // ---------------------------------------------------------------------------
@@ -213,22 +493,49 @@ async function uploadToBucket(buf: Buffer, filename: string): Promise<void> {
 async function main(): Promise<void> {
   if (VIEW_API) {
     await viewApi();
-    process.exit(0);
+    return;
   }
+
+  validateModelCoverage();
+  validateHunyuanUrl();
 
   console.log(`\nHunyuan3D server: ${HUNYUAN_URL}`);
   await checkServer();
   console.log('  Server OK\n');
 
   mkdirSync(OUT_DIR, { recursive: true });
+  mkdirSync(INPUT_DIR, { recursive: true });
 
-  if (!HF_TOKEN) {
-    console.log('  Note: HUGGINGFACE_API_KEY not set — skipping bucket upload.\n');
+  const modelsToGenerate = getModelsToGenerate();
+  const skippedModels = !FORCE_REGEN
+    ? modelsToGenerate.filter((model) => modelAlreadyExists(model.filename))
+    : [];
+  const pendingModels = FORCE_REGEN
+    ? modelsToGenerate
+    : modelsToGenerate.filter((model) => !modelAlreadyExists(model.filename));
+
+  console.log(`  Candidate models: ${modelsToGenerate.length} Turbo Drift models`);
+  console.log(`  Required: ${MODELS.filter((model) => model.required).length}`);
+  console.log(`  Optional with source images found: ${modelsToGenerate.length - MODELS.filter((model) => model.required).length}`);
+  console.log(`  Existing outputs skipped: ${skippedModels.length}${FORCE_REGEN ? ' (disabled by --force)' : ''}`);
+  console.log(`  Remaining to generate: ${pendingModels.length}\n`);
+  console.log(`  Input images: ${INPUT_DIR}\n`);
+
+  for (const spec of skippedModels) {
+    console.log(`↷  ${spec.filename}.glb`);
+    console.log(`   Existing: ${getModelOutputPath(spec.filename)}`);
   }
 
-  for (const spec of MODELS) {
+  if (skippedModels.length) {
+    console.log();
+  }
+
+  for (const spec of pendingModels) {
     console.log(`▶  ${spec.filename}.glb`);
-    console.log(`   Prompt: "${spec.prompt.slice(0, 70)}…"`);
+    const hasImage = findInputImagePath(spec.filename) !== null;
+    console.log(`   Mode: ${hasImage ? 'image-to-3D' : 'text-to-3D'}`);
+    console.log(`   Prompt: ${spec.prompt}`);
+    if (hasImage) console.log(`   Reference: ${spec.notes}`);
 
     const t0  = Date.now();
     const buf = await generate(spec);
@@ -236,23 +543,16 @@ async function main(): Promise<void> {
     console.log(`   Generated in ${secs} s  (${(buf.length / 1024).toFixed(1)} KB)`);
 
     // Save locally
-    const localPath = join(OUT_DIR, `${spec.filename}.glb`);
+    const localPath = getModelOutputPath(spec.filename);
     writeFileSync(localPath, buf);
     console.log(`   Local: ${localPath}`);
-
-    // Upload to bucket
-    if (HF_TOKEN) {
-      await uploadToBucket(buf, `${spec.filename}.glb`);
-      console.log(`   Bucket: https://huggingface.co/buckets/${BUCKET}/resolve/${spec.filename}.glb`);
-    }
     console.log();
   }
 
   console.log('✓  Done — restart the dev server to serve the new models.');
-  process.exit(0);
 }
 
 main().catch((err: unknown) => {
   console.error('\n✗  Failed:', err instanceof Error ? err.message : err);
-  process.exit(1);
+  process.exitCode = 1;
 });

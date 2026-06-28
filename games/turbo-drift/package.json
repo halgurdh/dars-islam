@@ -8,8 +8,8 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "generate-models": "tsx src/scripts/generate-models.ts",
-    "generate-models:view-api": "tsx src/scripts/generate-models.ts --view-api"
+    "generate-models": "node --experimental-strip-types src/scripts/generate-models.ts",
+    "generate-models:view-api": "node --experimental-strip-types src/scripts/generate-models.ts --view-api"
   },
   "dependencies": {
     "@gltf-transform/core": "^4.1.0",
