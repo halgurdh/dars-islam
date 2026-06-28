@@ -41,11 +41,11 @@ export class BootScene extends Phaser.Scene {
     for (const suit of SUITS) {
       for (const rank of RANKS) {
         const key = `card${suit}${rank}`;
-        this.load.image(key, `/assets/cards/${key}.png`);
+        this.load.image(key, `assets/cards/${key}.png`);
       }
     }
-    this.load.image('cardJoker', '/assets/cards/cardJoker.png');
-    this.load.image('cardBack',  '/assets/cards/cardBack_blue2.png');
+    this.load.image('cardJoker', 'assets/cards/cardJoker.png');
+    this.load.image('cardBack',  'assets/cards/cardBack_blue2.png');
 
     // Splash
     this.load.image('karma-splash-logo', splashLogoUrl);

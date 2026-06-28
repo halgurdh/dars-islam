@@ -284,42 +284,44 @@ export class ArcadeBar {
     const s = document.createElement('style');
     s.id = 'arcade-bar-styles';
     s.textContent = `
-      .arcade-bar-root { position:fixed; top:16px; right:80px; z-index:9000;
-        font-family:'Segoe UI',system-ui,sans-serif; pointer-events:auto; }
-      .ab-bar { display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+      .arcade-bar-root { position:fixed;
+        top: calc(max(var(--control-offset, 1rem), var(--safe-top, 0px)) + (var(--control-size, 48px) + 0.55rem) * 1.55);
+        right: calc(max(var(--control-offset, 1rem), var(--safe-right, 0px)) + var(--control-size, 48px) + 0.9rem);
+        z-index:9000; font-family:'Segoe UI',system-ui,sans-serif; pointer-events:auto;
+        max-width:min(calc(100vw - max(var(--control-offset, 1rem), var(--safe-left, 0px)) - max(var(--control-offset, 1rem), var(--safe-right, 0px)) - var(--control-size, 48px) - 6rem), 720px); }
+      .ab-bar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end;
         background:rgba(0,0,0,0.75); border:1px solid rgba(255,255,255,0.15);
-        border-radius:18px; padding:15px 30px; backdrop-filter:blur(10px); }
-      .ab-coins { font-weight:700; color:#ffd700; font-size:39px; }
-      .ab-email { font-size:33px; color:#aaa; max-width:300px;
+        border-radius:14px; padding:8px 12px; backdrop-filter:blur(10px); }
+      .ab-coins { font-weight:700; color:#ffd700; font-size:16px; }
+      .ab-email { font-size:13px; color:#aaa; max-width:140px;
         overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
       .ab-btn { background:rgba(255,255,255,0.1); color:#fff;
         border:1px solid rgba(255,255,255,0.18); border-radius:12px;
-        padding:12px 27px; font-size:36px; cursor:pointer; white-space:nowrap;
+        padding:6px 11px; font-size:13px; cursor:pointer; white-space:nowrap;
         transition:background 0.12s; }
       .ab-btn:hover:not(:disabled) { background:rgba(255,255,255,0.22); }
       @media (max-width: 1600px) {
-        .ab-bar { padding:10px 18px; gap:12px; border-radius:12px; }
-        .ab-coins { font-size:22px; }
-        .ab-email { font-size:16px; max-width:180px; }
-        .ab-btn { font-size:18px; padding:7px 14px; border-radius:8px; }
-        .ab-btn-auth,.ab-btn-sm { font-size:16px; }
-        .ab-toggle { width:34px; height:34px; }
+        .arcade-bar-root { max-width:min(calc(100vw - max(var(--control-offset, 1rem), var(--safe-left, 0px)) - max(var(--control-offset, 1rem), var(--safe-right, 0px)) - var(--control-size, 48px) - 4.5rem), 560px); }
       }
       @media (max-width: 900px) {
-        .arcade-bar-root { top:8px; right:56px; }
-        .ab-bar { padding:7px 12px; gap:8px; border-radius:10px; }
-        .ab-coins { font-size:15px; }
-        .ab-email { font-size:12px; max-width:120px; }
-        .ab-btn { font-size:13px; padding:5px 10px; border-radius:6px; }
+        .arcade-bar-root {
+          top: calc(max(var(--control-offset, 0.75rem), var(--safe-top, 0px)) + (var(--control-size, 44px) + 0.55rem) * 1.55);
+          right: calc(max(var(--control-offset, 0.75rem), var(--safe-right, 0px)) + var(--control-size, 44px) + 0.7rem);
+          max-width:min(calc(100vw - max(var(--control-offset, 0.75rem), var(--safe-left, 0px)) - max(var(--control-offset, 0.75rem), var(--safe-right, 0px)) - var(--control-size, 44px) - 3.6rem), 320px);
+        }
+        .ab-bar { padding:6px 9px; gap:7px; border-radius:10px; }
+        .ab-coins { font-size:14px; }
+        .ab-email { font-size:11px; max-width:90px; }
+        .ab-btn { font-size:12px; padding:5px 8px; border-radius:7px; }
         .ab-btn-auth,.ab-btn-sm { font-size:12px; }
         .ab-toggle { width:28px; height:28px; }
       }
       .ab-btn:disabled { opacity:0.4; cursor:default; }
       .ab-cool { opacity:0.45; }
-      .ab-btn-auth,.ab-btn-sm { font-size:33px; }
+      .ab-btn-auth,.ab-btn-sm { font-size:12px; }
       .ab-toggle { background:rgba(255,255,255,0.08); color:#fff;
         border:1px solid rgba(255,255,255,0.18); border-radius:10px;
-        width:48px; height:48px; display:flex; align-items:center; justify-content:center;
+        width:30px; height:30px; display:flex; align-items:center; justify-content:center;
         cursor:pointer; padding:0; flex-shrink:0; transition:background 0.12s; }
       .ab-toggle:hover { background:rgba(255,255,255,0.2); }
       .ab-toggle svg { display:block; }

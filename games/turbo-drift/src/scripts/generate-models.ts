@@ -84,10 +84,10 @@ const MODELS: ModelSpec[] = [
   {
     filename:  'car',
     prompt:
-      'Arcade race car, futuristic sleek design, aerodynamic body with smooth curves, ' +
-      'wide racing stance, sport rear spoiler, neon accent stripe along the side, ' +
-      'glossy metallic paint, four visible racing tires, front bumper with air intakes, ' +
-      'small side mirrors, clean game-ready geometry, car centered at origin facing +Z',
+      'Modern festival racing hero car, high-performance road racer with aggressive aerodynamic bodywork, ' +
+      'wide planted stance, sculpted fenders, sharp LED headlights, large performance wheels, ' +
+      'rear diffuser, premium paint with bold motorsport accents, clean game-ready geometry, ' +
+      'showcase vehicle for an open-world racing festival, centered at origin facing +Z',
     steps:     15,
     faceCount: 30_000,
     seed:      42,
@@ -99,9 +99,9 @@ const MODELS: ModelSpec[] = [
   {
     filename:  'grandstand',
     prompt:
-      'Futuristic night-time racing circuit grandstand, stepped concrete seating rows, ' +
-      'thin metal roof canopy with neon strip underneath, colorful banners on front railing, ' +
-      'no spectators, isolated asset',
+      'Premium racing festival grandstand, stepped seating structure with steel canopy, ' +
+      'large sponsor banners, broadcast lighting, polished event architecture, ' +
+      'high-energy open-world racing event aesthetic, no spectators, isolated asset',
     steps:     12,
     faceCount: 20_000,
     seed:      99,
@@ -113,8 +113,8 @@ const MODELS: ModelSpec[] = [
   {
     filename:  'tree',
     prompt:
-      'Stylized trackside palm tree, slightly curved trunk, six fronds at top, ' +
-      'night-time race track decoration, base at origin, isolated asset',
+      'Trackside festival palm tree, sunlit coastal roadside vegetation with a slightly curved trunk, ' +
+      'lush fronds, premium open-world racing environment prop, isolated asset, base at origin',
     steps:     10,
     faceCount: 8_000,
     seed:      7,
@@ -126,8 +126,8 @@ const MODELS: ModelSpec[] = [
   {
     filename:  'tower-block',
     prompt:
-      'Chunky racing-district tower block, mid-rise apartment building with strong silhouette, ' +
-      'balconies, window bands, rooftop units, isolated asset',
+      'Modern roadside apartment tower for a racing festival city district, striking silhouette, ' +
+      'balconies, window bands, rooftop units, polished contemporary architecture, isolated asset',
     steps:     12,
     faceCount: 22_000,
     seed:      120,
@@ -139,8 +139,8 @@ const MODELS: ModelSpec[] = [
   {
     filename:  'pit-building',
     prompt:
-      'Pit building facade for an arcade racing circuit, paddock garage doors, windows, signage, ' +
-      'control room volume, isolated asset',
+      'Festival racing pit building facade, paddock garage doors, control room glazing, bold signage, ' +
+      'premium motorsport venue architecture, isolated asset',
     steps:     12,
     faceCount: 24_000,
     seed:      121,
@@ -152,8 +152,8 @@ const MODELS: ModelSpec[] = [
   {
     filename:  'track-gate',
     prompt:
-      'Start-finish gantry for a racing circuit, bold support columns, overhead sign bridge, ' +
-      'clean silhouette, isolated asset',
+      'Racing festival start-finish gantry, bold support columns, overhead event signage, ' +
+      'premium sponsor presentation, clean silhouette, isolated asset',
     steps:     10,
     faceCount: 12_000,
     seed:      122,
@@ -165,7 +165,8 @@ const MODELS: ModelSpec[] = [
   {
     filename:  'billboard',
     prompt:
-      'Roadside racing billboard with support frame, bold rectangular panel, metal braces, isolated asset',
+      'Open-world racing festival roadside billboard, premium branded panel with steel support frame, ' +
+      'clean event presentation, isolated asset',
     steps:     8,
     faceCount: 6_000,
     seed:      123,
@@ -177,7 +178,8 @@ const MODELS: ModelSpec[] = [
   {
     filename:  'lamp-post',
     prompt:
-      'Trackside lamp post with floodlight head, tall slim mast, sturdy base, isolated asset',
+      'Trackside festival light mast, tall slim pole with performance venue floodlight head, ' +
+      'premium roadside infrastructure, isolated asset',
     steps:     8,
     faceCount: 5_000,
     seed:      124,
@@ -189,7 +191,8 @@ const MODELS: ModelSpec[] = [
   {
     filename:  'barrier-stack',
     prompt:
-      'Stacked tire barrier cluster for a racing circuit, layered protective wall, isolated asset',
+      'Motorsport safety barrier stack, layered tire wall or modular crash blocks, ' +
+      'clean premium racing event prop, isolated asset',
     steps:     8,
     faceCount: 7_000,
     seed:      125,
@@ -201,8 +204,8 @@ const MODELS: ModelSpec[] = [
   {
     filename:  'tunnel-module',
     prompt:
-      'Road tunnel portal module for an arcade racing track, enclosed overpass section, ' +
-      'concrete shell, bold silhouette, isolated asset',
+      'Open-world racing route tunnel portal, concrete shell with premium roadway finish, ' +
+      'bold silhouette for a scenic festival race route, isolated asset',
     steps:     10,
     faceCount: 16_000,
     seed:      126,
@@ -210,6 +213,145 @@ const MODELS: ModelSpec[] = [
     required:  false,
     notes:
       'Use a reference of a road tunnel portal or enclosed overpass section, isolated and fully framed.',
+  },
+  {
+    filename:  'festival-stage',
+    prompt:
+      'Main racing festival stage structure, concert truss architecture, giant LED screens, ' +
+      'speaker towers, premium event centerpiece for an open-world driving festival, isolated asset',
+    steps:     12,
+    faceCount: 28_000,
+    seed:      127,
+    texture:   true,
+    required:  false,
+    notes:
+      'Use a reference of a large festival event stage with truss, screens, and speakers visible.',
+  },
+  {
+    filename:  'checkpoint-arch',
+    prompt:
+      'Open-world race checkpoint arch, lightweight event truss with flags, branding, and timing hardware, ' +
+      'premium festival race prop, isolated asset',
+    steps:     8,
+    faceCount: 9_000,
+    seed:      128,
+    texture:   true,
+    required:  false,
+    notes:
+      'Use a reference of a branded checkpoint or route arch with the full shape visible.',
+  },
+  {
+    filename:  'flag-banner-cluster',
+    prompt:
+      'Cluster of tall racing festival flag banners, colorful fabric on slim poles, ' +
+      'premium roadside event dressing, isolated asset',
+    steps:     8,
+    faceCount: 6_000,
+    seed:      129,
+    texture:   true,
+    required:  false,
+    notes:
+      'Use a reference of multiple event flags or banner poles grouped together.',
+  },
+  {
+    filename:  'hospitality-tent',
+    prompt:
+      'Premium motorsport hospitality tent pavilion, tensile canopy, modular lounge structure, ' +
+      'open-world festival support building, isolated asset',
+    steps:     10,
+    faceCount: 18_000,
+    seed:      130,
+    texture:   true,
+    required:  false,
+    notes:
+      'Use a reference of a hospitality tent or pavilion with the entire structure framed.',
+  },
+  {
+    filename:  'service-truck',
+    prompt:
+      'Festival support truck for a major racing event, branded utility vehicle, equipment compartments, ' +
+      'clean modern silhouette, isolated asset',
+    steps:     12,
+    faceCount: 24_000,
+    seed:      131,
+    texture:   true,
+    required:  false,
+    notes:
+      'Use a reference of a service truck, support lorry, or event logistics vehicle.',
+  },
+  {
+    filename:  'camera-crane',
+    prompt:
+      'Broadcast camera crane for a motorsport festival, articulated boom arm, operator base, ' +
+      'premium live-event production equipment, isolated asset',
+    steps:     8,
+    faceCount: 8_000,
+    seed:      132,
+    texture:   true,
+    required:  false,
+    notes:
+      'Use a reference of a camera crane or large broadcast rig with clear silhouette.',
+  },
+  {
+    filename:  'traffic-cone-pack',
+    prompt:
+      'Pack of racing route traffic cones and marker pylons, premium event road layout props, isolated asset',
+    steps:     6,
+    faceCount: 4_000,
+    seed:      133,
+    texture:   true,
+    required:  false,
+    notes:
+      'Use a reference of grouped cones or pylons used for route marking.',
+  },
+  {
+    filename:  'roadside-rock',
+    prompt:
+      'Large scenic roadside rock formation for an open-world race route, sunlit natural stone landmark, isolated asset',
+    steps:     8,
+    faceCount: 10_000,
+    seed:      134,
+    texture:   true,
+    required:  false,
+    notes:
+      'Use a reference of a distinct roadside boulder or rock outcrop.',
+  },
+  {
+    filename:  'agave-cluster',
+    prompt:
+      'Cluster of agave-style desert plants for a warm-climate racing festival environment, isolated asset',
+    steps:     8,
+    faceCount: 7_000,
+    seed:      135,
+    texture:   true,
+    required:  false,
+    notes:
+      'Use a reference of grouped desert plants with clean separation from background.',
+  },
+  {
+    filename:  'gas-station',
+    prompt:
+      'Stylized premium roadside gas station for an open-world racing map, canopy, pumps, glass storefront, ' +
+      'clean modern architecture, isolated asset',
+    steps:     12,
+    faceCount: 30_000,
+    seed:      136,
+    texture:   true,
+    required:  false,
+    notes:
+      'Use a reference of a compact roadside service station with full structure visible.',
+  },
+  {
+    filename:  'motocross-ramp',
+    prompt:
+      'Festival stunt ramp for a high-energy driving event, steel support frame, wide launch deck, isolated asset',
+    steps:     8,
+    faceCount: 9_000,
+    seed:      137,
+    texture:   true,
+    required:  false,
+    notes:
+      'Use a reference of a stunt or jump ramp with the entire ramp profile visible.',
   },
 ];
 
@@ -317,7 +459,26 @@ type ProbeResult = {
 const GENERATE_MAX_ATTEMPTS = 4;
 const GENERATE_RETRY_DELAYS_MS = [3000, 6000, 12000] as const;
 const STATUS_POLL_INTERVAL_MS = 5000;
-const STATUS_POLL_TIMEOUT_MS = 40 * 60_000;
+const DEFAULT_STATUS_POLL_TIMEOUT_MS = 12 * 60 * 60_000;
+
+function parseStatusTimeoutMs(): number {
+  const arg = process.argv.find((value) => value.startsWith('--status-timeout-hours='));
+  const envValue = process.env.HUNYUAN_STATUS_TIMEOUT_HOURS;
+  const rawValue = arg ? arg.slice('--status-timeout-hours='.length) : envValue;
+  if (!rawValue) return DEFAULT_STATUS_POLL_TIMEOUT_MS;
+
+  const hours = Number(rawValue);
+  if (!Number.isFinite(hours) || hours <= 0) {
+    throw new Error(
+      `Invalid status timeout hours: ${rawValue}\n` +
+      '  → Use a positive number, for example HUNYUAN_STATUS_TIMEOUT_HOURS=12',
+    );
+  }
+
+  return Math.round(hours * 60 * 60_000);
+}
+
+const STATUS_POLL_TIMEOUT_MS = parseStatusTimeoutMs();
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -475,8 +636,6 @@ async function generate(spec: ModelSpec): Promise<Buffer> {
         }
         throw new Error(`Generation error for task ${task.uid}: ${message}`);
       }
-
-      console.log(`   Status: ${status.status}`);
     }
 
     if (Date.now() - startedAt >= STATUS_POLL_TIMEOUT_MS) {
@@ -518,6 +677,7 @@ async function main(): Promise<void> {
   console.log(`  Required: ${MODELS.filter((model) => model.required).length}`);
   console.log(`  Optional with source images found: ${modelsToGenerate.length - MODELS.filter((model) => model.required).length}`);
   console.log(`  Existing outputs skipped: ${skippedModels.length}${FORCE_REGEN ? ' (disabled by --force)' : ''}`);
+  console.log(`  Status timeout: ${(STATUS_POLL_TIMEOUT_MS / 3600000).toFixed(1)} h`);
   console.log(`  Remaining to generate: ${pendingModels.length}\n`);
   console.log(`  Input images: ${INPUT_DIR}\n`);
 

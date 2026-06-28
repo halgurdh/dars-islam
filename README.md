@@ -195,7 +195,10 @@ Copy the webhook signing secret → set as STRIPE_WEBHOOK_SECRET in api/_config.
 git clone https://github.com/Tencent-Hunyuan/Hunyuan3D-2.1.git
 cd Hunyuan3D-2.1
 
-conda activate hunyuan3d // in Hunyuan3D-2.1 repo
+# HunYuan3D-2.1 commands
+conda activate hunyuan3d
+python api_server.py --port 8081 --enable_t23d   
+
 npm run generate:turbo-drift-models
 
 // cd C:\Projects\Hunyuan3D-2.1\hy3dpaint\custom_rasterizer
