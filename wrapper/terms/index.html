@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0c0f0a" />
+    <title>Terms of Service · Minitoon.Games</title>
+    <link rel="icon" type="image/png" href="/games/board-rush/assets/icons/icon-512.png" />
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .site-header {
+        width: 100%;
+        border-bottom: 1px solid var(--border-color);
+        padding: 1rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+
+      .site-header__brand {
+        font-size: 0.9rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        background: linear-gradient(135deg, #ff0055, #ff6b35);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-decoration: none;
+      }
+
+      .site-header__back {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: color 0.15s;
+        margin-right: 3.5rem; /* clear of fixed theme toggle */
+      }
+      .site-header__back:hover { color: #ff0055; }
+
+      .content {
+        width: 100%;
+        max-width: 720px;
+        padding: 3rem 2rem 5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+      }
+
+      .content > header {
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 1.5rem;
+      }
+
+      .content > header h1 {
+        font-size: 2rem;
+        font-weight: 900;
+        letter-spacing: 0.02em;
+        margin-bottom: 0.4rem;
+        color: var(--text-primary);
+      }
+
+      .content > header p {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+      }
+
+      section {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+      }
+
+      h2 {
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: #ff0055;
+      }
+
+      p, li {
+        font-size: 0.92rem;
+        color: var(--text-secondary);
+        line-height: 1.75;
+      }
+
+      ul {
+        padding-left: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+      }
+
+      a { color: var(--accent-light); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+
+      @media (max-width: 500px) {
+        .content { padding: 2rem 1.25rem 4rem; }
+        .site-header { padding: 0.9rem 1.25rem; }
+        .content > header h1 { font-size: 1.6rem; }
+        .site-header__back { margin-right: 3rem; }
+      }
+    </style>
+    <script type="module">
+      import '@shared/theme.css';
+      import { initTheme } from '@shared/theme.js';
+      initTheme();
+    </script>
+  </head>
+  <body>
+    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark/light mode">
+      <svg class="theme-icon theme-icon--dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+      <svg class="theme-icon theme-icon--light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+        <line x1="1" y1="1" x2="23" y2="23"></line>
+      </svg>
+    </button>
+
+    <header class="site-header">
+      <a href="/" class="site-header__brand">Minitoon.Games</a>
+      <a href="/" class="site-header__back">← Back to games</a>
+    </header>
+
+    <main class="content">
+      <header>
+        <h1>Terms of Service</h1>
+        <p>Last updated: June 28, 2026</p>
+      </header>
+
+      <section>
+        <h2>Who We Are</h2>
+        <p>
+          Minitoon.Games is a casual game development studio. By accessing or using our website
+          and games at <strong>minitoon.games</strong>, you agree to these Terms of Service.
+          If you do not agree, please do not use our services.
+        </p>
+      </section>
+
+      <section>
+        <h2>Permitted Use</h2>
+        <p>Our website and games are provided for personal, non-commercial entertainment. You may:</p>
+        <ul>
+          <li>Play our games and explore the site freely</li>
+          <li>Install our games as Progressive Web Apps on your device</li>
+          <li>Contact us with legitimate business or support inquiries</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Prohibited Activities</h2>
+        <p>You may not:</p>
+        <ul>
+          <li>Attempt to gain unauthorized access to our systems or other users' accounts</li>
+          <li>Use automated tools to scrape, copy, or harvest content without written permission</li>
+          <li>Disrupt or interfere with the normal operation of our website or games</li>
+          <li>Impersonate Minitoon.Games or its team members</li>
+          <li>Use our platform for any unlawful purpose</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>Intellectual Property</h2>
+        <p>
+          All content on this website and in our games — including text, graphics, logos, game
+          assets, and code — is the property of Minitoon.Games. Reproduction or redistribution
+          of any content without prior written consent is prohibited.
+        </p>
+      </section>
+
+      <section>
+        <h2>User Accounts</h2>
+        <p>
+          Some features (such as cross-device progress sync) require you to create an account.
+          You are responsible for keeping your credentials secure and for any activity that occurs
+          under your account. We reserve the right to suspend or terminate accounts that violate
+          these terms.
+        </p>
+      </section>
+
+      <section>
+        <h2>In-App Purchases</h2>
+        <p>
+          Minitoon Premium subscriptions are billed monthly. You may cancel at any time; your
+          Premium access continues until the end of the current billing period. We do not offer
+          refunds for partial months. All transactions are processed securely through Stripe.
+        </p>
+      </section>
+
+      <section>
+        <h2>Third-Party Links</h2>
+        <p>
+          Our website may contain links to third-party sites. We are not responsible for the
+          content, privacy practices, or reliability of any external website.
+        </p>
+      </section>
+
+      <section>
+        <h2>Disclaimer of Warranties</h2>
+        <p>
+          Our games and website are provided "as is" without warranties of any kind, express or
+          implied. We do not guarantee uninterrupted availability or error-free operation.
+        </p>
+      </section>
+
+      <section>
+        <h2>Limitation of Liability</h2>
+        <p>
+          To the fullest extent permitted by law, Minitoon.Games shall not be liable for any
+          indirect, incidental, special, or consequential damages arising from your use of —
+          or inability to use — our services.
+        </p>
+      </section>
+
+      <section>
+        <h2>Changes to These Terms</h2>
+        <p>
+          We may update these Terms at any time. Continued use of our website or games after
+          changes are posted constitutes your acceptance of the revised Terms.
+        </p>
+      </section>
+
+      <section>
+        <h2>Contact</h2>
+        <p>
+          Questions? Reach us at <a href="mailto:hello@minitoon.games">hello@minitoon.games</a>.
+        </p>
+      </section>
+    </main>
+  </body>
+</html>
