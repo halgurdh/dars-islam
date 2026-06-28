@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { KarmaGame, GamePhase } from '../KarmaGame';
+import { gamepad, GP } from '@shared/gamepad';
 import type { PlayerState, PlayResult } from '../KarmaGame';
 import type { Card } from '../Card';
 import { Rank } from '../Card';
@@ -58,6 +59,10 @@ export class GameScene extends Phaser.Scene {
   private dyn: Phaser.GameObjects.GameObject[] = [];
   private aiTimer: Phaser.Time.TimerEvent | null = null;
   private dragInProgress = false;
+
+  // Gamepad focus
+  private gpFocusIdx = 0;
+  private gpFocusGfx: Phaser.GameObjects.Rectangle | null = null;
   private pileGlow?: Phaser.GameObjects.Arc;
 
   constructor() { super('KarmaGame'); }
@@ -114,7 +119,44 @@ export class GameScene extends Phaser.Scene {
       this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('KarmaMenu'));
     });
 
+    this.gpFocusGfx = this.add.rectangle(0, 0, HAND_CW + 8, HAND_CH + 8, 0xffffff, 0)
+      .setStrokeStyle(3, 0xffff00, 0.9).setDepth(80).setVisible(false);
+
     this.doSetup(0);
+  }
+
+  update(): void {
+    gamepad.tick();
+    if (!gamepad.connected()) { this.gpFocusGfx?.setVisible(false); return; }
+
+    const myTurn = this.g.currentPlayer === this.viewerIndex && this.g.phase === GamePhase.Play;
+    const hand   = this.g.players[this.viewerIndex]?.hand ?? [];
+
+    if (!myTurn || hand.length === 0) { this.gpFocusGfx?.setVisible(false); return; }
+
+    this.gpFocusIdx = Math.max(0, Math.min(this.gpFocusIdx, hand.length - 1));
+
+    if (gamepad.justPressed(GP.LEFT)  || gamepad.axisCrossed(0, -1))
+      this.gpFocusIdx = (this.gpFocusIdx - 1 + hand.length) % hand.length;
+    if (gamepad.justPressed(GP.RIGHT) || gamepad.axisCrossed(0,  1))
+      this.gpFocusIdx = (this.gpFocusIdx + 1) % hand.length;
+
+    // Mirror the card-position formula from renderPlayerHand
+    const n       = hand.length;
+    const maxSpan = 944;
+    const spacing = n <= 1 ? 0 : Math.min(HAND_CW + 6, maxSpan / (n - 1));
+    const startX  = CX - ((n - 1) * spacing) / 2;
+    const cx      = startX + this.gpFocusIdx * spacing;
+
+    this.gpFocusGfx?.setPosition(cx, HAND_CY).setVisible(true);
+
+    if (gamepad.justPressed(GP.A)) {
+      const card = hand[this.gpFocusIdx];
+      this.toggleSel(card.id, card.rank);
+      this.renderAll();
+    }
+    if (gamepad.justPressed(GP.LB) || gamepad.justPressed(GP.Y)) this.attemptPlay();
+    if (gamepad.justPressed(GP.RB) || gamepad.justPressed(GP.B)) this.handleResult(this.g.takePile());
   }
 
   // ── Setup phase ─────────────────────────────────────────────────────────────

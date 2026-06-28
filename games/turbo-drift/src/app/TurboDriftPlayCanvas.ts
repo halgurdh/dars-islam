@@ -22,6 +22,7 @@ import { GameState } from '../systems/GameState';
 import { gameFlow, type FlowHooks } from '../systems/GameFlowMachine';
 import { turboMusic } from '../systems/MusicStateMachine';
 import type { CarConfig, CustomizablePart, RaceInput } from '../types';
+import { gamepad, GP } from '@shared/gamepad';
 
 // WatercolorPostEffect removed: pc.createShaderFromCode is deprecated in
 // PlayCanvas 2.x, and the WGSL UV mapping (vUv.y = pos.y*0.5+0.5) inverts
@@ -382,6 +383,7 @@ const CSS = `
 
 /* ── Touch controls ──────────────────────────────────────────────────── */
 .td-touch { position: fixed; inset: 0; pointer-events: none; display: none; }
+@media (hover: hover) and (pointer: fine) { .td-touch { display: none !important; } }
 .td-touch-btn {
   position: absolute; display: flex; align-items: center; justify-content: center;
   border-radius: 50%;
@@ -424,6 +426,7 @@ class TurboDriftPlayCanvas {
   private raceInput: RaceInput = { throttle: 0, brake: false, steer: 0, handbrake: false };
   private keys = new Set<string>();
   private touchState = { left: false, right: false, throttle: false, brake: false, drift: false };
+  private gpState:   RaceInput = { throttle: 0, brake: false, steer: 0, handbrake: false };
 
   private lapCount = 0;
   private lapStartTime = 0;
@@ -1221,14 +1224,33 @@ class TurboDriftPlayCanvas {
     window.addEventListener('keyup',   (e) => { this.keys.delete(e.code); });
   }
 
+  private pollGamepad(): void {
+    gamepad.tick();
+    if (!gamepad.connected()) {
+      this.gpState = { throttle: 0, brake: false, steer: 0, handbrake: false };
+      return;
+    }
+    const rt    = gamepad.value(GP.RT);
+    const lt    = gamepad.value(GP.LT);
+    const axisX = gamepad.axis(0);
+    this.gpState = {
+      throttle:  Math.max(rt, gamepad.pressed(GP.A) ? 1 : 0),
+      brake:     lt > 0.1 || gamepad.pressed(GP.B),
+      steer:     axisX !== 0 ? -axisX
+               : gamepad.pressed(GP.LEFT) ? 1 : gamepad.pressed(GP.RIGHT) ? -1 : 0,
+      handbrake: gamepad.pressed(GP.X) || gamepad.pressed(GP.LB),
+    };
+  }
+
   private gatherInput(): RaceInput {
-    const k = this.keys, t = this.touchState;
+    const k = this.keys, t = this.touchState, gp = this.gpState;
     return {
-      throttle:  (k.has('ArrowUp')   || k.has('KeyW') || t.throttle) ? 1 : 0,
-      brake:     k.has('ArrowDown') || k.has('KeyS')  || t.brake,
+      throttle:  (k.has('ArrowUp')   || k.has('KeyW') || t.throttle) ? 1 : gp.throttle,
+      brake:     k.has('ArrowDown') || k.has('KeyS')  || t.brake || gp.brake,
       steer:     (k.has('ArrowLeft') || k.has('KeyA') || t.left)  ?  1
-               : (k.has('ArrowRight')|| k.has('KeyD') || t.right) ? -1 : 0,
-      handbrake: k.has('Space') || t.drift,
+               : (k.has('ArrowRight')|| k.has('KeyD') || t.right) ? -1
+               : gp.steer,
+      handbrake: k.has('Space') || t.drift || gp.handbrake,
     };
   }
 
@@ -1347,6 +1369,7 @@ class TurboDriftPlayCanvas {
 
     if (state === 'race_active') {
       const dtC = Math.min(dt, 0.05);
+      this.pollGamepad();
       this.raceInput = this.gatherInput();
       this.physics = stepPhysics(this.physics, this.raceInput, this.carConfig.stats, dtC);
       this.raceElapsedMs += dtC * 1000;

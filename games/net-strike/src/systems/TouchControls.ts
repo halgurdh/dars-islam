@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import type { GridCoord } from '../types';
+import { gamepad, GP } from '@shared/gamepad';
 
 export type TouchMode = 'battle' | 'world' | 'menu';
 
@@ -58,6 +59,9 @@ export class TouchControls {
   private _dpadX      = 0;
   private _dpadY      = 0;
 
+  // True only on actual touch screens — controls whether the Phaser touch UI is built
+  private readonly isTouch: boolean;
+
   // UI references
   private allGfx: Phaser.GameObjects.GameObject[] = [];
   private customBtn:    Phaser.GameObjects.Container | null = null;
@@ -74,10 +78,12 @@ export class TouchControls {
   onCardTap?: (x: number, y: number) => void;
 
   constructor(scene: Phaser.Scene, mode: TouchMode) {
-    this.scene = scene;
-    this.mode  = mode;
+    this.scene   = scene;
+    this.mode    = mode;
+    this.isTouch = window.matchMedia('(pointer: coarse)').matches;
     this.buildUI();
     this.bindInput();
+    this.scene.events.on('preupdate', this.gpPoll, this);
   }
 
   // ── Public consume API ────────────────────────────────────────────
@@ -132,6 +138,7 @@ export class TouchControls {
   destroy(): void {
     this.hintAutoTimer?.remove();
     this.hintFadeTween?.remove();
+    this.scene.events.off('preupdate', this.gpPoll, this);
     this.scene.input.off('pointerdown', this.handleDown, this);
     this.scene.input.off('pointermove', this.handleMove, this);
     this.scene.input.off('pointerup',   this.handleUp,   this);
@@ -267,19 +274,53 @@ export class TouchControls {
     });
   }
 
+  // ── Gamepad polling ───────────────────────────────────────────────
+
+  private gpPoll(): void {
+    gamepad.tick();
+    if (!gamepad.connected()) return;
+
+    if (this.mode === 'battle') {
+      if (gamepad.justPressed(GP.LEFT)  || gamepad.axisCrossed(0, -1)) this._swipe = { col: -1, row:  0 };
+      if (gamepad.justPressed(GP.RIGHT) || gamepad.axisCrossed(0,  1)) this._swipe = { col:  1, row:  0 };
+      if (gamepad.justPressed(GP.UP)    || gamepad.axisCrossed(1, -1)) this._swipe = { col:  0, row: -1 };
+      if (gamepad.justPressed(GP.DOWN)  || gamepad.axisCrossed(1,  1)) this._swipe = { col:  0, row:  1 };
+    }
+
+    if (this.mode === 'world') {
+      const ax = gamepad.axis(0);
+      const ay = gamepad.axis(1);
+      this._dpadX = ax !== 0 ? ax : (gamepad.pressed(GP.LEFT) ? -1 : gamepad.pressed(GP.RIGHT) ? 1 : 0);
+      this._dpadY = ay !== 0 ? ay : (gamepad.pressed(GP.UP)   ? -1 : gamepad.pressed(GP.DOWN)  ? 1 : 0);
+    }
+
+    if (gamepad.justPressed(GP.A))                          this._tap       = true;
+    if (gamepad.justPressed(GP.Y))                          this._doubleTap = true;
+    if (gamepad.justPressed(GP.X) && this.mode === 'world') this._jackIn    = true;
+
+    if (this.mode === 'menu') {
+      if (gamepad.justPressed(GP.START) || gamepad.justPressed(GP.A))      this._confirm  = true;
+      if (gamepad.justPressed(GP.B)     || gamepad.justPressed(GP.SELECT)) this._cancel   = true;
+      if (gamepad.justPressed(GP.LB)    || gamepad.justPressed(GP.LEFT)  ) this._menuNav  = -1;
+      if (gamepad.justPressed(GP.RB)    || gamepad.justPressed(GP.RIGHT) ) this._menuNav  =  1;
+    }
+  }
+
   // ── UI construction ───────────────────────────────────────────────
 
   private buildUI(): void {
-    if (this.mode === 'battle') {
-      this.buildDpad();
-      this.buildFireButton();
-      this.buildCustomButton();
-    } else if (this.mode === 'world') {
-      this.buildJoystickZone();
-      this.buildDpad();
-      this.buildJackInButton();
-    } else {
-      this.buildMenuButtons();
+    if (this.isTouch) {
+      if (this.mode === 'battle') {
+        this.buildDpad();
+        this.buildFireButton();
+        this.buildCustomButton();
+      } else if (this.mode === 'world') {
+        this.buildJoystickZone();
+        this.buildDpad();
+        this.buildJackInButton();
+      } else {
+        this.buildMenuButtons();
+      }
     }
     this.buildHintPanel();
   }

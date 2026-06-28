@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { playClick } from '@src/sfx';
+import { gamepad, GP } from '@shared/gamepad';
 import { rfNetwork } from '../net/NetworkManager';
 import type { RFMember } from '../net/protocol';
 import { Deck } from '../objects/Deck';
@@ -85,6 +86,10 @@ export class PlayScene extends Phaser.Scene {
   private _overlayBtn?: Phaser.GameObjects.Rectangle;
   private _overlayBtnTxt?: Phaser.GameObjects.Text;
 
+  // Gamepad focus
+  private gpFocusIdx = -1;
+  private gpFocusGfx!: Phaser.GameObjects.Rectangle;
+
   constructor() { super('Play'); }
 
   // ─── Lifecycle ───────────────────────────────────────────────────────────────
@@ -103,6 +108,10 @@ export class PlayScene extends Phaser.Scene {
     this._buildActionButtons();
     this._buildStatusBar();
     this.overlay = this.add.container(CX, H / 2).setDepth(50).setVisible(false);
+
+    this.gpFocusGfx = this.add.rectangle(0, 0, HAND_CARD_W + 10, HAND_CARD_H + 10, 0xffffff, 0)
+      .setStrokeStyle(3, 0xffff00, 0.9).setDepth(999).setVisible(false);
+
     if (this.online) this._initOnlineHandlers();
     this._startRound();
   }
@@ -111,6 +120,33 @@ export class PlayScene extends Phaser.Scene {
     rfNetwork.onRosterUpdate = undefined;
     rfNetwork.onNextBlind    = undefined;
     rfNetwork.onGameOver     = undefined;
+  }
+
+  update(): void {
+    gamepad.tick();
+    if (!gamepad.connected() || this.phase !== Phase.PLAYER) {
+      this.gpFocusGfx?.setVisible(false);
+      return;
+    }
+
+    const n = this.handCards.length;
+    if (n === 0) { this.gpFocusGfx.setVisible(false); return; }
+
+    if (this.gpFocusIdx < 0) this.gpFocusIdx = 0;
+
+    if (gamepad.justPressed(GP.LEFT)  || gamepad.axisCrossed(0, -1))
+      this.gpFocusIdx = (this.gpFocusIdx - 1 + n) % n;
+    if (gamepad.justPressed(GP.RIGHT) || gamepad.axisCrossed(0,  1))
+      this.gpFocusIdx = (this.gpFocusIdx + 1) % n;
+
+    this.gpFocusIdx = Math.min(this.gpFocusIdx, n - 1);
+
+    const focused = this.handCards[this.gpFocusIdx];
+    this.gpFocusGfx.setPosition(focused.x, focused.y).setVisible(true);
+
+    if (gamepad.justPressed(GP.A))                                     this._onCardTap(focused);
+    if (gamepad.justPressed(GP.RB) || gamepad.justPressed(GP.Y))      this._playHand();
+    if (gamepad.justPressed(GP.LB) || gamepad.justPressed(GP.B))      this._discard();
   }
 
   // ─── Run / Round ─────────────────────────────────────────────────────────────
