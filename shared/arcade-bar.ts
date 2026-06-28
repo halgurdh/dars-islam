@@ -297,6 +297,23 @@ export class ArcadeBar {
         padding:12px 27px; font-size:36px; cursor:pointer; white-space:nowrap;
         transition:background 0.12s; }
       .ab-btn:hover:not(:disabled) { background:rgba(255,255,255,0.22); }
+      @media (max-width: 1600px) {
+        .ab-bar { padding:10px 18px; gap:12px; border-radius:12px; }
+        .ab-coins { font-size:22px; }
+        .ab-email { font-size:16px; max-width:180px; }
+        .ab-btn { font-size:18px; padding:7px 14px; border-radius:8px; }
+        .ab-btn-auth,.ab-btn-sm { font-size:16px; }
+        .ab-toggle { width:34px; height:34px; }
+      }
+      @media (max-width: 900px) {
+        .arcade-bar-root { top:8px; right:56px; }
+        .ab-bar { padding:7px 12px; gap:8px; border-radius:10px; }
+        .ab-coins { font-size:15px; }
+        .ab-email { font-size:12px; max-width:120px; }
+        .ab-btn { font-size:13px; padding:5px 10px; border-radius:6px; }
+        .ab-btn-auth,.ab-btn-sm { font-size:12px; }
+        .ab-toggle { width:28px; height:28px; }
+      }
       .ab-btn:disabled { opacity:0.4; cursor:default; }
       .ab-cool { opacity:0.45; }
       .ab-btn-auth,.ab-btn-sm { font-size:33px; }
