@@ -336,8 +336,8 @@ export class TouchControls {
       .setDepth(4800)
       .setInteractive(new Phaser.Geom.Circle(0, 0, r + 4), Phaser.Geom.Circle.Contains);
 
-    const circle = this.scene.add.circle(0, 0, r, fill, 0.72);
-    circle.setStrokeStyle(2, 0xffffff, 0.4);
+    const circle = this.scene.add.circle(0, 0, r, fill, 0.38);
+    circle.setStrokeStyle(2, 0xffffff, 0.25);
 
     const text = this.scene.add.text(0, 0, label, {
       fontFamily: 'Segoe UI',
@@ -352,7 +352,7 @@ export class TouchControls {
     const pressRelease = () => {
       this.scene.tweens.killTweensOf(c);
       this.scene.tweens.add({ targets: c, scaleX: 1, scaleY: 1, duration: 80 });
-      circle.setAlpha(0.72);
+      circle.setAlpha(0.38);
       onUp?.();
     };
 
@@ -371,7 +371,7 @@ export class TouchControls {
   }
 
   private buildDpad(): void {
-    const halo = this.scene.add.circle(DPAD_CX, DPAD_CY, DPAD_STEP + BTN_R + 6, 0x000e1e, 0.36)
+    const halo = this.scene.add.circle(DPAD_CX, DPAD_CY, DPAD_STEP + BTN_R + 6, 0x000e1e, 0.15)
       .setScrollFactor(0).setDepth(4795);
     this.allGfx.push(halo);
 

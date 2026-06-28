@@ -42,14 +42,17 @@
       </svg>
     </button>
     <button id="fullscreen-toggle" class="fullscreen-toggle" aria-label="Enter fullscreen" hidden>⛶</button>
+    <button id="install-toggle" class="install-toggle" aria-label="Install app" hidden>📲 Install</button>
     <a href="/" class="game-exit">← Exit Game</a>
     <div id="app"></div>
     <script type="module" src="./src/main.ts"></script>
     <script type="module">
       import '@shared/theme.css';
-      import { initTheme, initFullscreen } from '@shared/theme.js';
+      import { initTheme, initFullscreen, initInstallPrompt, initOrientationLock } from '@shared/theme.js';
       initTheme();
       initFullscreen({ targetId: 'app' });
+      initInstallPrompt();
+      initOrientationLock('landscape');
     </script>
   </body>
 </html>
