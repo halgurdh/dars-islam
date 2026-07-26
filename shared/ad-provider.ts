@@ -28,7 +28,7 @@ export const BRAND_ADS: BrandAd[] = [
   },
   {
     name:    'ChilledPunks',
-    tagline: 'Independent Record Label',
+    tagline: 'Independent Music Label',
     url:     'https://chilledpunks.com',
     bg:      'linear-gradient(135deg,#0d1b2a,#1b3a4b)',
     fg:      '#38bdf8',
