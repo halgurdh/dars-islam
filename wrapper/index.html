@@ -15,7 +15,8 @@
     <link rel="stylesheet" href="style.css" />
     <script async custom-element="amp-auto-ads"
         src="https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js">
-</script>
+    </script>
+    <script src="https://pl29856091.effectivecpmnetwork.com/f4/62/c9/f462c971b1a696ad7eddfe99e569332b.js"></script>
   </head>
   <body>
     <amp-auto-ads type="adsense"
@@ -286,7 +287,7 @@
         const host = new URL(brand.url).hostname;
 
         content.innerHTML = `
-          <span class="ad-banner__label">SPONSORED</span>
+        <span class="ad-banner__label">SPONSORED</span>
           <a href="${utm}" target="_blank" rel="noopener noreferrer" class="ad-banner__link">
             <strong>${brand.name}</strong>
             <span>${brand.tagline}</span>
@@ -303,7 +304,7 @@
         document.getElementById('adBanner').style.display = 'none';
         localStorage.setItem('adBannerDismissedAt', String(Date.now()));
         clearTimeout(_adTimer);
-        
+
         // Re-show after 15 min only if still not premium
         if (!ArcadeStore.getPremium().active) {
           const delay = 15 * 60 * 1000;
