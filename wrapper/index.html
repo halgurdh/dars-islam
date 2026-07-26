@@ -274,7 +274,7 @@
         if (ArcadeStore.getPremium().active) return; // premium = no ads
         if (BRAND_ADS.length === 0) return;
         const dismissedAt = localStorage.getItem('adBannerDismissedAt');
-        if (dismissedAt && Date.now() - Number(dismissedAt) < 45 * 60 * 1000) return;
+        if (dismissedAt && Date.now() - Number(dismissedAt) < 15 * 60 * 1000) return;
 
         const banner = document.getElementById('adBanner');
         const content = document.getElementById('adBannerContent');
@@ -303,9 +303,10 @@
         document.getElementById('adBanner').style.display = 'none';
         localStorage.setItem('adBannerDismissedAt', String(Date.now()));
         clearTimeout(_adTimer);
-        // Re-show after 45–75 min only if still not premium
+        
+        // Re-show after 15 min only if still not premium
         if (!ArcadeStore.getPremium().active) {
-          const delay = (45 + Math.random() * 30) * 60 * 1000;
+          const delay = 15 * 60 * 1000;
           _adTimer = setTimeout(showAdBanner, delay);
         }
       });
