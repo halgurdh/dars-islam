@@ -49,6 +49,8 @@
           <p class="hero-banner__desc">Minitoon.Games is a casual game development studio creating fun and addictive games for players around the world.</p>
       </div>
 
+      <img src="../shared/minitoon.games.png" alt="Minitoon.Games promotional banner" class="hero-banner__promo" />
+
       <div class="hero-features">
         <div class="hero-feature">
           <span class="hero-feature__icon">🎮</span>
@@ -84,14 +86,12 @@
           <span class="premium-crown">👑</span>
           <div class="premium-banner__copy">
             <strong>Minitoon Premium</strong>
-            <span>5 exclusive Dragon card backs · 500 bonus coins · Instant ad rewards</span>
           </div>
         </div>
-        <button id="premiumBtn" class="premium-cta">Get Premium — €4.99/mo</button>
+        <div class="premium-banner__ctas">
+          <a href="mailto:info@minitoon.games?subject=Minitoon%20Premium" class="premium-cta">For Publisers: Email Us</a>
+        </div>
       </div>
-      <p id="premiumActivatedMsg" style="display:none; text-align:center; color:#ffd700; font-weight:700; margin:8px 0 0">
-        ✓ Premium activated! Dragon card backs + 500 coins added. Enjoy!
-      </p>
     </section>
 
     <!-- Game Grid -->
@@ -194,6 +194,14 @@
       </div>
     </main>
 
+    <!-- Radio -->
+    <header id="radio" class="hub-header">
+      <h2 class="hub-title">Minitoon Radio</h2>
+      <p class="hub-subtitle">Listen to our Game Music Radio</p>
+    </header>
+
+    <iframe style="width: 50%; height: 30rem;" src="https://radio.chilledpunks.com/player/minitoon-games" title="Minitoon Radio"></iframe> 
+
     <!-- Sponsor Ad Banner (hidden for premium users) -->
     <div id="adBanner" class="ad-banner" style="display:none">
       <button id="adBannerClose" class="ad-banner__close" aria-label="Close ad">✕</button>
@@ -238,7 +246,7 @@
       import { initTheme } from '@shared/theme.js';
       import { ArcadeStore } from '@shared/arcade-store';
       import { sync } from '@shared/sync';
-      import { api, getSessionToken } from '@shared/api';
+      import { getSessionToken } from '@shared/api';
       import { BRAND_ADS } from '@shared/ad-provider';
       initTheme();
 
@@ -326,25 +334,6 @@
 
       // First appearance: random 8–20 seconds after page load
       setTimeout(showAdBanner, (8 + Math.random() * 12) * 1000);
-
-      // Stripe checkout — calls PHP API to get a server-signed checkout URL
-      document.getElementById('premiumBtn')?.addEventListener('click', async () => {
-        if (!sync.isLoggedIn) {
-          alert('Please sign in first to get Premium.\n\nOpen any game and tap "Sign in to sync across devices".');
-          return;
-        }
-        const btn = document.getElementById('premiumBtn');
-        if (btn) btn.textContent = 'Loading…';
-        try {
-          const { url } = await api.post('/stripe/create-checkout.php');
-          if (!url) throw new Error('No checkout URL returned');
-          window.location.href = url;
-        } catch (err) {
-          console.error(err);
-          if (btn) btn.textContent = 'Get Premium — €4.99/mo';
-          alert('Could not start checkout. Please try again.');
-        }
-      });
 
       // Handle Stripe success redirect (?premium=success)
       if (new URLSearchParams(window.location.search).get('premium') === 'success') {
