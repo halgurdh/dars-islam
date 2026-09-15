@@ -74,9 +74,16 @@ export function pickDistractors(
     return sample(pool, count);
   }
 
+  // Only explode an *other* item into its own word-pieces if it's itself
+  // multi-word — a single-word other item (common: months/pillars mixed
+  // with multi-word ones) contributes its whole word as one candidate,
+  // not its individual letters. Without this, a word-building tray could
+  // end up with a stray bare letter in it (caught in testing on
+  // months-builder: "ل" leaking in from single-word "رَجَب").
   const wordPool = new Set<string>();
   for (const arabic of otherItemsArabic) {
-    for (const word of piecesFor(arabic)) {
+    const candidates = pieceKindFor(arabic) === 'word' ? piecesFor(arabic) : [arabic.trim()];
+    for (const word of candidates) {
       if (!correctSet.has(word)) wordPool.add(word);
     }
   }

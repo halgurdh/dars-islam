@@ -26,6 +26,7 @@ const GAMES = {
   'phrases-builder': { bgLight: '#163d2e', bgDark: '#081712', accent: '#4fd9a0', accentLight: '#cdf7e6' },
   'salah-builder': { bgLight: '#3d1620', bgDark: '#17080b', accent: '#e04f6a', accentLight: '#f7c2cd' },
   'months-builder': { bgLight: '#16333d', bgDark: '#081417', accent: '#4fa8d9', accentLight: '#cde8f7' },
+  'letter-trace': { bgLight: '#1c2440', bgDark: '#0a0e1a', accent: '#7c93e0', accentLight: '#d6def7' },
 };
 
 function renderSvg(colors) {

@@ -17,6 +17,11 @@ interface Strings {
   roundSummary: (items: number, mistakes: number, time: string, learned: number, total: number) => string;
   nextLevelHint: string;
   hear: string;
+  modeArabic: string;
+  modeToTranslation: string;
+  modeToArabic: string;
+  typeAnswerPlaceholder: string;
+  checkAnswer: string;
 }
 
 const STRINGS: Record<'en' | 'nl', Strings> = {
@@ -38,6 +43,11 @@ const STRINGS: Record<'en' | 'nl', Strings> = {
       `${items} pillars spelled in ${mistakes} mistakes\nTime: ${time}\n${learned} / ${total} pillars learned overall`,
     nextLevelHint: 'Next level starting…',
     hear: '🔊 Hear it',
+    modeArabic: '🔤 Arabic',
+    modeToTranslation: '✍️ AR → EN',
+    modeToArabic: '🔤 EN → AR',
+    typeAnswerPlaceholder: 'Type the meaning…',
+    checkAnswer: 'Check',
   },
   nl: {
     subtitle: 'Pillars Builder',
@@ -57,6 +67,11 @@ const STRINGS: Record<'en' | 'nl', Strings> = {
       `${items} zuilen gespeld in ${mistakes} fouten\nTijd: ${time}\n${learned} / ${total} zuilen in totaal geleerd`,
     nextLevelHint: 'Volgend level begint…',
     hear: '🔊 Uitspraak',
+    modeArabic: '🔤 Arabisch',
+    modeToTranslation: '✍️ AR → NL',
+    modeToArabic: '🔤 NL → AR',
+    typeAnswerPlaceholder: 'Typ de betekenis…',
+    checkAnswer: 'Controleer',
   },
 };
 
