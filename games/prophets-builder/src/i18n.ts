@@ -23,6 +23,7 @@ interface Strings {
   modeToArabic: string;
   typeAnswerPlaceholder: string;
   checkAnswer: string;
+  listenAndChoose: string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
@@ -49,6 +50,7 @@ const STRINGS: Record<LangMode, Strings> = {
     modeToArabic: '🔤 EN → AR',
     typeAnswerPlaceholder: 'Type the meaning…',
     checkAnswer: 'Check',
+    listenAndChoose: '🎧 Listen, then choose the answer',
   },
   nl: {
     subtitle: 'Prophets Builder',
@@ -73,6 +75,7 @@ const STRINGS: Record<LangMode, Strings> = {
     modeToArabic: '🔤 NL → AR',
     typeAnswerPlaceholder: 'Typ de betekenis…',
     checkAnswer: 'Controleer',
+    listenAndChoose: '🎧 Luister en kies het antwoord',
   },
   de: {
     subtitle: 'Prophets Builder',
@@ -97,6 +100,7 @@ const STRINGS: Record<LangMode, Strings> = {
     modeToArabic: '🔤 DE → AR',
     typeAnswerPlaceholder: 'Bedeutung eingeben…',
     checkAnswer: 'Prüfen',
+    listenAndChoose: '🎧 Hör zu und wähle die Antwort',
   },
   es: {
     subtitle: 'Prophets Builder',
@@ -121,6 +125,7 @@ const STRINGS: Record<LangMode, Strings> = {
     modeToArabic: '🔤 ES → AR',
     typeAnswerPlaceholder: 'Escribe el significado…',
     checkAnswer: 'Comprobar',
+    listenAndChoose: '🎧 Escucha y elige la respuesta',
   },
   fr: {
     subtitle: 'Prophets Builder',
@@ -145,6 +150,7 @@ const STRINGS: Record<LangMode, Strings> = {
     modeToArabic: '🔤 FR → AR',
     typeAnswerPlaceholder: 'Tapez la signification…',
     checkAnswer: 'Vérifier',
+    listenAndChoose: '🎧 Écoute, puis choisis la réponse',
   },
 };
 

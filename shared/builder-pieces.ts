@@ -89,3 +89,35 @@ export function pickDistractors(
   }
   return sample([...wordPool], count);
 }
+
+// ── Round formats ────────────────────────────────────────────────────────
+// 'build' is the original tap-pieces-into-blanks format (or, in
+// 'toTranslation' mode, the existing type-the-meaning challenge — both
+// scenes' own default). 'multipleChoice' and 'listening' are newer
+// alternatives that reuse the same clue/direction rules but swap the
+// interaction for picking one of a few whole-answer options instead of
+// assembling one; 'listening' additionally hides the text clue so the
+// audio is the only way to answer. Picked per item, not per round, so a
+// single round mixes formats rather than committing to one throughout.
+export type RoundFormat = 'build' | 'multipleChoice' | 'listening';
+
+const ROUND_FORMATS: RoundFormat[] = ['build', 'multipleChoice', 'listening'];
+
+// 'listening' hides the text clue entirely and relies on TTS audio being
+// playable — callers must pass whether a voice is actually available
+// (e.g. sfx.hasVoice(lang)) so a device with no installed Arabic voice
+// never gets handed an unplayable, clueless round.
+export function pickRoundFormat(canListen: boolean): RoundFormat {
+  const pool = canListen ? ROUND_FORMATS : ROUND_FORMATS.filter((f) => f !== 'listening');
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+// Whole-answer options for a multiple-choice/listening round — distinct
+// from pickDistractors, which builds tile-level decoys for the build
+// format. Degrades gracefully for small datasets (e.g. the 5-item Pillars
+// list) by returning fewer options rather than throwing or repeating.
+export function pickAnswerOptions(correct: string, otherAnswers: string[], count = 4): string[] {
+  const pool = [...new Set(otherAnswers)].filter((a) => a !== correct);
+  const distractors = sample(pool, count - 1); // sample() already caps at pool.length itself
+  return sample([correct, ...distractors], distractors.length + 1);
+}

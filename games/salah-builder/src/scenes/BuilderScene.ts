@@ -6,7 +6,7 @@ import { sfx } from '../systems/Sfx';
 import { getLang } from '../systems/Locale';
 import { SPEECH_LANG } from '@shared/tts';
 import { toArabicSpeechText } from '@shared/arabic-speech';
-import { pieceKindFor, piecesFor, pickDistractors } from '@shared/builder-pieces';
+import { pieceKindFor, piecesFor, pickDistractors, pickAnswerOptions, pickRoundFormat, type RoundFormat } from '@shared/builder-pieces';
 import { isCorrectAnswer } from '@shared/builder-typing';
 import { PlayerProgress } from '@shared/player-progress';
 import { ProgressBar } from '@shared/progress-bar';
@@ -71,6 +71,7 @@ export class BuilderScene extends Phaser.Scene {
   private clueMeaning!: Phaser.GameObjects.Text;
   private slots: SlotBox[] = [];
   private tiles: TrayTile[] = [];
+  private choiceButtons: Phaser.GameObjects.Container[] = [];
   private revealText?: Phaser.GameObjects.Text;
   private roundLayer!: Phaser.GameObjects.Container;
   // A plain HTML <input>, not a Phaser DOM Element — Phaser's DOM Element
@@ -266,17 +267,29 @@ export class BuilderScene extends Phaser.Scene {
 
     this.currentIndex = index;
     this.currentItem = this.roundItems[index];
-    this.currentPieces = piecesFor(this.currentItem.arabic);
     this.placedCount = 0;
     this.locked = false;
 
     this.roundLayer.removeAll(true);
     this.slots = [];
     this.tiles = [];
+    this.choiceButtons = [];
     this.revealText = undefined;
     this.destroyTypingInput();
     this.refreshHearBtn();
 
+    const format = pickRoundFormat(sfx.hasVoice(SPEECH_LANG.arabic));
+    if (format !== 'build') {
+      const isArabicAnswer = this.mode !== 'toTranslation';
+      const correct = isArabicAnswer ? this.currentItem.arabic : meaningFor(this.currentItem);
+      const otherAnswers = SALAH_STEPS
+        .filter((p) => p.id !== this.currentItem.id)
+        .map((p) => (isArabicAnswer ? p.arabic : meaningFor(p)));
+      this.buildChoiceRound(format, isArabicAnswer, correct, pickAnswerOptions(correct, otherAnswers));
+      return;
+    }
+
+    this.currentPieces = piecesFor(this.currentItem.arabic);
     if (this.mode === 'toTranslation') {
       // Shown the Arabic word/phrase (+ audio) only — no transliteration,
       // no meaning text, since typing the meaning IS the challenge here.
@@ -377,6 +390,93 @@ export class BuilderScene extends Phaser.Scene {
       this.tiles.push(tile);
       container.on('pointerdown', () => this.onTileTapped(tile));
     });
+  }
+
+  // 'multipleChoice' / 'listening' formats: same clue/direction rules as
+  // 'build' for whichever mode is active, but the answer is picked from a
+  // handful of whole-answer options instead of assembled piece-by-piece.
+  // 'listening' additionally hides the text clue and auto-plays the audio,
+  // so the only way to find the answer is to actually listen.
+  private buildChoiceRound(format: RoundFormat, isArabicAnswer: boolean, correct: string, options: string[]): void {
+    const { width } = this.scale;
+    const listening = format === 'listening';
+
+    if (this.mode === 'toTranslation') {
+      this.clueTransliteration.setText('');
+      this.clueMeaning.setText('');
+      if (!listening) {
+        const promptText = this.add.text(width / 2, BuilderScene.SLOTS_TOP, this.currentItem.arabic, {
+          fontFamily: ARABIC_FONT,
+          fontSize: '44px',
+          color: hex(COLORS.accent),
+          align: 'center',
+          wordWrap: { width: width * 0.85 },
+        }).setOrigin(0.5);
+        this.roundLayer.add(promptText);
+      } else {
+        const hint = this.add.text(width / 2, BuilderScene.SLOTS_TOP, t().listenAndChoose, {
+          fontFamily: LATIN_FONT,
+          fontSize: '18px',
+          color: COLORS.textMuted,
+          align: 'center',
+          wordWrap: { width: width * 0.8 },
+        }).setOrigin(0.5);
+        this.roundLayer.add(hint);
+      }
+    } else {
+      this.clueTransliteration.setText(this.mode === 'toArabic' || listening ? '' : this.currentItem.transliteration);
+      this.clueMeaning.setText(listening ? t().listenAndChoose : meaningFor(this.currentItem));
+    }
+
+    if (listening) void this.speakCurrent();
+
+    const font = isArabicAnswer ? ARABIC_FONT : LATIN_FONT;
+    const top = BuilderScene.TRAY_TOP;
+    const btnW = Math.min(520, width - 60);
+    const btnH = 64;
+    const gap = 14;
+
+    options.forEach((option, i) => {
+      const y = top + i * (btnH + gap);
+      const container = this.add.container(width / 2, y);
+      const bg = this.add.graphics();
+      bg.fillStyle(COLORS.tile, 1);
+      bg.fillRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, 12);
+      bg.lineStyle(2, COLORS.accentLight, 0.5);
+      bg.strokeRoundedRect(-btnW / 2, -btnH / 2, btnW, btnH, 12);
+      const text = this.add.text(0, 0, option, {
+        fontFamily: font,
+        fontSize: isArabicAnswer ? '26px' : '17px',
+        color: COLORS.text,
+        align: 'center',
+        wordWrap: { width: btnW * 0.88 },
+      }).setOrigin(0.5);
+      container.add([bg, text]);
+      container.setSize(btnW, btnH);
+      container.setInteractive({ useHandCursor: true });
+      this.roundLayer.add(container);
+      this.choiceButtons.push(container);
+      container.on('pointerdown', () => this.onChoiceTapped(option, correct, container));
+    });
+  }
+
+  private onChoiceTapped(option: string, correct: string, container: Phaser.GameObjects.Container): void {
+    if (this.locked || this.overlayShown || !container.input?.enabled) return;
+
+    if (option === correct) {
+      sfx.correct();
+      // Clear the option stack out of the way before onItemSolved() adds its
+      // own reveal/confirm text — both use the same vertical space.
+      this.tweens.add({ targets: this.choiceButtons, alpha: 0, duration: 150 });
+      this.onItemSolved();
+    } else {
+      this.mistakes++;
+      this.mistakesText.setText(t().mistakes(this.mistakes));
+      sfx.wrong();
+      shakeTile(container, this.tweens);
+      container.disableInteractive();
+      this.tweens.add({ targets: container, alpha: 0.4, duration: 200 });
+    }
   }
 
   // 'toTranslation' mode: show the Arabic prompt full-size (it's the clue
