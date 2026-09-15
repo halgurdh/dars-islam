@@ -1,4 +1,5 @@
-import { getLang } from './systems/Locale';
+import { createI18n } from '@shared/i18n';
+import { getLang, type LangMode } from './systems/Locale';
 
 interface Strings {
   subtitle: string;
@@ -24,7 +25,7 @@ interface Strings {
   checkAnswer: string;
 }
 
-const STRINGS: Record<'en' | 'nl', Strings> = {
+const STRINGS: Record<LangMode, Strings> = {
   en: {
     subtitle: 'Phrases Builder',
     tagline: 'Learn everyday Islamic phrases\nby building each one, word by word.',
@@ -58,7 +59,7 @@ const STRINGS: Record<'en' | 'nl', Strings> = {
     hard: 'Moeilijk · 10 uitdrukkingen',
     soundOn: '🔈 Geluid Aan',
     soundOff: '🔇 Geluid Uit',
-    langToggle: '🇬🇧 Switch to English',
+    langToggle: '🇩🇪 Naar Duits wisselen',
     footer: 'Geen muziek. Geluidseffecten zijn minimaal en optioneel.',
     menu: '☰ Menu',
     mistakes: (n) => `Fouten: ${n}`,
@@ -73,8 +74,78 @@ const STRINGS: Record<'en' | 'nl', Strings> = {
     typeAnswerPlaceholder: 'Typ de betekenis…',
     checkAnswer: 'Controleer',
   },
+  de: {
+    subtitle: 'Phrases Builder',
+    tagline: 'Lerne alltägliche islamische Redewendungen,\nindem du jede Wort für Wort aufbaust.',
+    itemsLearned: (n, total) => `${n} / ${total} Redewendungen gelernt`,
+    easy: 'Leicht · 4 Redewendungen',
+    medium: 'Mittel · 7 Redewendungen',
+    hard: 'Schwer · 10 Redewendungen',
+    soundOn: '🔈 Ton An',
+    soundOff: '🔇 Ton Aus',
+    langToggle: '🇪🇸 Zu Spanisch wechseln',
+    footer: 'Keine Musik. Soundeffekte sind minimal und optional.',
+    menu: '☰ Menü',
+    mistakes: (n) => `Fehler: ${n}`,
+    wellDone: 'Gut gemacht! 🌿',
+    roundSummary: (items, mistakes, time, learned, total) =>
+      `${items} Redewendungen gebaut mit ${mistakes} Fehlern\nZeit: ${time}\n${learned} / ${total} Redewendungen insgesamt gelernt`,
+    nextLevelHint: 'Nächstes Level startet…',
+    hear: '🔊 Anhören',
+    modeArabic: '🔤 Arabisch',
+    modeToTranslation: '✍️ AR → DE',
+    modeToArabic: '🔤 DE → AR',
+    typeAnswerPlaceholder: 'Bedeutung eingeben…',
+    checkAnswer: 'Prüfen',
+  },
+  es: {
+    subtitle: 'Phrases Builder',
+    tagline: 'Aprende frases islámicas cotidianas\nconstruyendo cada una, palabra por palabra.',
+    itemsLearned: (n, total) => `${n} / ${total} frases aprendidas`,
+    easy: 'Fácil · 4 frases',
+    medium: 'Medio · 7 frases',
+    hard: 'Difícil · 10 frases',
+    soundOn: '🔈 Sonido Activado',
+    soundOff: '🔇 Sonido Desactivado',
+    langToggle: '🇫🇷 Cambiar a francés',
+    footer: 'Sin música. Los efectos de sonido son mínimos y opcionales.',
+    menu: '☰ Menú',
+    mistakes: (n) => `Errores: ${n}`,
+    wellDone: '¡Bien hecho! 🌿',
+    roundSummary: (items, mistakes, time, learned, total) =>
+      `${items} frases construidas con ${mistakes} errores\nTiempo: ${time}\n${learned} / ${total} frases aprendidas en total`,
+    nextLevelHint: 'Comienza el siguiente nivel…',
+    hear: '🔊 Escuchar',
+    modeArabic: '🔤 Árabe',
+    modeToTranslation: '✍️ AR → ES',
+    modeToArabic: '🔤 ES → AR',
+    typeAnswerPlaceholder: 'Escribe el significado…',
+    checkAnswer: 'Comprobar',
+  },
+  fr: {
+    subtitle: 'Phrases Builder',
+    tagline: 'Apprenez des phrases islamiques courantes\nen les construisant mot par mot.',
+    itemsLearned: (n, total) => `${n} / ${total} phrases apprises`,
+    easy: 'Facile · 4 phrases',
+    medium: 'Moyen · 7 phrases',
+    hard: 'Difficile · 10 phrases',
+    soundOn: '🔈 Son Activé',
+    soundOff: '🔇 Son Désactivé',
+    langToggle: '🇬🇧 Switch to English',
+    footer: 'Pas de musique. Les effets sonores sont minimes et facultatifs.',
+    menu: '☰ Menu',
+    mistakes: (n) => `Erreurs : ${n}`,
+    wellDone: 'Bien joué ! 🌿',
+    roundSummary: (items, mistakes, time, learned, total) =>
+      `${items} phrases construites avec ${mistakes} erreurs\nTemps : ${time}\n${learned} / ${total} phrases apprises au total`,
+    nextLevelHint: 'Le niveau suivant commence…',
+    hear: '🔊 Écouter',
+    modeArabic: '🔤 Arabe',
+    modeToTranslation: '✍️ AR → FR',
+    modeToArabic: '🔤 FR → AR',
+    typeAnswerPlaceholder: 'Tapez la signification…',
+    checkAnswer: 'Vérifier',
+  },
 };
 
-export function t(): Strings {
-  return STRINGS[getLang()];
-}
+export const t = createI18n(STRINGS, getLang);

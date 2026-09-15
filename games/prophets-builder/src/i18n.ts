@@ -1,4 +1,5 @@
-import { getLang } from './systems/Locale';
+import { createI18n } from '@shared/i18n';
+import { getLang, type LangMode } from './systems/Locale';
 
 interface Strings {
   subtitle: string;
@@ -24,7 +25,7 @@ interface Strings {
   checkAnswer: string;
 }
 
-const STRINGS: Record<'en' | 'nl', Strings> = {
+const STRINGS: Record<LangMode, Strings> = {
   en: {
     subtitle: 'Prophets Builder',
     tagline: 'Learn the Prophets\nby spelling each name.',
@@ -58,7 +59,7 @@ const STRINGS: Record<'en' | 'nl', Strings> = {
     hard: 'Moeilijk · 25 profeten',
     soundOn: '🔈 Geluid Aan',
     soundOff: '🔇 Geluid Uit',
-    langToggle: '🇬🇧 Switch to English',
+    langToggle: '🇩🇪 Naar Duits wisselen',
     footer: 'Geen muziek. Geluidseffecten zijn minimaal en optioneel.',
     menu: '☰ Menu',
     mistakes: (n) => `Fouten: ${n}`,
@@ -73,8 +74,78 @@ const STRINGS: Record<'en' | 'nl', Strings> = {
     typeAnswerPlaceholder: 'Typ de betekenis…',
     checkAnswer: 'Controleer',
   },
+  de: {
+    subtitle: 'Prophets Builder',
+    tagline: 'Lerne die Propheten,\nindem du jeden Namen buchstabierst.',
+    itemsLearned: (n, total) => `${n} / ${total} Propheten gelernt`,
+    easy: 'Leicht · 8 Propheten',
+    medium: 'Mittel · 15 Propheten',
+    hard: 'Schwer · 25 Propheten',
+    soundOn: '🔈 Ton An',
+    soundOff: '🔇 Ton Aus',
+    langToggle: '🇪🇸 Zu Spanisch wechseln',
+    footer: 'Keine Musik. Soundeffekte sind minimal und optional.',
+    menu: '☰ Menü',
+    mistakes: (n) => `Fehler: ${n}`,
+    wellDone: 'Gut gemacht! 🌿',
+    roundSummary: (items, mistakes, time, learned, total) =>
+      `${items} Propheten buchstabiert mit ${mistakes} Fehlern\nZeit: ${time}\n${learned} / ${total} Propheten insgesamt gelernt`,
+    nextLevelHint: 'Nächstes Level startet…',
+    hear: '🔊 Anhören',
+    modeArabic: '🔤 Arabisch',
+    modeToTranslation: '✍️ AR → DE',
+    modeToArabic: '🔤 DE → AR',
+    typeAnswerPlaceholder: 'Bedeutung eingeben…',
+    checkAnswer: 'Prüfen',
+  },
+  es: {
+    subtitle: 'Prophets Builder',
+    tagline: 'Aprende los Profetas\ndeletreando cada nombre.',
+    itemsLearned: (n, total) => `${n} / ${total} profetas aprendidos`,
+    easy: 'Fácil · 8 profetas',
+    medium: 'Medio · 15 profetas',
+    hard: 'Difícil · 25 profetas',
+    soundOn: '🔈 Sonido Activado',
+    soundOff: '🔇 Sonido Desactivado',
+    langToggle: '🇫🇷 Cambiar a francés',
+    footer: 'Sin música. Los efectos de sonido son mínimos y opcionales.',
+    menu: '☰ Menú',
+    mistakes: (n) => `Errores: ${n}`,
+    wellDone: '¡Bien hecho! 🌿',
+    roundSummary: (items, mistakes, time, learned, total) =>
+      `${items} profetas deletreados con ${mistakes} errores\nTiempo: ${time}\n${learned} / ${total} profetas aprendidos en total`,
+    nextLevelHint: 'Comienza el siguiente nivel…',
+    hear: '🔊 Escuchar',
+    modeArabic: '🔤 Árabe',
+    modeToTranslation: '✍️ AR → ES',
+    modeToArabic: '🔤 ES → AR',
+    typeAnswerPlaceholder: 'Escribe el significado…',
+    checkAnswer: 'Comprobar',
+  },
+  fr: {
+    subtitle: 'Prophets Builder',
+    tagline: 'Apprenez les Prophètes\nen épelant chaque nom.',
+    itemsLearned: (n, total) => `${n} / ${total} prophètes appris`,
+    easy: 'Facile · 8 prophètes',
+    medium: 'Moyen · 15 prophètes',
+    hard: 'Difficile · 25 prophètes',
+    soundOn: '🔈 Son Activé',
+    soundOff: '🔇 Son Désactivé',
+    langToggle: '🇬🇧 Switch to English',
+    footer: 'Pas de musique. Les effets sonores sont minimes et facultatifs.',
+    menu: '☰ Menu',
+    mistakes: (n) => `Erreurs : ${n}`,
+    wellDone: 'Bien joué ! 🌿',
+    roundSummary: (items, mistakes, time, learned, total) =>
+      `${items} prophètes épelés avec ${mistakes} erreurs\nTemps : ${time}\n${learned} / ${total} prophètes appris au total`,
+    nextLevelHint: 'Le niveau suivant commence…',
+    hear: '🔊 Écouter',
+    modeArabic: '🔤 Arabe',
+    modeToTranslation: '✍️ AR → FR',
+    modeToArabic: '🔤 FR → AR',
+    typeAnswerPlaceholder: 'Tapez la signification…',
+    checkAnswer: 'Vérifier',
+  },
 };
 
-export function t(): Strings {
-  return STRINGS[getLang()];
-}
+export const t = createI18n(STRINGS, getLang);

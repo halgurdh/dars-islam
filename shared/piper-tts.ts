@@ -14,7 +14,13 @@
 // *importing* game at build time, so each game's own /ort/ wasm path (see
 // serveOnnxWasm in shared/game-vite-plugins.ts) keeps working unchanged.
 
-export type PiperVoiceId = 'ar_JO-kareem-medium' | 'nl_BE-nathalie-medium' | 'en_US-lessac-high';
+export type PiperVoiceId =
+  | 'ar_JO-kareem-medium'
+  | 'nl_BE-nathalie-medium'
+  | 'en_US-lessac-high'
+  | 'de_DE-thorsten-high'
+  | 'es_ES-sharvard-medium'
+  | 'fr_FR-siwis-medium';
 
 type PiperModule = typeof import('@mintplex-labs/piper-tts-web');
 

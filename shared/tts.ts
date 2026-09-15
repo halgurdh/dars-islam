@@ -10,6 +10,9 @@ export const SPEECH_LANG = {
   arabic: 'ar-SA',
   en: 'en-US',
   nl: 'nl-NL',
+  de: 'de-DE',
+  es: 'es-ES',
+  fr: 'fr-FR',
 } as const;
 
 // Pronunciation always uses this free, modern neural voice per language —
@@ -29,6 +32,9 @@ const PIPER_VOICE: Record<string, PiperVoiceId> = {
   // the community-recommended working voice — different regional accent,
   // but correct, intelligible Dutch, which matters more here than accent.
   'nl-NL': 'nl_BE-nathalie-medium',
+  'de-DE': 'de_DE-thorsten-high', // single-speaker, high quality tier — matches en_US
+  'es-ES': 'es_ES-sharvard-medium', // best available single-speaker es_ES voice
+  'fr-FR': 'fr_FR-siwis-medium', // well-regarded, widely-used single-speaker French voice
 };
 
 const ARABIC_SCRIPT = /[؀-ۿ]/;

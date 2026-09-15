@@ -37,7 +37,13 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 function meaningFor(name: AsmaName): string {
-  return getLang() === 'nl' ? name.meaningNl : name.meaningEn;
+  switch (getLang()) {
+    case 'nl': return name.meaningNl;
+    case 'de': return name.meaningDe;
+    case 'es': return name.meaningEs;
+    case 'fr': return name.meaningFr;
+    default: return name.meaningEn;
+  }
 }
 
 // What to say and in which language tag, for either side of a tile.

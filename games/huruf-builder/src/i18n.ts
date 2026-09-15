@@ -1,4 +1,5 @@
-import { getLang } from './systems/Locale';
+import { createI18n } from '@shared/i18n';
+import { getLang, type LangMode } from './systems/Locale';
 
 interface Strings {
   subtitle: string;
@@ -24,7 +25,7 @@ interface Strings {
   checkAnswer: string;
 }
 
-const STRINGS: Record<'en' | 'nl', Strings> = {
+const STRINGS: Record<LangMode, Strings> = {
   en: {
     subtitle: 'Huruf Builder',
     tagline: 'Learn the Arabic alphabet\nby spelling each letter’s name.',
@@ -58,7 +59,7 @@ const STRINGS: Record<'en' | 'nl', Strings> = {
     hard: 'Moeilijk · 16 letters',
     soundOn: '🔈 Geluid Aan',
     soundOff: '🔇 Geluid Uit',
-    langToggle: '🇬🇧 Switch to English',
+    langToggle: '🇩🇪 Naar Duits wisselen',
     footer: 'Geen muziek. Geluidseffecten zijn minimaal en optioneel.',
     menu: '☰ Menu',
     mistakes: (n) => `Fouten: ${n}`,
@@ -73,8 +74,78 @@ const STRINGS: Record<'en' | 'nl', Strings> = {
     typeAnswerPlaceholder: 'Typ de betekenis…',
     checkAnswer: 'Controleer',
   },
+  de: {
+    subtitle: 'Huruf Builder',
+    tagline: 'Lerne das arabische Alphabet,\nindem du den Namen jedes Buchstabens buchstabierst.',
+    itemsLearned: (n, total) => `${n} / ${total} Buchstaben gelernt`,
+    easy: 'Leicht · 6 Buchstaben',
+    medium: 'Mittel · 10 Buchstaben',
+    hard: 'Schwer · 16 Buchstaben',
+    soundOn: '🔈 Ton An',
+    soundOff: '🔇 Ton Aus',
+    langToggle: '🇪🇸 Zu Spanisch wechseln',
+    footer: 'Keine Musik. Soundeffekte sind minimal und optional.',
+    menu: '☰ Menü',
+    mistakes: (n) => `Fehler: ${n}`,
+    wellDone: 'Gut gemacht! 🌿',
+    roundSummary: (items, mistakes, time, learned, total) =>
+      `${items} Buchstaben buchstabiert mit ${mistakes} Fehlern\nZeit: ${time}\n${learned} / ${total} Buchstaben insgesamt gelernt`,
+    nextLevelHint: 'Nächstes Level startet…',
+    hear: '🔊 Anhören',
+    modeArabic: '🔤 Arabisch',
+    modeToTranslation: '✍️ AR → DE',
+    modeToArabic: '🔤 DE → AR',
+    typeAnswerPlaceholder: 'Bedeutung eingeben…',
+    checkAnswer: 'Prüfen',
+  },
+  es: {
+    subtitle: 'Huruf Builder',
+    tagline: 'Aprende el alfabeto árabe\ndeletreando el nombre de cada letra.',
+    itemsLearned: (n, total) => `${n} / ${total} letras aprendidas`,
+    easy: 'Fácil · 6 letras',
+    medium: 'Medio · 10 letras',
+    hard: 'Difícil · 16 letras',
+    soundOn: '🔈 Sonido Activado',
+    soundOff: '🔇 Sonido Desactivado',
+    langToggle: '🇫🇷 Cambiar a francés',
+    footer: 'Sin música. Los efectos de sonido son mínimos y opcionales.',
+    menu: '☰ Menú',
+    mistakes: (n) => `Errores: ${n}`,
+    wellDone: '¡Bien hecho! 🌿',
+    roundSummary: (items, mistakes, time, learned, total) =>
+      `${items} letras deletreadas con ${mistakes} errores\nTiempo: ${time}\n${learned} / ${total} letras aprendidas en total`,
+    nextLevelHint: 'Comienza el siguiente nivel…',
+    hear: '🔊 Escuchar',
+    modeArabic: '🔤 Árabe',
+    modeToTranslation: '✍️ AR → ES',
+    modeToArabic: '🔤 ES → AR',
+    typeAnswerPlaceholder: 'Escribe el significado…',
+    checkAnswer: 'Comprobar',
+  },
+  fr: {
+    subtitle: 'Huruf Builder',
+    tagline: "Apprenez l'alphabet arabe\nen épelant le nom de chaque lettre.",
+    itemsLearned: (n, total) => `${n} / ${total} lettres apprises`,
+    easy: 'Facile · 6 lettres',
+    medium: 'Moyen · 10 lettres',
+    hard: 'Difficile · 16 lettres',
+    soundOn: '🔈 Son Activé',
+    soundOff: '🔇 Son Désactivé',
+    langToggle: '🇬🇧 Switch to English',
+    footer: 'Pas de musique. Les effets sonores sont minimes et facultatifs.',
+    menu: '☰ Menu',
+    mistakes: (n) => `Erreurs : ${n}`,
+    wellDone: 'Bien joué ! 🌿',
+    roundSummary: (items, mistakes, time, learned, total) =>
+      `${items} lettres épelées avec ${mistakes} erreurs\nTemps : ${time}\n${learned} / ${total} lettres apprises au total`,
+    nextLevelHint: 'Le niveau suivant commence…',
+    hear: '🔊 Écouter',
+    modeArabic: '🔤 Arabe',
+    modeToTranslation: '✍️ AR → FR',
+    modeToArabic: '🔤 FR → AR',
+    typeAnswerPlaceholder: 'Tapez la signification…',
+    checkAnswer: 'Vérifier',
+  },
 };
 
-export function t(): Strings {
-  return STRINGS[getLang()];
-}
+export const t = createI18n(STRINGS, getLang);

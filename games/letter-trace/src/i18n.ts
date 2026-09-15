@@ -1,4 +1,5 @@
-import { getLang } from './systems/Locale';
+import { createI18n } from '@shared/i18n';
+import { getLang, type LangMode } from './systems/Locale';
 
 interface Strings {
   subtitle: string;
@@ -23,7 +24,7 @@ interface Strings {
   playAgain: string;
 }
 
-const STRINGS: Record<'en' | 'nl', Strings> = {
+const STRINGS: Record<LangMode, Strings> = {
   en: {
     subtitle: 'Letter Trace',
     tagline: 'Practice handwriting by tracing each letter\nwith your finger or mouse.',
@@ -55,7 +56,7 @@ const STRINGS: Record<'en' | 'nl', Strings> = {
     start: 'Start',
     soundOn: '🔈 Geluid Aan',
     soundOff: '🔇 Geluid Uit',
-    langToggle: '🇬🇧 Switch to English',
+    langToggle: '🇩🇪 Naar Duits wisselen',
     footer: 'Geen muziek. Geluidseffecten zijn minimaal en optioneel.',
     menu: '☰ Menu',
     accuracy: (n) => `Nauwkeurigheid: ${n}%`,
@@ -68,8 +69,72 @@ const STRINGS: Record<'en' | 'nl', Strings> = {
     nextLevelHint: 'Volgende letter begint…',
     playAgain: '↻ Nog een keer',
   },
+  de: {
+    subtitle: 'Letter Trace',
+    tagline: 'Übe das Schreiben, indem du jeden Buchstaben\nmit deinem Finger oder der Maus nachzeichnest.',
+    alphabetArabic: '🔤 Arabisch',
+    alphabetEnglish: '🔤 Englisch',
+    itemsLearned: (n, total) => `${n} / ${total} Buchstaben nachgezeichnet`,
+    start: 'Start',
+    soundOn: '🔈 Ton An',
+    soundOff: '🔇 Ton Aus',
+    langToggle: '🇪🇸 Zu Spanisch wechseln',
+    footer: 'Keine Musik. Soundeffekte sind minimal und optional.',
+    menu: '☰ Menü',
+    accuracy: (n) => `Genauigkeit: ${n}%`,
+    coverage: (n) => `Abdeckung: ${n}%`,
+    hear: '🔊 Anhören',
+    reset: '↻ Zurücksetzen / Erneut versuchen',
+    wellDone: 'Gut gemacht! 🌿',
+    itemComplete: 'Schön nachgezeichnet!',
+    roundSummary: (items, total) => `${items} Buchstaben in dieser Runde nachgezeichnet\n${total} insgesamt gelernt`,
+    nextLevelHint: 'Nächster Buchstabe startet…',
+    playAgain: '↻ Nochmal üben',
+  },
+  es: {
+    subtitle: 'Letter Trace',
+    tagline: 'Practica la escritura trazando cada letra\ncon el dedo o el ratón.',
+    alphabetArabic: '🔤 Árabe',
+    alphabetEnglish: '🔤 Inglés',
+    itemsLearned: (n, total) => `${n} / ${total} letras trazadas`,
+    start: 'Empezar',
+    soundOn: '🔈 Sonido Activado',
+    soundOff: '🔇 Sonido Desactivado',
+    langToggle: '🇫🇷 Cambiar a francés',
+    footer: 'Sin música. Los efectos de sonido son mínimos y opcionales.',
+    menu: '☰ Menú',
+    accuracy: (n) => `Precisión: ${n}%`,
+    coverage: (n) => `Cobertura: ${n}%`,
+    hear: '🔊 Escuchar',
+    reset: '↻ Reiniciar / Intentar de nuevo',
+    wellDone: '¡Bien hecho! 🌿',
+    itemComplete: '¡Bien trazado!',
+    roundSummary: (items, total) => `${items} letras trazadas esta ronda\n${total} aprendidas en total`,
+    nextLevelHint: 'Comienza la siguiente letra…',
+    playAgain: '↻ Practicar de nuevo',
+  },
+  fr: {
+    subtitle: 'Letter Trace',
+    tagline: "Entraînez-vous à l'écriture en traçant chaque lettre\navec votre doigt ou votre souris.",
+    alphabetArabic: '🔤 Arabe',
+    alphabetEnglish: '🔤 Anglais',
+    itemsLearned: (n, total) => `${n} / ${total} lettres tracées`,
+    start: 'Commencer',
+    soundOn: '🔈 Son Activé',
+    soundOff: '🔇 Son Désactivé',
+    langToggle: '🇬🇧 Switch to English',
+    footer: 'Pas de musique. Les effets sonores sont minimes et facultatifs.',
+    menu: '☰ Menu',
+    accuracy: (n) => `Précision : ${n}%`,
+    coverage: (n) => `Couverture : ${n}%`,
+    hear: '🔊 Écouter',
+    reset: '↻ Réinitialiser / Réessayer',
+    wellDone: 'Bien joué ! 🌿',
+    itemComplete: 'Bien tracé !',
+    roundSummary: (items, total) => `${items} lettres tracées ce tour\n${total} apprises au total`,
+    nextLevelHint: 'La lettre suivante commence…',
+    playAgain: '↻ Pratiquer à nouveau',
+  },
 };
 
-export function t(): Strings {
-  return STRINGS[getLang()];
-}
+export const t = createI18n(STRINGS, getLang);

@@ -21,7 +21,13 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 function meaningFor(item: BuilderItem): string {
-  return getLang() === 'nl' ? item.meaningNl : item.meaningEn;
+  switch (getLang()) {
+    case 'nl': return item.meaningNl;
+    case 'de': return item.meaningDe;
+    case 'es': return item.meaningEs;
+    case 'fr': return item.meaningFr;
+    default: return item.meaningEn;
+  }
 }
 
 interface TrayTile {
