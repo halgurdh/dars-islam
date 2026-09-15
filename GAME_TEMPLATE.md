@@ -1,6 +1,6 @@
 # Game Template Guide
 
-This template shows how to create a new game with light/dark theme support and minimal CSS duplication.
+This template shows how to create a new game with the shared theme and minimal CSS duplication.
 
 ## Quick Setup (Copy-Paste)
 
@@ -52,20 +52,6 @@ Change the `name` field to your game name:
     </style>
   </head>
   <body>
-    <!-- Theme toggle (optional, if your game has UI) -->
-    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark/light mode">
-      <!-- Eye open (dark mode) -->
-      <svg class="theme-icon theme-icon--dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-        <circle cx="12" cy="12" r="3"></circle>
-      </svg>
-      <!-- Eye closed (light mode) -->
-      <svg class="theme-icon theme-icon--light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-        <line x1="1" y1="1" x2="23" y2="23"></line>
-      </svg>
-    </button>
-
     <!-- Exit button (optional, if your game is full-screen) -->
     <a href="/" class="game-exit">← Exit Game</a>
 
@@ -74,7 +60,7 @@ Change the `name` field to your game name:
 
     <!-- Game script -->
     <script type="module" src="./src/main.ts"></script>
-    <!-- Shared theme toggle (must come after HTML) -->
+    <!-- Shared fullscreen/orientation helpers (must come after HTML) -->
     <script src="../../shared/theme.js"></script>
   </body>
 </html>
@@ -132,9 +118,9 @@ All theme variables are defined in `shared/theme.css` and available to your game
 --shadow-lg         /* Large shadow (12px) */
 ```
 
-## Light/Dark Mode
+## Theming
 
-Users can toggle light/dark mode by clicking the theme button. Your styles automatically adapt via CSS variables.
+The site uses a single fixed dark theme — there is no light-mode toggle. Use the CSS variables below so your game's chrome matches the rest of the site.
 
 Example:
 ```css
@@ -156,6 +142,6 @@ Example:
 3. Create style.css with only game-specific styles
 4. Create src/main.ts with your game logic
 5. Update vite.config.ts with your game's base path
-6. Done! Theme toggle works automatically, light/dark mode inherited
+6. Done! Theme variables are inherited automatically
 
 **Result:** New game with zero CSS duplication, theme built-in, minimal setup.
