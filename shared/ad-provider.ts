@@ -25,14 +25,7 @@ export const BRAND_ADS: BrandAd[] = [
     url:     'https://cdgbrands.com',
     bg:      'linear-gradient(135deg,#0f0f1a,#1a1a2e)',
     fg:      '#a78bfa',
-  },
-  {
-    name:    'ChilledPunks',
-    tagline: 'Independent Music Label',
-    url:     'https://chilledpunks.com',
-    bg:      'linear-gradient(135deg,#0d1b2a,#1b3a4b)',
-    fg:      '#38bdf8',
-  },
+  }
   // Add more sponsors here ↓
 ];
 
