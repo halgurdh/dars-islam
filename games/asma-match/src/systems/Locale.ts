@@ -18,13 +18,6 @@ export function toggleLang(): LangMode {
   return currentLang;
 }
 
-// Speech-synthesis language tags per mode.
-export const SPEECH_LANG = {
-  arabic: 'ar-SA',
-  en: 'en-US',
-  nl: 'nl-NL',
-} as const;
-
 // Free, key-less IP lookup — resolves the visitor's country and defaults
 // Dutch (NL) visitors to the Dutch pairing on their very first visit.
 // Only runs once: if the user already has a stored preference (manual pick,

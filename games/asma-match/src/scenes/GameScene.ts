@@ -3,7 +3,9 @@ import { COLORS, ARABIC_FONT, LATIN_FONT, hex } from '../theme';
 import { ASMA_UL_HUSNA, AsmaName } from '../data/names';
 import { progress } from '../systems/Progress';
 import { sfx } from '../systems/Sfx';
-import { getLang, SPEECH_LANG } from '../systems/Locale';
+import { getLang } from '../systems/Locale';
+import { SPEECH_LANG } from '@shared/tts';
+import { toArabicSpeechText } from '@shared/arabic-speech';
 import { t } from '../i18n';
 
 type TileKind = 'arabic' | 'meaning';
@@ -45,7 +47,7 @@ function meaningFor(name: AsmaName): string {
 // out mangled, so only the actual meaning gets spoken, never that part.
 function speechFor(data: TileData): { text: string; lang: string } {
   if (data.kind === 'arabic') {
-    return { text: data.name.arabic, lang: SPEECH_LANG.arabic };
+    return { text: toArabicSpeechText(data.name.arabic), lang: SPEECH_LANG.arabic };
   }
   const lang = getLang();
   return { text: meaningFor(data.name), lang: SPEECH_LANG[lang] };
@@ -103,6 +105,7 @@ export class GameScene extends Phaser.Scene {
   // so in-canvas HUD and board content must stay clear of it.
   private static readonly HUD_TOP = 300;
   static readonly BOARD_TOP = GameScene.HUD_TOP + 150;
+  private static readonly AUTO_ADVANCE_MS = 2200;
 
   private buildHud(): void {
     const { width } = this.scale;
@@ -382,18 +385,28 @@ export class GameScene extends Phaser.Scene {
       }
     ).setOrigin(0.5);
 
-    const againBtn = this.add.text(width / 2 - panelW * 0.22, height / 2 + panelH * 0.28, t().playAgain, {
+    this.add.text(width / 2, height / 2 + panelH * 0.22, t().nextLevelHint, {
       fontFamily: LATIN_FONT,
-      fontSize: '17px',
-      color: hex(COLORS.accentLight),
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-    againBtn.on('pointerdown', () => this.scene.restart({ pairs: this.pairs }));
+      fontSize: '14px',
+      color: COLORS.textMuted,
+    }).setOrigin(0.5);
 
-    const menuBtn = this.add.text(width / 2 + panelW * 0.22, height / 2 + panelH * 0.28, t().menu, {
+    const menuBtn = this.add.text(width / 2, height / 2 + panelH * 0.42, t().menu, {
       fontFamily: LATIN_FONT,
-      fontSize: '17px',
+      fontSize: '15px',
       color: hex(COLORS.accentLight),
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-    menuBtn.on('pointerdown', () => this.scene.start('MenuScene'));
+    menuBtn.on('pointerdown', () => {
+      autoAdvance.remove();
+      this.scene.start('MenuScene');
+    });
+
+    // Every match already gets its own celebratory sound and a beat to read
+    // the summary — the round itself IS the "next" confirmation, so it
+    // advances on its own rather than waiting for a tap. Menu stays as the
+    // one manual way out.
+    const autoAdvance = this.time.delayedCall(GameScene.AUTO_ADVANCE_MS, () =>
+      this.scene.restart({ pairs: this.pairs })
+    );
   }
 }

@@ -15,7 +15,7 @@ interface Strings {
   moves: (n: number) => string;
   wellDone: string;
   roundSummary: (pairs: number, moves: number, time: string, learned: number, total: number) => string;
-  playAgain: string;
+  nextLevelHint: string;
   hear: string;
 }
 
@@ -36,7 +36,7 @@ const STRINGS: Record<'en' | 'nl', Strings> = {
     wellDone: 'Well done! 🌿',
     roundSummary: (pairs, moves, time, learned, total) =>
       `${pairs} names matched in ${moves} moves\nTime: ${time}\n${learned} / ${total} names learned overall`,
-    playAgain: '↻ Play Again',
+    nextLevelHint: 'Next level starting…',
     hear: '🔊 Hear it',
   },
   nl: {
@@ -55,7 +55,7 @@ const STRINGS: Record<'en' | 'nl', Strings> = {
     wellDone: 'Goed gedaan! 🌿',
     roundSummary: (pairs, moves, time, learned, total) =>
       `${pairs} namen gematcht in ${moves} zetten\nTijd: ${time}\n${learned} / ${total} namen in totaal geleerd`,
-    playAgain: '↻ Opnieuw',
+    nextLevelHint: 'Volgend level begint…',
     hear: '🔊 Uitspraak',
   },
 };
