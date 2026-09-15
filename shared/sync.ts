@@ -10,14 +10,17 @@
 
 import { api, getSessionToken, setSessionToken, clearSessionToken } from './api';
 import { ArcadeStore } from './arcade-store';
+import { PlayerProgress } from './player-progress';
 
 type AuthListener = (loggedIn: boolean, email: string | null) => void;
 export type AccountType = 'consumer' | 'commercial';
+export type UserRole = 'player' | 'teacher' | 'student';
 
 interface ServerProfile {
   user_id: string;
-  email: string;
+  email: string | null;
   account_type: AccountType;
+  role: UserRole;
   coins: number;
   active_card_back: string;
   owned_card_backs: string[];
@@ -28,12 +31,19 @@ interface ServerProfile {
   games_played: number;
   best_streak: number;
   current_streak: number;
+  display_name: string | null;
+  xp: number;
+  daily_streak: number;
+  best_daily_streak: number;
+  last_played_date: string | null;
+  badges: string[];
 }
 
 class SyncManager {
   private _userId: string | null = null;
   private _email: string | null = null;
   private _accountType: AccountType = 'consumer';
+  private _role: UserRole = 'player';
   private _timer: ReturnType<typeof setTimeout> | null = null;
   private _listeners: Set<AuthListener> = new Set();
   private _ready = false;
@@ -41,6 +51,8 @@ class SyncManager {
   get userId() { return this._userId; }
   get email() { return this._email; }
   get accountType() { return this._accountType; }
+  get role() { return this._role; }
+  get isTeacher() { return this._role === 'teacher'; }
   get isLoggedIn() { return !!this._userId; }
   get isReady() { return this._ready; }
 
@@ -83,6 +95,7 @@ class SyncManager {
     this._userId = profile.user_id;
     this._email = profile.email;
     this._accountType = profile.account_type;
+    this._role = profile.role;
 
     const localOwned = ArcadeStore.getOwnedCardBacks();
     const serverOwned = profile.owned_card_backs ?? ['cardBack_blue1'];
@@ -98,6 +111,17 @@ class SyncManager {
     ArcadeStore.set('bestStreak', profile.best_streak ?? 0);
     ArcadeStore.set('currentStreak', profile.current_streak ?? 0);
 
+    if (profile.display_name && !ArcadeStore.getPlayerName()) {
+      ArcadeStore.setPlayerName(profile.display_name);
+    }
+    PlayerProgress.applySyncSnapshot({
+      xp: profile.xp,
+      daily_streak: profile.daily_streak,
+      best_daily_streak: profile.best_daily_streak,
+      last_played_date: profile.last_played_date,
+      badges: profile.badges,
+    });
+
     if (profile.premium_active && profile.premium_until) {
       ArcadeStore.set('premium', { until: new Date(profile.premium_until).getTime() });
     } else {
@@ -106,7 +130,13 @@ class SyncManager {
 
     this._notify(true, this._email);
 
-    if (finalCoins > profile.coins || merged.length > serverOwned.length) {
+    const localProgress = PlayerProgress.getSyncSnapshot();
+    if (
+      finalCoins > profile.coins ||
+      merged.length > serverOwned.length ||
+      localProgress.xp > (profile.xp ?? 0) ||
+      (ArcadeStore.getPlayerName() && ArcadeStore.getPlayerName() !== profile.display_name)
+    ) {
       void this.pushProfile();
     }
   }
@@ -122,6 +152,7 @@ class SyncManager {
 
   async pushProfile(): Promise<void> {
     if (!getSessionToken()) return;
+    const progress = PlayerProgress.getSyncSnapshot();
     await api.post('/profile/update.php', {
       coins: ArcadeStore.getCoins(),
       active_card_back: ArcadeStore.getCardBack(),
@@ -131,6 +162,12 @@ class SyncManager {
       games_played: (ArcadeStore.get('gamesPlayed') as number) ?? 0,
       best_streak: (ArcadeStore.get('bestStreak') as number) ?? 0,
       current_streak: (ArcadeStore.get('currentStreak') as number) ?? 0,
+      display_name: ArcadeStore.getPlayerName() ?? null,
+      xp: progress.xp,
+      daily_streak: progress.daily_streak,
+      best_daily_streak: progress.best_daily_streak,
+      last_played_date: progress.last_played_date,
+      badges: progress.badges,
     }).catch(() => { /* network error — will retry next write */ });
   }
 
@@ -158,6 +195,7 @@ class SyncManager {
     this._userId = null;
     this._email = null;
     this._accountType = 'consumer';
+    this._role = 'player';
   }
 
   private _notify(loggedIn: boolean, email: string | null): void {

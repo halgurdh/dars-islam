@@ -1,6 +1,6 @@
-# minitoon.games — Monorepo
+# darsislam.games — Monorepo
 
-This repository is the monorepo for Minitoon Arcade: a small multi-app
+This repository is the monorepo for darsislam Arcade: a small multi-app
 platform that hosts web PWAs (games) plus a wrapper hub. Each game is
 contained in `games/<game-name>/` and may have its own README and
 build instructions.
@@ -68,9 +68,9 @@ Use the included deploy helper (node + PowerShell versions are provided):
 
 ```bash
 # configure environment variables or rely on defaults
-export DEPLOY_HOST=minitoon.games
+export DEPLOY_HOST=darsislam.games
 export DEPLOY_USER=youruser
-export DEPLOY_PATH=/var/www/minitoon.games
+export DEPLOY_PATH=/var/www/darsislam.games
 export SSH_PORT=22
 
 npm run deploy
@@ -88,9 +88,9 @@ environment variables or a `.env` file.
 Create a `.env` with:
 
 ```
-DEPLOY_HOST=minitoon.games
+DEPLOY_HOST=darsislam.games
 DEPLOY_USER=youruser
-DEPLOY_PATH=/var/www/minitoon.games
+DEPLOY_PATH=/var/www/darsislam.games
 SSH_PORT=22
 # Either:
 DEPLOY_PASSWORD=your-password
@@ -185,7 +185,7 @@ const ADSENSE_SLOT = 'XXXXXXXXXX';           // line 3
 
 ```
 Create a recurring premium product → copy prod_XXXX as STRIPE_PRODUCT_ID
-Add webhook → point to https://minitoon.games/api/stripe/webhook.php
+Add webhook → point to https://darsislam.games/api/stripe/webhook.php
 Listen for: customer.subscription.created, customer.subscription.updated, customer.subscription.deleted
 Copy the webhook signing secret → set as STRIPE_WEBHOOK_SECRET in api/_config.php
 ```

@@ -23,7 +23,7 @@ if ($existing) {
     // Create customer via Stripe API
     $response = stripe_post('/v1/customers', [
         'email'                    => $email,
-        'metadata[minitoon_user_id]' => $uid,
+        'metadata[darsislam_user_id]' => $uid,
     ]);
     if (isset($response['error'])) json_error('Stripe error: ' . $response['error']['message'], 502);
     $customerId = $response['id'];
@@ -43,7 +43,7 @@ $checkoutResponse = stripe_post('/v1/checkout/sessions', [
     'client_reference_id'          => $uid,
     'success_url'                  => SITE_URL . '/?premium=success',
     'cancel_url'                   => SITE_URL . '/',
-    'subscription_data[metadata][minitoon_user_id]' => $uid,
+    'subscription_data[metadata][darsislam_user_id]' => $uid,
 ]);
 
 if (isset($checkoutResponse['error'])) {

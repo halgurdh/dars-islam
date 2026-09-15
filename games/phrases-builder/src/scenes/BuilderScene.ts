@@ -8,8 +8,12 @@ import { SPEECH_LANG } from '@shared/tts';
 import { toArabicSpeechText } from '@shared/arabic-speech';
 import { pieceKindFor, piecesFor, pickDistractors } from '@shared/builder-pieces';
 import { isCorrectAnswer } from '@shared/builder-typing';
+import { PlayerProgress } from '@shared/player-progress';
+import { ProgressBar } from '@shared/progress-bar';
 import { t } from '../i18n';
 import type { PracticeMode } from './BuilderMenuScene';
+
+const progressBar = new ProgressBar();
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -605,6 +609,11 @@ export class BuilderScene extends Phaser.Scene {
   private showComplete(): void {
     this.overlayShown = true;
     sfx.complete();
+    progressBar.showCompletionToast(PlayerProgress.recordCompletion({
+      gameId: 'phrases-builder',
+      itemsCompleted: this.roundItems.length,
+      mistakes: this.mistakes,
+    }));
     const { width, height } = this.scale;
 
     this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.55);

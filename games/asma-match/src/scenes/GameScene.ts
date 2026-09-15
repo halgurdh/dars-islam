@@ -6,7 +6,11 @@ import { sfx } from '../systems/Sfx';
 import { getLang } from '../systems/Locale';
 import { SPEECH_LANG } from '@shared/tts';
 import { toArabicSpeechText } from '@shared/arabic-speech';
+import { PlayerProgress } from '@shared/player-progress';
+import { ProgressBar } from '@shared/progress-bar';
 import { t } from '../i18n';
+
+const progressBar = new ProgressBar();
 
 type TileKind = 'arabic' | 'meaning';
 
@@ -358,6 +362,11 @@ export class GameScene extends Phaser.Scene {
   private showComplete(): void {
     this.overlayShown = true;
     sfx.complete();
+    progressBar.showCompletionToast(PlayerProgress.recordCompletion({
+      gameId: 'asma-match',
+      itemsCompleted: this.pairs,
+      mistakes: Math.max(0, this.moves - this.pairs),
+    }));
     const { width, height } = this.scale;
 
     this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.55);

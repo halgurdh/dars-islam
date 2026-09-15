@@ -19,13 +19,13 @@ export interface BrandAd {
 }
 
 export const BRAND_ADS: BrandAd[] = [
-  {
-    name:    'CDG Brands',
-    tagline: 'The Ultimate Brand Builders Toolkit',
-    url:     'https://cdgbrands.com',
-    bg:      'linear-gradient(135deg,#0f0f1a,#1a1a2e)',
-    fg:      '#a78bfa',
-  }
+  // {
+  //   name:    'CDG Brands',
+  //   tagline: 'The Ultimate Brand Builders Toolkit',
+  //   url:     'https://cdgbrands.com',
+  //   bg:      'linear-gradient(135deg,#0f0f1a,#1a1a2e)',
+  //   fg:      '#a78bfa',
+  // }
   // Add more sponsors here ↓
 ];
 
@@ -41,9 +41,9 @@ function pickBrand(): BrandAd {
 }
 
 const _fallback: BrandAd = {
-  name:    'Minitoon Games',
+  name:    'darsislam Games',
   tagline: 'Casual games everyone loves',
-  url:     'https://minitoon.games',
+  url:     'https://darsislam.games',
   bg:      'linear-gradient(135deg,#0c0f0a,#1a2a14)',
   fg:      '#f2cc1a',
 };
@@ -51,7 +51,7 @@ const _fallback: BrandAd = {
 /** Renders a brand sponsor card into `container`. */
 export function injectAd(container: HTMLElement): void {
   const brand  = pickBrand();
-  const utmUrl = `${brand.url}?utm_source=minitoon&utm_medium=rewarded_ad&utm_campaign=game`;
+  const utmUrl = `${brand.url}?utm_source=darsislam&utm_medium=rewarded_ad&utm_campaign=game`;
   const host   = new URL(brand.url).hostname;
 
   container.style.cssText = `

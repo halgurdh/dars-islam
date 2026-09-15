@@ -2,8 +2,12 @@ import { ARABIC_LETTERS, ENGLISH_LETTERS, TraceLetter } from '../data/letters';
 import { arabicProgress, englishProgress } from '../systems/Progress';
 import { sfx } from '../systems/Sfx';
 import { getLang, toggleLang, detectDefaultLang } from '../systems/Locale';
+import { PlayerProgress } from '@shared/player-progress';
+import { ProgressBar } from '@shared/progress-bar';
 import { t } from '../i18n';
 import { TraceCanvas } from './TraceCanvas';
+
+const progressBar = new ProgressBar();
 
 type AlphabetKey = 'arabic' | 'english';
 
@@ -268,6 +272,10 @@ export class TraceApp {
     sfx.complete();
     this.views.trace.hidden = true;
     this.views.complete.hidden = false;
+    progressBar.showCompletionToast(PlayerProgress.recordCompletion({
+      gameId: 'letter-trace',
+      itemsCompleted: this.itemsTracedThisRound,
+    }));
 
     const total = this.progressFor(this.alphabet).count();
     this.completeEls.title.textContent = t().wellDone;

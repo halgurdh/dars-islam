@@ -1,9 +1,8 @@
 /* ── Shared Theme System ── */
-/* This file provides CSS variables and base light/dark mode support */
-/* for the wrapper hub and all games. Import this in your HTML head. */
+/* This file provides CSS variables and base styles for the wrapper hub */
+/* and all games. Import this in your HTML head. */
 
 :root {
-  /* Dark mode (default) */
   --bg-primary: #0c0f0a;
   --bg-secondary: #1a1a2e;
   --text-primary: #e8e8e8;
@@ -29,26 +28,6 @@
   --control-size: clamp(44px, 9vw, 50px);
 }
 
-[data-theme="light"] {
-  --bg-primary: #f5f5f5;
-  --bg-secondary: #ffffff;
-  --text-primary: #1a1a1a;
-  --text-secondary: #666;
-  --text-tertiary: #888;
-  --text-muted: #bbb;
-  --border-color: rgba(0, 0, 0, 0.08);
-  --border-color-hover: rgba(255, 0, 85, 0.2);
-  --accent: #ff6b35;
-  --accent-light: #ff4466;
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12);
-  --surface: rgba(0, 0, 0, 0.04);
-  --surface-strong: rgba(0, 0, 0, 0.08);
-  --surface-muted: rgba(0, 0, 0, 0.03);
-  --surface-overlay: rgba(0, 0, 0, 0.35);
-}
-
 /* ── Base Styles ── */
 * {
   margin: 0;
@@ -72,31 +51,9 @@ body {
   transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* ── Theme Toggle Button (Shared) ── */
-.theme-toggle {
-  position: fixed;
-  top: max(var(--control-offset), var(--safe-top));
-  right: max(var(--control-offset), var(--safe-right));
-  z-index: 1000;
-  width: var(--control-size);
-  height: var(--control-size);
-  border-radius: 50%;
-  border: 2px solid var(--text-primary);
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  padding: 0;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-
 .fullscreen-toggle {
   position: fixed;
-  top: calc(max(var(--control-offset), var(--safe-top)) + var(--control-size) + 0.55rem);
+  top: max(var(--control-offset), var(--safe-top));
   right: max(var(--control-offset), var(--safe-right));
   z-index: 1000;
   width: var(--control-size);
@@ -117,96 +74,16 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-.install-toggle {
-  position: fixed;
-  top: calc(max(var(--control-offset), var(--safe-top)) + (var(--control-size) + 0.55rem) * 2);
-  right: max(var(--control-offset), var(--safe-right));
-  z-index: 1000;
-  min-height: 40px;
-  padding: 0.45rem 0.8rem;
-  border-radius: 999px;
-  border: 2px solid var(--accent);
-  background: rgba(255, 107, 53, 0.92);
-  color: #fff;
-  cursor: pointer;
-  display: inline-flex;
-}
-
-.install-toggle[hidden] {
-  display: none !important;
-}
-
-.install-toggle:not([hidden]) {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  transition: all 0.3s ease;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-
 @media (hover: hover) and (pointer: fine) {
-  .theme-toggle:hover {
-    background: var(--accent);
-    border-color: var(--accent);
-    transform: scale(1.1);
-  }
-
   .fullscreen-toggle:hover {
     background: var(--accent);
     border-color: var(--accent);
     transform: scale(1.1);
   }
-
-  .install-toggle:hover {
-    background: rgba(255, 107, 53, 1);
-    border-color: var(--accent);
-    transform: scale(1.04);
-  }
-}
-
-.theme-toggle:active {
-  transform: scale(0.95);
 }
 
 .fullscreen-toggle:active {
   transform: scale(0.95);
-}
-
-.install-toggle:active {
-  transform: scale(0.97);
-}
-
-.theme-icon {
-  width: 24px;
-  height: 24px;
-  stroke-width: 2.5;
-  stroke: currentColor;
-  fill: none;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  display: block;
-  pointer-events: none;
-}
-
-.theme-icon--dark {
-  opacity: 1;
-}
-
-.theme-icon--light {
-  opacity: 0;
-}
-
-[data-theme="light"] .theme-icon--dark {
-  opacity: 0;
-}
-
-[data-theme="light"] .theme-icon--light {
-  opacity: 1;
 }
 
 /* ── Game Exit Button ── */
@@ -250,24 +127,8 @@ body {
     --control-offset: 0.75rem;
   }
 
-  .theme-toggle {
-    border-width: 1.5px;
-  }
-
   .fullscreen-toggle {
     border-width: 1.5px;
-  }
-
-  .install-toggle {
-    border-width: 1.5px;
-    min-height: 38px;
-    padding: 0.4rem 0.7rem;
-    font-size: 0.76rem;
-  }
-
-  .theme-icon {
-    width: 22px;
-    height: 22px;
   }
 
   .game-exit {
@@ -284,19 +145,8 @@ body {
     --control-size: 38px;
   }
 
-  .theme-icon {
-    width: 18px;
-    height: 18px;
-  }
-
   .fullscreen-toggle {
     font-size: 0.95rem;
-  }
-
-  .install-toggle {
-    min-height: 34px;
-    padding: 0.35rem 0.6rem;
-    font-size: 0.72rem;
   }
 
   .game-exit {

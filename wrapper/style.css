@@ -1,6 +1,64 @@
 /* ── Hub-Specific Styles ── */
 /* Theme variables & base styles are in shared/theme.css */
 
+/* ── Account nav (sign in, dashboards) ── */
+.site-nav {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 0.9rem 1.25rem;
+  box-sizing: border-box;
+}
+
+.site-nav__links { display: flex; gap: 16px; flex-wrap: wrap; }
+
+.site-nav__link {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.site-nav__link:hover { color: var(--accent); }
+
+.site-nav__auth { display: flex; align-items: center; gap: 10px; }
+
+.site-nav__email {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.site-nav__btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 7px 14px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+.site-nav__btn:hover { filter: brightness(1.1); }
+
+.site-nav__btn--ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+@media (max-width: 560px) {
+  .site-nav { padding: 0.75rem 1rem; }
+  .site-nav__link { font-size: 0.78rem; }
+}
+
 /* ── Hero Banner ── */
 .hero-banner {
   width: 100%;
@@ -11,10 +69,6 @@
   flex-direction: column;
   align-items: center;
   gap: 1.5rem;
-}
-
-[data-theme="light"] .hero-banner {
-  background: linear-gradient(160deg, #f0f0f0 0%, #f5f5f5 60%);
 }
 
 .hero-banner__inner {
@@ -60,22 +114,11 @@
   background-clip: text;
 }
 
-[data-theme="light"] .hero-banner__headline {
-  background: linear-gradient(135deg, #ff6b35 30%, #ff0055);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
 .hero-banner__desc {
   font-size: 1rem;
   color: #999;
   line-height: 1.6;
   max-width: 380px;
-}
-
-[data-theme="light"] .hero-banner__desc {
-  color: var(--text-secondary);
 }
 
 .hero-banner__promo {
@@ -127,14 +170,6 @@
   line-height: 1.4;
 }
 
-[data-theme="light"] .hero-feature strong {
-  color: var(--text-primary);
-}
-
-[data-theme="light"] .hero-feature span {
-  color: var(--text-tertiary);
-}
-
 @media (max-width: 680px) {
   .hero-banner__inner {
     flex-direction: column;
@@ -171,11 +206,6 @@ body {
   align-items: center;
 }
 
-[data-theme="light"] body {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-}
-
 .hub-header {
   text-align: center;
   padding: 3rem 1rem 2rem;
@@ -197,10 +227,6 @@ body {
   font-size: 1.1rem;
   color: #888;
   font-weight: 400;
-}
-
-[data-theme="light"] .hub-subtitle {
-  color: var(--text-secondary);
 }
 
 .game-grid {
@@ -235,17 +261,6 @@ body {
   transform: translateY(-4px);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
   border-color: rgba(255, 0, 85, 0.3);
-}
-
-[data-theme="light"] .game-card {
-  background: var(--bg-secondary);
-  border-color: var(--border-color);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-[data-theme="light"] .game-card:hover {
-  border-color: var(--border-color-hover);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
 .game-card__thumb {
@@ -286,10 +301,6 @@ body {
   flex: 1;
 }
 
-[data-theme="light"] .game-card__desc {
-  color: var(--text-secondary);
-}
-
 .game-card__install-badge {
   display: inline-block;
   margin-top: 0.75rem;
@@ -319,10 +330,6 @@ body {
   margin-top: 2rem;
 }
 
-[data-theme="light"] .hub-footer {
-  border-top-color: var(--border-color);
-}
-
 .footer-inner {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr;
@@ -345,10 +352,6 @@ body {
   max-width: 280px;
 }
 
-[data-theme="light"] .footer-brand p {
-  color: var(--text-secondary);
-}
-
 .footer-logo {
   display: flex;
   align-items: center;
@@ -369,10 +372,6 @@ body {
   color: #e8e8e8;
 }
 
-[data-theme="light"] .footer-logo span {
-  color: var(--text-primary);
-}
-
 .footer-column {
   display: flex;
   flex-direction: column;
@@ -388,10 +387,6 @@ body {
   margin-bottom: 0.25rem;
 }
 
-[data-theme="light"] .footer-column h4 {
-  color: var(--text-muted);
-}
-
 .footer-column a {
   font-size: 0.875rem;
   color: #888;
@@ -401,14 +396,6 @@ body {
 
 .footer-column a:hover {
   color: #ff6b8a;
-}
-
-[data-theme="light"] .footer-column a {
-  color: var(--text-secondary);
-}
-
-[data-theme="light"] .footer-column a:hover {
-  color: #ff0055;
 }
 
 .footer-bottom {
@@ -421,10 +408,6 @@ body {
   margin: 0 auto;
   gap: 1rem;
   flex-wrap: wrap;
-}
-
-[data-theme="light"] .footer-bottom {
-  border-top-color: var(--border-color);
 }
 
 .footer-bottom p {
@@ -440,10 +423,6 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-}
-
-[data-theme="light"] .footer-bottom p {
-  color: var(--text-muted);
 }
 
 @media (max-width: 860px) {
@@ -478,11 +457,6 @@ body {
   border-top: 1px solid rgba(255, 215, 0, 0.2);
   border-bottom: 1px solid rgba(255, 215, 0, 0.2);
   padding: 1.2rem 2rem;
-}
-
-[data-theme="light"] .premium-banner {
-  background: linear-gradient(135deg, #fffbe6 0%, #fff8d6 50%, #fffbe6 100%);
-  border-color: rgba(180, 140, 0, 0.25);
 }
 
 .premium-banner__inner {
@@ -523,17 +497,9 @@ body {
   font-weight: 800;
 }
 
-[data-theme="light"] .premium-banner__copy strong {
-  color: #b8860b;
-}
-
 .premium-banner__copy span {
   font-size: 0.82rem;
   color: rgba(255, 215, 0, 0.75);
-}
-
-[data-theme="light"] .premium-banner__copy span {
-  color: #7a6000;
 }
 
 .premium-coins {
@@ -625,11 +591,6 @@ body {
   to   { transform: translateY(0);    opacity: 1; }
 }
 
-[data-theme="light"] .ad-banner {
-  background: rgba(245, 245, 245, 0.97);
-  border-top-color: rgba(0, 0, 0, 0.08);
-}
-
 .ad-banner__label {
   font-size: 9px;
   letter-spacing: 2px;
@@ -637,10 +598,6 @@ body {
   color: rgba(255, 255, 255, 0.35);
   text-transform: uppercase;
   flex-shrink: 0;
-}
-
-[data-theme="light"] .ad-banner__label {
-  color: rgba(0, 0, 0, 0.3);
 }
 
 .ad-banner__content {
@@ -668,20 +625,12 @@ body {
   white-space: nowrap;
 }
 
-[data-theme="light"] .ad-banner__link strong {
-  color: var(--text-primary);
-}
-
 .ad-banner__link span {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.5);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-[data-theme="light"] .ad-banner__link span {
-  color: var(--text-secondary);
 }
 
 .ad-banner__cta {
@@ -707,14 +656,6 @@ body {
 
 .ad-banner__close:hover {
   color: rgba(255, 255, 255, 0.7);
-}
-
-[data-theme="light"] .ad-banner__close {
-  color: rgba(0, 0, 0, 0.3);
-}
-
-[data-theme="light"] .ad-banner__close:hover {
-  color: rgba(0, 0, 0, 0.6);
 }
 
 /* Prevent footer from being hidden behind sticky banner */

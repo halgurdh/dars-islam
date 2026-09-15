@@ -1,10 +1,10 @@
 /**
- * Thin client for the Minitoon PHP API.
+ * Thin client for the darsislam PHP API.
  * Session token is stored in localStorage and sent on every request.
  */
 
 const API_BASE    = '/api';
-const SESSION_KEY = 'minitoon:session';
+const SESSION_KEY = 'darsislam:session';
 
 export function getSessionToken(): string | null {
   return localStorage.getItem(SESSION_KEY);

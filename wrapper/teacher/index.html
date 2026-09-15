@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0c0f0a" />
+    <title>Teacher Dashboard · darsislam.Games</title>
+    <link rel="icon" type="image/png" href="/games/board-rush/assets/icons/icon-512.png" />
+    <style>
+      body { display: flex; flex-direction: column; align-items: center; }
+
+      .site-header {
+        width: 100%;
+        border-bottom: 1px solid var(--border-color);
+        padding: 1rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        box-sizing: border-box;
+      }
+      .site-header__brand {
+        font-size: 0.9rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        background: linear-gradient(135deg, #ff0055, #ff6b35);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-decoration: none;
+      }
+      .site-header__back {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        text-decoration: none;
+        margin-right: 3.5rem;
+      }
+      .site-header__back:hover { color: #ff0055; }
+
+      .content {
+        width: 100%;
+        max-width: 900px;
+        padding: 2.5rem 1.5rem 5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.75rem;
+        box-sizing: border-box;
+      }
+
+      .content > header h1 { font-size: 1.9rem; font-weight: 900; color: var(--text-primary); margin-bottom: 0.3rem; }
+      .content > header p { font-size: 0.88rem; color: var(--text-muted); }
+
+      .card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        padding: 1.25rem 1.4rem;
+      }
+      .card h2 {
+        font-size: 0.72rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+        color: #ff0055; margin-bottom: 0.9rem;
+      }
+      .card + .card { margin-top: 0; }
+
+      .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+      .row input, .row select {
+        background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border-color);
+        border-radius: 8px; padding: 9px 12px; font-size: 0.9rem; box-sizing: border-box;
+      }
+      .row input { flex: 1; min-width: 160px; }
+      button {
+        background: var(--accent); color: #fff; border: none; border-radius: 8px;
+        padding: 9px 16px; font-size: 0.88rem; font-weight: 700; cursor: pointer;
+      }
+      button:hover { filter: brightness(1.1); }
+      button.ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border-color); }
+      .sub { font-size: 0.82rem; color: var(--text-muted); }
+      .form-msg { font-size: 0.82rem; min-height: 1.2em; }
+      .form-msg--error { color: #e54040; }
+      .form-msg--ok { color: #33c37d; }
+
+      .code-chip {
+        display: inline-block; font-family: 'Courier New', monospace; font-weight: 800; letter-spacing: 0.1em;
+        background: var(--bg-primary); border: 1px dashed var(--border-color); border-radius: 8px; padding: 4px 10px;
+      }
+
+      .class-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-top: 12px; }
+      .class-tile {
+        background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 10px;
+        padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; text-decoration: none;
+      }
+      .class-tile:hover { border-color: var(--accent); }
+      .class-tile strong { color: var(--text-primary); font-size: 0.95rem; }
+      .class-tile span { font-size: 0.78rem; color: var(--text-muted); }
+
+      table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+      th { text-align: left; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); padding: 6px 8px; border-bottom: 1px solid var(--border-color); }
+      td { padding: 8px; font-size: 0.88rem; color: var(--text-secondary); border-bottom: 1px solid var(--border-color); }
+      tr:last-child td { border-bottom: none; }
+      tr.top-row td:first-child { color: #ffd700; font-weight: 800; }
+      tr.bottom-row td:first-child { color: #ff8a3d; font-weight: 800; }
+
+      .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+      @media (max-width: 500px) {
+        .content { padding: 1.75rem 1rem 4rem; }
+        .site-header { padding: 0.9rem 1.25rem; }
+        .site-header__back { margin-right: 2rem; }
+      }
+    </style>
+    <script type="module">
+      import '@shared/theme.css';
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a href="/" class="site-header__brand">darsislam.Games</a>
+      <a href="/" class="site-header__back">← Back to games</a>
+    </header>
+
+    <main class="content">
+      <header>
+        <h1>🏫 Teacher Dashboard</h1>
+        <p>Schools, classes and student progress at a glance.</p>
+      </header>
+
+      <div id="app"></div>
+    </main>
+
+    <script type="module">
+      import { sync } from '@shared/sync';
+      import { SchoolApi } from '@shared/school-api';
+      import { ProgressBar } from '@shared/progress-bar';
+
+      const progressBar = new ProgressBar();
+      const app = document.getElementById('app');
+
+      function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      }
+
+      function setParams(next) {
+        const params = new URLSearchParams(window.location.search);
+        Object.entries(next).forEach(([k, v]) => (v === null ? params.delete(k) : params.set(k, v)));
+        window.history.pushState({}, '', `${window.location.pathname}?${params.toString()}`);
+        render();
+      }
+
+      function renderSignedOut() {
+        app.innerHTML = `
+          <div class="card">
+            <h2>Sign In Required</h2>
+            <p class="sub">Sign in with the same email you use for darsislam.Games to create or manage a school.</p>
+            <button id="teacherSignIn" style="margin-top:10px">☁ Sign in</button>
+          </div>`;
+        document.getElementById('teacherSignIn').addEventListener('click', () => progressBar.openSignIn());
+      }
+
+      function renderNoSchool() {
+        app.innerHTML = `
+          <div class="two-col">
+            <div class="card">
+              <h2>Create a School</h2>
+              <p class="sub">You'll get an invite code to share with other teachers.</p>
+              <form id="createSchoolForm" class="row" style="margin-top:10px">
+                <input id="schoolName" type="text" maxlength="120" placeholder="School name" />
+                <button type="submit">Create</button>
+              </form>
+              <p class="form-msg" id="createSchoolMsg"></p>
+            </div>
+            <div class="card">
+              <h2>Join a School</h2>
+              <p class="sub">Have an invite code from a colleague?</p>
+              <form id="joinSchoolForm" class="row" style="margin-top:10px">
+                <input id="schoolCode" type="text" maxlength="8" placeholder="Invite code" style="text-transform:uppercase" />
+                <button type="submit">Join</button>
+              </form>
+              <p class="form-msg" id="joinSchoolMsg"></p>
+            </div>
+          </div>`;
+
+        document.getElementById('createSchoolForm').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const name = document.getElementById('schoolName').value.trim();
+          const msg = document.getElementById('createSchoolMsg');
+          if (!name) return;
+          msg.className = 'form-msg'; msg.textContent = 'Creating…';
+          try {
+            const school = await SchoolApi.createSchool(name);
+            setParams({ school: school.id, class: null });
+          } catch {
+            msg.className = 'form-msg form-msg--error'; msg.textContent = 'Could not create the school.';
+          }
+        });
+
+        document.getElementById('joinSchoolForm').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const code = document.getElementById('schoolCode').value.trim();
+          const msg = document.getElementById('joinSchoolMsg');
+          if (!code) return;
+          msg.className = 'form-msg'; msg.textContent = 'Joining…';
+          try {
+            const school = await SchoolApi.joinSchool(code);
+            setParams({ school: school.id, class: null });
+          } catch {
+            msg.className = 'form-msg form-msg--error'; msg.textContent = 'Invite code not found.';
+          }
+        });
+      }
+
+      function schoolSwitcher(schools, current) {
+        if (schools.length < 2) return '';
+        const opts = schools.map((s) => `<option value="${s.id}" ${s.id === current.id ? 'selected' : ''}>${escapeHtml(s.name)}</option>`).join('');
+        return `<select id="schoolSwitch">${opts}</select>`;
+      }
+
+      async function renderSchoolOverview(schools, school) {
+        app.innerHTML = `
+          <div class="card">
+            <div class="row" style="justify-content:space-between">
+              <h2 style="margin:0">${escapeHtml(school.name)}</h2>
+              ${schoolSwitcher(schools, school)}
+            </div>
+            <p class="sub">Invite other teachers with code <span class="code-chip">${school.invite_code}</span></p>
+            <form id="createClassForm" class="row" style="margin-top:14px">
+              <input id="className" type="text" maxlength="80" placeholder="New class name (e.g. Grade 4B)" />
+              <button type="submit">Create Class</button>
+            </form>
+            <p class="form-msg" id="createClassMsg"></p>
+            <div class="class-grid" id="classGrid"></div>
+          </div>
+          <div class="two-col" id="schoolStats"></div>`;
+
+        document.getElementById('schoolSwitch')?.addEventListener('change', (e) => setParams({ school: e.target.value, class: null }));
+
+        document.getElementById('classGrid').innerHTML = school.classes.length
+          ? school.classes.map((c) => `
+              <a class="class-tile" href="?school=${school.id}&class=${c.id}" data-class="${c.id}">
+                <strong>${escapeHtml(c.name)}</strong>
+                <span>Code <span class="code-chip">${c.join_code}</span></span>
+                <span>${c.student_count} student${c.student_count === 1 ? '' : 's'} · avg ${c.avg_xp} XP</span>
+              </a>`).join('')
+          : '<p class="sub">No classes yet — create one above.</p>';
+
+        app.querySelectorAll('.class-tile').forEach((el) => el.addEventListener('click', (e) => {
+          e.preventDefault();
+          setParams({ school: school.id, class: el.dataset.class });
+        }));
+
+        document.getElementById('createClassForm').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const name = document.getElementById('className').value.trim();
+          const msg = document.getElementById('createClassMsg');
+          if (!name) return;
+          msg.className = 'form-msg'; msg.textContent = 'Creating…';
+          try {
+            await SchoolApi.createClass(school.id, name);
+            render();
+          } catch {
+            msg.className = 'form-msg form-msg--error'; msg.textContent = 'Could not create the class.';
+          }
+        });
+
+        try {
+          const dash = await SchoolApi.schoolDashboard(school.id);
+          const rankedRows = (list, cls) => list.length
+            ? list.map((s, i) => `<tr class="${cls}"><td>#${i + 1}</td><td>${escapeHtml(s.display_name)}</td><td>${escapeHtml(s.class_name ?? '')}</td><td>${s.xp} XP</td></tr>`).join('')
+            : '<tr><td colspan="4" class="sub">No students yet</td></tr>';
+
+          document.getElementById('schoolStats').innerHTML = `
+            <div class="card">
+              <h2>🏆 Top Students (School-Wide)</h2>
+              <table><thead><tr><th>#</th><th>Name</th><th>Class</th><th>XP</th></tr></thead>
+                <tbody>${rankedRows(dash.top_students, 'top-row')}</tbody></table>
+            </div>
+            <div class="card">
+              <h2>🌱 Could Use a Nudge</h2>
+              <table><thead><tr><th>#</th><th>Name</th><th>Class</th><th>XP</th></tr></thead>
+                <tbody>${rankedRows(dash.bottom_students, 'bottom-row')}</tbody></table>
+            </div>`;
+        } catch { /* dashboard stats are a nice-to-have — overview still works without them */ }
+      }
+
+      async function renderClassRoster(schools, school, classSummary) {
+        app.innerHTML = `<div class="card"><p class="sub">Loading roster…</p></div>`;
+        try {
+          const roster = await SchoolApi.classRoster(classSummary.id);
+          const rows = roster.students.map((s, i) => {
+            const cls = i < 3 ? 'top-row' : (i >= roster.students.length - 3 && roster.students.length > 3 ? 'bottom-row' : '');
+            return `<tr class="${cls}"><td>#${i + 1}</td><td>${escapeHtml(s.display_name)}</td><td>Lvl ${s.level}</td><td>🔥 ${s.daily_streak}</td><td>${s.badge_count} 🏅</td><td>${s.xp} XP</td></tr>`;
+          }).join('') || '<tr><td colspan="6" class="sub">No students have joined yet.</td></tr>';
+
+          app.innerHTML = `
+            <div class="card">
+              <button class="ghost" id="backToSchool">← Back to ${escapeHtml(school.name)}</button>
+              <div class="row" style="justify-content:space-between; margin-top:12px">
+                <h2 style="margin:0">${escapeHtml(roster.class.name)}</h2>
+                <span class="sub">Share code <span class="code-chip">${roster.class.join_code}</span></span>
+              </div>
+              <p class="sub">${roster.students.length} students · class average ${roster.avg_xp} XP</p>
+              <table>
+                <thead><tr><th>#</th><th>Name</th><th>Level</th><th>Streak</th><th>Badges</th><th>XP</th></tr></thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </div>`;
+          document.getElementById('backToSchool').addEventListener('click', () => setParams({ school: school.id, class: null }));
+        } catch {
+          app.innerHTML = `<div class="card"><p class="form-msg form-msg--error">Could not load this class's roster.</p></div>`;
+        }
+      }
+
+      async function render() {
+        if (!sync.isLoggedIn) { renderSignedOut(); return; }
+
+        let schools;
+        try {
+          ({ schools } = await SchoolApi.listSchools());
+        } catch {
+          app.innerHTML = '<div class="card"><p class="form-msg form-msg--error">Could not load your schools.</p></div>';
+          return;
+        }
+        if (schools.length === 0) { renderNoSchool(); return; }
+
+        const params = new URLSearchParams(window.location.search);
+        const school = schools.find((s) => s.id === params.get('school')) ?? schools[0];
+        const classId = params.get('class');
+        const classSummary = classId ? school.classes.find((c) => c.id === classId) : null;
+
+        if (classSummary) await renderClassRoster(schools, school, classSummary);
+        else await renderSchoolOverview(schools, school);
+      }
+
+      window.addEventListener('popstate', render);
+
+      (async () => {
+        try { await sync.init(); } catch { /* not signed in — render() handles that state */ }
+        // A magic-link redirect lands here with ?mt_session=... already consumed by sync.init();
+        // just re-render once auth state settles.
+        render();
+      })();
+    </script>
+  </body>
+</html>

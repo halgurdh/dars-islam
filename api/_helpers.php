@@ -33,7 +33,7 @@ function json_error(string $msg, int $status = 400): never {
 }
 
 function server_error(string $publicMsg, string $logMsg): never {
-    error_log('[minitoon api] ' . $logMsg);
+    error_log('[darsislam api] ' . $logMsg);
     json_error($publicMsg, 500);
 }
 
@@ -72,7 +72,7 @@ function client_ip(): string {
 function rate_limit_or_fail(string $bucket, int $limit, int $windowSeconds, ?string $subject = null): void {
     $subject = $subject !== null && $subject !== '' ? strtolower(trim($subject)) : client_ip();
     $key = hash('sha256', $bucket . '|' . $subject);
-    $dir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'minitoon-rate-limit';
+    $dir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'darsislam-rate-limit';
     if (!is_dir($dir) && !@mkdir($dir, 0775, true) && !is_dir($dir)) {
         return;
     }
@@ -126,7 +126,7 @@ function body(): array {
 
 function send_text_mail(string $to, string $subject, string $message): bool {
     if (!filter_var(FROM_EMAIL, FILTER_VALIDATE_EMAIL)) {
-        error_log('[minitoon api] Invalid FROM_EMAIL configured: ' . FROM_EMAIL);
+        error_log('[darsislam api] Invalid FROM_EMAIL configured: ' . FROM_EMAIL);
         return false;
     }
 
@@ -172,7 +172,7 @@ function require_session(): array {
     if (!$token) json_error('Unauthorized', 401);
 
     $stmt = db()->prepare(
-        'SELECT s.user_id, u.email, u.account_type
+        'SELECT s.user_id, u.email, u.account_type, u.role
          FROM sessions s
          JOIN users u ON u.id = s.user_id
          WHERE s.token = ? AND s.expires_at > NOW()'
@@ -184,14 +184,53 @@ function require_session(): array {
     return $row;
 }
 
+// Leaderboard/roster-safe: letters, numbers, spaces and a few marks only.
+// Shared by profile/update.php (player renaming themselves) and
+// auth/join-class.php (a student picking a name when they join a class).
+function sanitize_display_name(?string $value): ?string {
+    if ($value === null) return null;
+    $clean = trim(preg_replace('/[^\p{L}\p{N} _.\'-]/u', '', $value));
+    $clean = mb_substr($clean, 0, 24);
+    return $clean !== '' ? $clean : null;
+}
+
+// Short, human-typeable codes for class/school invites — excludes visually
+// ambiguous characters (0/O, 1/I/L) since kids type these on a keyboard.
+function random_code(int $len): string {
+    $alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+    $code = '';
+    for ($i = 0; $i < $len; $i++) {
+        $code .= $alphabet[random_int(0, strlen($alphabet) - 1)];
+    }
+    return $code;
+}
+
+// Generates a random_code() and retries on the rare unique-constraint
+// collision. $exists must return true if that code is already taken.
+function unique_code(int $len, callable $exists): string {
+    for ($attempt = 0; $attempt < 20; $attempt++) {
+        $code = random_code($len);
+        if (!$exists($code)) return $code;
+    }
+    server_error('Could not generate a unique code', 'unique_code() exhausted retries');
+}
+
+// Promotes a player to teacher the first time they create/join a school.
+// One-way: a teacher who stops teaching keeps the role (no downgrade path
+// needed yet, and it's harmless — it only gates the dashboard link).
+function promote_to_teacher(string $userId): void {
+    db()->prepare("UPDATE users SET role = 'teacher' WHERE id = ? AND role = 'player'")
+        ->execute([$userId]);
+}
+
 function ensure_profile(string $userId): void {
     $db = db();
     $exists = $db->prepare('SELECT 1 FROM profiles WHERE user_id = ?');
     $exists->execute([$userId]);
     if (!$exists->fetch()) {
         $db->prepare(
-            "INSERT INTO profiles (user_id, owned_card_backs)
-             VALUES (?, JSON_ARRAY('cardBack_blue1'))"
+            "INSERT INTO profiles (user_id, owned_card_backs, badges)
+             VALUES (?, JSON_ARRAY('cardBack_blue1'), JSON_ARRAY())"
         )->execute([$userId]);
     }
 }
@@ -202,6 +241,7 @@ function get_profile(string $userId): array {
     $stmt->execute([$userId]);
     $row = $stmt->fetch();
     $row['owned_card_backs'] = json_decode($row['owned_card_backs'], true);
+    $row['badges'] = json_decode($row['badges'] ?? '[]', true) ?? [];
     $row['premium_active'] = $row['premium_until'] && strtotime($row['premium_until']) > time();
     return $row;
 }

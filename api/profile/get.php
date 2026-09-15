@@ -10,6 +10,7 @@ json_out([
     'user_id'          => $session['user_id'],
     'email'            => $session['email'],
     'account_type'     => $session['account_type'] ?? classify_account_type($session['email']),
+    'role'             => $session['role'] ?? 'player',
     'coins'            => (int) $profile['coins'],
     'active_card_back' => $profile['active_card_back'],
     'owned_card_backs' => $profile['owned_card_backs'],
@@ -20,4 +21,10 @@ json_out([
     'games_played'     => (int) $profile['games_played'],
     'best_streak'      => (int) $profile['best_streak'],
     'current_streak'   => (int) $profile['current_streak'],
+    'display_name'     => $profile['display_name'],
+    'xp'               => (int) $profile['xp'],
+    'daily_streak'     => (int) $profile['daily_streak'],
+    'best_daily_streak' => (int) $profile['best_daily_streak'],
+    'last_played_date' => $profile['last_played_date'],
+    'badges'           => $profile['badges'],
 ]);

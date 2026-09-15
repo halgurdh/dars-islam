@@ -6,11 +6,11 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Minitoon.Games" />
+    <meta name="apple-mobile-web-app-title" content="darsislam.Games" />
     <meta name="theme-color" content="#0c0f0a" />
     <link rel="apple-touch-icon" href="../shared/splash.png" />
     <link rel="icon" type="image/png" href="../shared/splash.png" />
-    <title>Minitoon.Games</title>
+    <title>darsislam.Games</title>
     <!-- Wrapper-specific CSS -->
     <link rel="stylesheet" href="style.css" />
     <script async custom-element="amp-auto-ads"
@@ -22,19 +22,16 @@
     <amp-auto-ads type="adsense"
         data-ad-client="ca-pub-4284817009631043">
 </amp-auto-ads>
-    <!-- Theme toggle -->
-    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark/light mode">
-      <!-- Eye open (dark mode icon) -->
-      <svg class="theme-icon theme-icon--dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-        <circle cx="12" cy="12" r="3"></circle>
-      </svg>
-      <!-- Eye closed (light mode icon) -->
-      <svg class="theme-icon theme-icon--light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-        <line x1="1" y1="1" x2="23" y2="23"></line>
-      </svg>
-    </button>
+    <!-- Account / dashboards nav -->
+    <nav class="site-nav">
+      <div class="site-nav__links">
+        <a href="/dashboard/" class="site-nav__link">📊 My Dashboard</a>
+        <a href="/teacher/" class="site-nav__link" id="navTeacherLink" hidden>🏫 Teacher Dashboard</a>
+      </div>
+      <div id="authChip" class="site-nav__auth">
+        <button id="authSignIn" class="site-nav__btn">☁ Sign in</button>
+      </div>
+    </nav>
 
       <div class="hero-features">
         <div class="hero-feature">
@@ -70,11 +67,11 @@
         <div class="premium-banner__left">
           <span class="premium-crown">👑</span>
           <div class="premium-banner__copy">
-            <strong>Minitoon Premium</strong>
+            <strong>darsislam Premium</strong>
           </div>
         </div>
         <div class="premium-banner__ctas">
-          <a href="mailto:info@minitoon.games?subject=Minitoon%20Premium" class="premium-cta">For Publisers: Email Us</a>
+          <a href="mailto:info@darsislam.games?subject=darsislam%20Premium" class="premium-cta">For Publisers: Email Us</a>
         </div>
       </div>
     </section>
@@ -238,8 +235,8 @@
       <div class="footer-inner">
         <div class="footer-brand">
           <div class="footer-logo">
-            <img src="../shared/splash.png" alt="Minitoon.Games logo" class="footer-logo__img" />
-            <span>MINITOON<br>GAMES</span>
+            <img src="../shared/splash.png" alt="darsislam.Games logo" class="footer-logo__img" />
+            <span>darsislam<br>GAMES</span>
           </div>
           <p>A casual game development studio creating fun and addictive games for players around the world.</p>
         </div>
@@ -250,8 +247,8 @@
         </div>
         <div class="footer-column">
           <h4>Studio</h4>
-          <a href="https://instagram.com/minitoon.games" target="_blank" rel="noopener">Instagram</a>
-          <a href="mailto:info@minitoon.games">Contact</a>
+          <a href="https://instagram.com/darsislam.games" target="_blank" rel="noopener">Instagram</a>
+          <a href="mailto:info@darsislam.games">Contact</a>
         </div>
         <div class="footer-column">
           <h4>Legal</h4>
@@ -261,23 +258,47 @@
       </div>
       <div class="footer-bottom">
         <p>PLAY MORE. SMILE MORE.</p>
-        <p>All rights reserved © 2018–<span id="year"></span> Minitoon Games.</p>
+        <p>All rights reserved © 2018–<span id="year"></span> darsislam Games.</p>
         <script>document.getElementById("year").innerHTML = new Date().getFullYear();</script>
       </div>
     </footer>
 
     <script type="module">
       import '@shared/theme.css';
-      import { initTheme } from '@shared/theme.js';
       import { ArcadeStore } from '@shared/arcade-store';
       import { sync } from '@shared/sync';
       import { getSessionToken } from '@shared/api';
       import { BRAND_ADS } from '@shared/ad-provider';
-      initTheme();
+      import { ProgressBar } from '@shared/progress-bar';
+      const progressBar = new ProgressBar();
+
+      // Single sign-in entry point for the whole hub — shows email + sign
+      // out once logged in, and reveals the Teacher Dashboard link for
+      // teacher accounts.
+      function renderAuthChip() {
+        const chip = document.getElementById('authChip');
+        const teacherLink = document.getElementById('navTeacherLink');
+        if (teacherLink) teacherLink.hidden = !sync.isTeacher;
+        if (!chip) return;
+        if (sync.isLoggedIn) {
+          chip.innerHTML = `
+            <span class="site-nav__email">☁ ${sync.email ?? 'Signed in'}</span>
+            <button id="authSignOut" class="site-nav__btn site-nav__btn--ghost">Sign out</button>`;
+          chip.querySelector('#authSignOut')?.addEventListener('click', async () => {
+            await sync.signOut();
+            renderAuthChip();
+          });
+        } else {
+          chip.innerHTML = `<button id="authSignIn" class="site-nav__btn">☁ Sign in</button>`;
+          chip.querySelector('#authSignIn')?.addEventListener('click', () => progressBar.openSignIn());
+        }
+      }
+      renderAuthChip();
 
       (async () => {
       // Init sync / auth — wrapped so a failing API never blocks ads or UI
       try { await sync.init(); } catch (e) { console.warn('sync.init failed:', e); }
+      renderAuthChip();
 
       // Reflect premium status in the banner
       function updateBanner() {
@@ -316,7 +337,7 @@
 
         const brand = BRAND_ADS[_adIndex % BRAND_ADS.length];
         _adIndex++;
-        const utm = `${brand.url}?utm_source=minitoon&utm_medium=banner&utm_campaign=wrapper`;
+        const utm = `${brand.url}?utm_source=darsislam&utm_medium=banner&utm_campaign=wrapper`;
         const host = new URL(brand.url).hostname;
 
         content.innerHTML = `
@@ -347,6 +368,7 @@
 
       sync.onAuthChange(() => {
         updateBanner();
+        renderAuthChip();
         if (ArcadeStore.getPremium().active) {
           // Premium active — kill any pending ad timer and hide banner immediately
           clearTimeout(_adTimer);

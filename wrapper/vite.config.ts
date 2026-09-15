@@ -31,6 +31,8 @@ export default defineConfig({
         main: 'index.html',
         terms: 'terms/index.html',
         privacy: 'privacy/index.html',
+        dashboard: 'dashboard/index.html',
+        teacher: 'teacher/index.html',
       },
     },
   },

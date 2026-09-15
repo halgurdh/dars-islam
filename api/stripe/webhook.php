@@ -40,7 +40,7 @@ function subscription_grants_access(string $status): bool {
 }
 
 function handle_subscription(PDO $db, array $sub, string $eventType): void {
-    $uid        = $sub['metadata']['minitoon_user_id'] ?? ($sub['client_reference_id'] ?? null);
+    $uid        = $sub['metadata']['darsislam_user_id'] ?? ($sub['client_reference_id'] ?? null);
     $customerId = $sub['customer'] ?? null;
     $subId      = $sub['id'] ?? null;
     $status     = $sub['status'] ?? 'unknown';
