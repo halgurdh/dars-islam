@@ -14,6 +14,19 @@ export const PREFERRED_GAME_PORTS = {
   'karma': 5176,
   'net-strike': 5177,
   'turbo-drift': 5178,
+  'number-basics': 5187,
+  'times-table-dojo': 5188,
+  'math-tricks-lab': 5189,
+  'mental-math-sprint': 5190,
+  'math-mastery': 5191,
+  'shapes-colors': 5192,
+  'counting-fun': 5193,
+  'pattern-play': 5194,
+  'wonder-why': 5195,
+  'kind-hearts': 5196,
+  'duas-builder': 5197,
+  'juz-amma-match': 5198,
+  'memory-match': 5199,
 };
 
 export function getGamePortMap() {

@@ -46,3 +46,12 @@ export const ENGLISH_LETTERS: TraceLetter[] = Array.from({ length: 26 }, (_, i) 
   const letter = String.fromCharCode(65 + i);
   return { id: i + 1, glyph: letter, label: letter, speak: letter };
 });
+
+// Digits 0-9 — same universal numeral shapes regardless of UI language.
+const NUMBER_WORDS = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+export const NUMBER_LETTERS: TraceLetter[] = NUMBER_WORDS.map((word, i) => ({
+  id: i + 1,
+  glyph: String(i),
+  label: word,
+  speak: word,
+}));

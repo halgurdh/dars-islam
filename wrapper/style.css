@@ -229,6 +229,41 @@ body {
   font-weight: 400;
 }
 
+.category-filter {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1.25rem;
+}
+
+.category-filter__btn {
+  background: #1a1a2e;
+  border: 1.5px solid #333;
+  color: #ccc;
+  padding: 0.5rem 1.1rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.category-filter__btn:hover {
+  border-color: #ff6b35;
+  color: #fff;
+}
+
+.category-filter__btn.is-active {
+  background: linear-gradient(135deg, #ff0055, #ff6b35);
+  border-color: transparent;
+  color: #fff;
+}
+
+.game-card[hidden] {
+  display: none;
+}
+
 .game-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));

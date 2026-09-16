@@ -6,6 +6,7 @@ interface Strings {
   tagline: string;
   alphabetArabic: string;
   alphabetEnglish: string;
+  alphabetNumbers: string;
   itemsLearned: (n: number, total: number) => string;
   start: string;
   soundOn: string;
@@ -17,6 +18,8 @@ interface Strings {
   coverage: (n: number) => string;
   hear: string;
   reset: string;
+  confirm: string;
+  next: string;
   wellDone: string;
   itemComplete: string;
   roundSummary: (items: number, total: number) => string;
@@ -30,6 +33,7 @@ const STRINGS: Record<LangMode, Strings> = {
     tagline: 'Practice handwriting by tracing each letter\nwith your finger or mouse.',
     alphabetArabic: '🔤 Arabic',
     alphabetEnglish: '🔤 English',
+    alphabetNumbers: '🔢 Numbers',
     itemsLearned: (n, total) => `${n} / ${total} letters traced`,
     start: 'Start',
     soundOn: '🔈 Sound On',
@@ -41,6 +45,8 @@ const STRINGS: Record<LangMode, Strings> = {
     coverage: (n) => `Coverage: ${n}%`,
     hear: '🔊 Hear it',
     reset: '↻ Reset / Try Again',
+    confirm: '✓ Confirm',
+    next: 'Next →',
     wellDone: 'Well done! 🌿',
     itemComplete: 'Nicely traced!',
     roundSummary: (items, total) => `${items} letters traced this round\n${total} learned overall`,
@@ -52,6 +58,7 @@ const STRINGS: Record<LangMode, Strings> = {
     tagline: 'Oefen met schrijven door elke letter\nmet je vinger of muis na te trekken.',
     alphabetArabic: '🔤 Arabisch',
     alphabetEnglish: '🔤 Engels',
+    alphabetNumbers: '🔢 Cijfers',
     itemsLearned: (n, total) => `${n} / ${total} letters getraced`,
     start: 'Start',
     soundOn: '🔈 Geluid Aan',
@@ -63,6 +70,8 @@ const STRINGS: Record<LangMode, Strings> = {
     coverage: (n) => `Dekking: ${n}%`,
     hear: '🔊 Uitspraak',
     reset: '↻ Reset / Opnieuw',
+    confirm: '✓ Klaar',
+    next: 'Volgende →',
     wellDone: 'Goed gedaan! 🌿',
     itemComplete: 'Mooi getraced!',
     roundSummary: (items, total) => `${items} letters getraced deze ronde\n${total} in totaal geleerd`,
@@ -74,6 +83,7 @@ const STRINGS: Record<LangMode, Strings> = {
     tagline: 'Übe das Schreiben, indem du jeden Buchstaben\nmit deinem Finger oder der Maus nachzeichnest.',
     alphabetArabic: '🔤 Arabisch',
     alphabetEnglish: '🔤 Englisch',
+    alphabetNumbers: '🔢 Zahlen',
     itemsLearned: (n, total) => `${n} / ${total} Buchstaben nachgezeichnet`,
     start: 'Start',
     soundOn: '🔈 Ton An',
@@ -85,6 +95,8 @@ const STRINGS: Record<LangMode, Strings> = {
     coverage: (n) => `Abdeckung: ${n}%`,
     hear: '🔊 Anhören',
     reset: '↻ Zurücksetzen / Erneut versuchen',
+    confirm: '✓ Fertig',
+    next: 'Weiter →',
     wellDone: 'Gut gemacht! 🌿',
     itemComplete: 'Schön nachgezeichnet!',
     roundSummary: (items, total) => `${items} Buchstaben in dieser Runde nachgezeichnet\n${total} insgesamt gelernt`,
@@ -96,6 +108,7 @@ const STRINGS: Record<LangMode, Strings> = {
     tagline: 'Practica la escritura trazando cada letra\ncon el dedo o el ratón.',
     alphabetArabic: '🔤 Árabe',
     alphabetEnglish: '🔤 Inglés',
+    alphabetNumbers: '🔢 Números',
     itemsLearned: (n, total) => `${n} / ${total} letras trazadas`,
     start: 'Empezar',
     soundOn: '🔈 Sonido Activado',
@@ -107,6 +120,8 @@ const STRINGS: Record<LangMode, Strings> = {
     coverage: (n) => `Cobertura: ${n}%`,
     hear: '🔊 Escuchar',
     reset: '↻ Reiniciar / Intentar de nuevo',
+    confirm: '✓ Listo',
+    next: 'Siguiente →',
     wellDone: '¡Bien hecho! 🌿',
     itemComplete: '¡Bien trazado!',
     roundSummary: (items, total) => `${items} letras trazadas esta ronda\n${total} aprendidas en total`,
@@ -118,6 +133,7 @@ const STRINGS: Record<LangMode, Strings> = {
     tagline: "Entraînez-vous à l'écriture en traçant chaque lettre\navec votre doigt ou votre souris.",
     alphabetArabic: '🔤 Arabe',
     alphabetEnglish: '🔤 Anglais',
+    alphabetNumbers: '🔢 Chiffres',
     itemsLearned: (n, total) => `${n} / ${total} lettres tracées`,
     start: 'Commencer',
     soundOn: '🔈 Son Activé',
@@ -129,6 +145,8 @@ const STRINGS: Record<LangMode, Strings> = {
     coverage: (n) => `Couverture : ${n}%`,
     hear: '🔊 Écouter',
     reset: '↻ Réinitialiser / Réessayer',
+    confirm: '✓ Terminé',
+    next: 'Suivant →',
     wellDone: 'Bien joué ! 🌿',
     itemComplete: 'Bien tracé !',
     roundSummary: (items, total) => `${items} lettres tracées ce tour\n${total} apprises au total`,

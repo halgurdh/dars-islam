@@ -68,7 +68,9 @@
         padding: 0 20px;
         /* Clears the fixed Exit/Theme/Install buttons overlaid in the top
            corners by the shared site chrome. */
-        padding-top: calc(96px + env(safe-area-inset-top, 0px));
+        /* 150px (not just the ~50px corner buttons) also clears the
+           ProgressBar's floating level/streak pill in its expanded state. */
+        padding-top: calc(150px + env(safe-area-inset-top, 0px));
         padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
         overflow-y: auto;
       }
@@ -253,6 +255,17 @@
         }
       }
 
+      /* "Not quite yet" feedback on a Confirm tap that doesn't pass. */
+      #clue-label.nudge {
+        animation: shake 0.35s ease-in-out;
+      }
+
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-6px); }
+        75% { transform: translateX(6px); }
+      }
+
       /* Complete view */
       #complete-view {
         justify-content: center;
@@ -302,6 +315,7 @@
         <div class="alphabet-selector">
           <button id="alpha-arabic-btn" class="alpha-btn"></button>
           <button id="alpha-english-btn" class="alpha-btn"></button>
+          <button id="alpha-numbers-btn" class="alpha-btn"></button>
         </div>
         <button id="start-btn" class="primary-btn"></button>
         <button id="lang-toggle-btn" class="secondary-btn"></button>
@@ -326,6 +340,7 @@
           <canvas id="trace-canvas"></canvas>
           <div id="completion-badge" class="completion-badge" hidden>✓</div>
         </div>
+        <button id="confirm-btn" class="primary-btn"></button>
         <button id="reset-btn" class="secondary-btn"></button>
       </div>
 

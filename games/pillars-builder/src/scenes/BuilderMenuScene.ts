@@ -19,9 +19,16 @@ interface DifficultyOption {
   distractorRange: [number, number];
 }
 
+// Only 5 pillars exist, so "harder" can't mean "more items" the way the
+// bigger-pool Builder games do — but leaving itemsPerRound/percentile
+// identical across all three tiers (as this used to) made Easy/Medium/Hard
+// select from the same full set every time, differing only in decoy-tile
+// count on the ~1/3 of rounds that use the 'build' format. Scaling both the
+// pool cap and the round size gives each tier a genuinely different round,
+// with Hard the first to guarantee all 5 in the same session.
 const DIFFICULTIES: DifficultyOption[] = [
-  { label: () => t().easy, itemsPerRound: 5, maxDifficultyPercentile: 1, distractorRange: [1, 2] },
-  { label: () => t().medium, itemsPerRound: 5, maxDifficultyPercentile: 1, distractorRange: [2, 3] },
+  { label: () => t().easy, itemsPerRound: 3, maxDifficultyPercentile: 0.6, distractorRange: [1, 2] },
+  { label: () => t().medium, itemsPerRound: 4, maxDifficultyPercentile: 0.8, distractorRange: [2, 3] },
   { label: () => t().hard, itemsPerRound: 5, maxDifficultyPercentile: 1, distractorRange: [3, 5] },
 ];
 

@@ -1,5 +1,5 @@
-import { ARABIC_LETTERS, ENGLISH_LETTERS, TraceLetter } from '../data/letters';
-import { arabicProgress, englishProgress } from '../systems/Progress';
+import { ARABIC_LETTERS, ENGLISH_LETTERS, NUMBER_LETTERS, TraceLetter } from '../data/letters';
+import { arabicProgress, englishProgress, numbersProgress } from '../systems/Progress';
 import { sfx } from '../systems/Sfx';
 import { getLang, toggleLang, detectDefaultLang } from '../systems/Locale';
 import { PlayerProgress } from '@shared/player-progress';
@@ -9,18 +9,22 @@ import { TraceCanvas } from './TraceCanvas';
 
 const progressBar = new ProgressBar();
 
-type AlphabetKey = 'arabic' | 'english';
+type AlphabetKey = 'arabic' | 'english' | 'numbers';
 
 const ARABIC_FONT = "'Noto Naskh Arabic', 'Scheherazade New', 'Traditional Arabic', 'Segoe UI', sans-serif";
 const ENGLISH_FONT = "'Arial Black', 'Arial', 'Segoe UI', sans-serif";
+const NUMBER_FONT = "'Arial Black', 'Arial', 'Segoe UI', sans-serif";
 
 // A round is solved once the trace covers most of the glyph's ink and
 // mostly stays on it — generous enough that normal hand-wobble doesn't
 // fail someone, strict enough that scribbling once across the canvas
-// doesn't pass.
+// doesn't pass. Checked only when the learner taps Confirm (not after every
+// single stroke) so multi-stroke glyphs — "X", "T", the dot on "ب"/"ن" — get
+// a chance to draw every stroke before being judged; one diagonal of an "X"
+// alone often already covers ~50% of the ink, so checking mid-trace would
+// mark it solved before the second stroke ever happens.
 const COVERAGE_THRESHOLD = 45;
 const ACCURACY_THRESHOLD = 40;
-const ITEM_SOLVED_DELAY_MS = 1300;
 const AUTO_ADVANCE_MS = 2200;
 
 function shuffle<T>(arr: T[]): T[] {
@@ -59,6 +63,7 @@ export class TraceApp {
     progress: el<HTMLParagraphElement>('menu-progress'),
     arabicBtn: el<HTMLButtonElement>('alpha-arabic-btn'),
     englishBtn: el<HTMLButtonElement>('alpha-english-btn'),
+    numbersBtn: el<HTMLButtonElement>('alpha-numbers-btn'),
     startBtn: el<HTMLButtonElement>('start-btn'),
     langBtn: el<HTMLButtonElement>('lang-toggle-btn'),
     muteBtn: el<HTMLButtonElement>('mute-toggle-btn'),
@@ -74,8 +79,13 @@ export class TraceApp {
     hearBtn: el<HTMLButtonElement>('hear-btn'),
     canvas: el<HTMLCanvasElement>('trace-canvas'),
     completionBadge: el<HTMLDivElement>('completion-badge'),
+    confirmBtn: el<HTMLButtonElement>('confirm-btn'),
     resetBtn: el<HTMLButtonElement>('reset-btn'),
   };
+
+  // Confirm doubles as Next once an item is solved, rather than adding a
+  // second button — one tap target, its meaning just changes.
+  private itemSolved = false;
 
   private completeEls = {
     title: el<HTMLHeadingElement>('complete-title'),
@@ -103,15 +113,21 @@ export class TraceApp {
   }
 
   private progressFor(alphabet: AlphabetKey) {
-    return alphabet === 'arabic' ? arabicProgress : englishProgress;
+    if (alphabet === 'arabic') return arabicProgress;
+    if (alphabet === 'numbers') return numbersProgress;
+    return englishProgress;
   }
 
   private dataFor(alphabet: AlphabetKey): TraceLetter[] {
-    return alphabet === 'arabic' ? ARABIC_LETTERS : ENGLISH_LETTERS;
+    if (alphabet === 'arabic') return ARABIC_LETTERS;
+    if (alphabet === 'numbers') return NUMBER_LETTERS;
+    return ENGLISH_LETTERS;
   }
 
   private fontFor(alphabet: AlphabetKey): string {
-    return alphabet === 'arabic' ? ARABIC_FONT : ENGLISH_FONT;
+    if (alphabet === 'arabic') return ARABIC_FONT;
+    if (alphabet === 'numbers') return NUMBER_FONT;
+    return ENGLISH_FONT;
   }
 
   private speechLangFor(alphabet: AlphabetKey): string {
@@ -133,6 +149,11 @@ export class TraceApp {
     });
     this.menuEls.englishBtn.addEventListener('click', () => {
       this.alphabet = 'english';
+      sfx.tap();
+      this.renderMenu();
+    });
+    this.menuEls.numbersBtn.addEventListener('click', () => {
+      this.alphabet = 'numbers';
       sfx.tap();
       this.renderMenu();
     });
@@ -164,6 +185,7 @@ export class TraceApp {
     this.menuEls.tagline.textContent = t().tagline;
     this.menuEls.arabicBtn.textContent = t().alphabetArabic;
     this.menuEls.englishBtn.textContent = t().alphabetEnglish;
+    this.menuEls.numbersBtn.textContent = t().alphabetNumbers;
     this.menuEls.startBtn.textContent = t().start;
     this.menuEls.langBtn.textContent = t().langToggle;
     this.menuEls.muteBtn.textContent = sfx.isMuted() ? t().soundOff : t().soundOn;
@@ -171,6 +193,7 @@ export class TraceApp {
 
     this.menuEls.arabicBtn.classList.toggle('selected', this.alphabet === 'arabic');
     this.menuEls.englishBtn.classList.toggle('selected', this.alphabet === 'english');
+    this.menuEls.numbersBtn.classList.toggle('selected', this.alphabet === 'numbers');
 
     const progress = this.progressFor(this.alphabet);
     const total = this.dataFor(this.alphabet).length;
@@ -190,7 +213,17 @@ export class TraceApp {
     this.traceEls.resetBtn.addEventListener('click', () => {
       sfx.tap();
       this.trace.reset();
+      this.itemSolved = false;
+      this.traceEls.completionBadge.hidden = true;
+      this.traceEls.confirmBtn.textContent = t().confirm;
       this.updateStats();
+    });
+    this.traceEls.confirmBtn.addEventListener('click', () => {
+      if (this.itemSolved) {
+        this.loadItem(this.currentIndex + 1);
+      } else {
+        this.checkSolution();
+      }
     });
   }
 
@@ -219,8 +252,10 @@ export class TraceApp {
     this.currentIndex = index;
     this.currentItem = this.roundQueue[index];
 
+    this.itemSolved = false;
     this.traceEls.clueLabel.textContent = this.currentItem.label;
     this.traceEls.completionBadge.hidden = true;
+    this.traceEls.confirmBtn.textContent = t().confirm;
     this.trace.setGlyph(this.currentItem.glyph, this.fontFor(this.alphabet));
     this.updateStats();
     this.refreshHearBtn();
@@ -228,17 +263,37 @@ export class TraceApp {
 
   private onStrokeEnd(): void {
     this.updateStats();
+  }
+
+  // Only runs when the learner taps Confirm — see the threshold comment
+  // above for why this isn't automatic after every stroke.
+  private checkSolution(): void {
+    sfx.tap();
     if (this.trace.coverage >= COVERAGE_THRESHOLD && this.trace.accuracy >= ACCURACY_THRESHOLD) {
       this.onItemSolved();
+    } else {
+      this.nudgeIncomplete();
     }
+  }
+
+  // A short shake on the clue label — "not yet, keep going" — rather than
+  // silently doing nothing, which would look like the tap didn't register.
+  private nudgeIncomplete(): void {
+    const label = this.traceEls.clueLabel;
+    label.classList.remove('nudge');
+    // Reflow forces the animation to restart if it's still mid-shake from a
+    // rapid repeat tap, instead of the class no-op'ing on an unchanged value.
+    void label.offsetWidth;
+    label.classList.add('nudge');
   }
 
   private onItemSolved(): void {
     sfx.solved();
+    this.itemSolved = true;
     this.progressFor(this.alphabet).markLearned([this.currentItem.id]);
     this.itemsTracedThisRound++;
     this.traceEls.completionBadge.hidden = false;
-    window.setTimeout(() => this.loadItem(this.currentIndex + 1), ITEM_SOLVED_DELAY_MS);
+    this.traceEls.confirmBtn.textContent = t().next;
   }
 
   private updateStats(): void {

@@ -38,3 +38,4 @@ class ProgressStore {
 
 export const arabicProgress = new ProgressStore('arabic');
 export const englishProgress = new ProgressStore('english');
+export const numbersProgress = new ProgressStore('numbers');

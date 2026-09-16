@@ -19,9 +19,15 @@ interface DifficultyOption {
   distractorRange: [number, number];
 }
 
+// Identical itemsPerRound/percentile across all three tiers used to mean
+// Easy/Medium/Hard all drew all 9 steps every round, differing only in
+// decoy-tile count on the ~1/3 of rounds using the 'build' format. Scaling
+// both the pool cap and round size like the bigger Builder games do gives
+// each tier a genuinely different round; Hard is the first to guarantee all
+// 9 steps in one session.
 const DIFFICULTIES: DifficultyOption[] = [
-  { label: () => t().easy, itemsPerRound: 9, maxDifficultyPercentile: 1, distractorRange: [1, 2] },
-  { label: () => t().medium, itemsPerRound: 9, maxDifficultyPercentile: 1, distractorRange: [2, 4] },
+  { label: () => t().easy, itemsPerRound: 5, maxDifficultyPercentile: 0.6, distractorRange: [1, 2] },
+  { label: () => t().medium, itemsPerRound: 7, maxDifficultyPercentile: 0.8, distractorRange: [2, 4] },
   { label: () => t().hard, itemsPerRound: 9, maxDifficultyPercentile: 1, distractorRange: [3, 6] },
 ];
 

@@ -27,6 +27,19 @@ const GAMES = {
   'salah-builder': { bgLight: '#3d1620', bgDark: '#17080b', accent: '#e04f6a', accentLight: '#f7c2cd' },
   'months-builder': { bgLight: '#16333d', bgDark: '#081417', accent: '#4fa8d9', accentLight: '#cde8f7' },
   'letter-trace': { bgLight: '#1c2440', bgDark: '#0a0e1a', accent: '#7c93e0', accentLight: '#d6def7' },
+  'number-basics': { bgLight: '#163d20', bgDark: '#08170e', accent: '#4fd97a', accentLight: '#c2f7d9' },
+  'times-table-dojo': { bgLight: '#3d3016', bgDark: '#171208', accent: '#e0b34f', accentLight: '#f7e3c2' },
+  'math-tricks-lab': { bgLight: '#3d163d', bgDark: '#170817', accent: '#d94fd9', accentLight: '#f7c2f7' },
+  'mental-math-sprint': { bgLight: '#163d3a', bgDark: '#081715', accent: '#4fd9d0', accentLight: '#c2f7f2' },
+  'math-mastery': { bgLight: '#3d1f16', bgDark: '#170b08', accent: '#e0574f', accentLight: '#f7c2ba' },
+  'shapes-colors': { bgLight: '#163540', bgDark: '#081619', accent: '#4fb8e0', accentLight: '#c2ecf7' },
+  'counting-fun': { bgLight: '#3d2a16', bgDark: '#170f08', accent: '#e0954f', accentLight: '#f7dcc2' },
+  'pattern-play': { bgLight: '#3d1628', bgDark: '#170a11', accent: '#e04f95', accentLight: '#f7c2da' },
+  'wonder-why': { bgLight: '#1c3d16', bgDark: '#0b1708', accent: '#6bcf4f', accentLight: '#d6f7c2' },
+  'kind-hearts': { bgLight: '#3d1c26', bgDark: '#170b0f', accent: '#e06b8a', accentLight: '#f7d0dc' },
+  'duas-builder': { bgLight: '#163538', bgDark: '#081416', accent: '#4fc9d9', accentLight: '#c2eff7' },
+  'juz-amma-match': { bgLight: '#3d3816', bgDark: '#141208', accent: '#d9c94f', accentLight: '#f7f0c2' },
+  'memory-match': { bgLight: '#3d2416', bgDark: '#170d08', accent: '#e0764f', accentLight: '#f7d4c2' },
 };
 
 function renderSvg(colors) {

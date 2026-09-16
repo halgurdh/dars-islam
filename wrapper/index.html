@@ -80,11 +80,17 @@
     <header id="all_games" class="hub-header">
       <h2 class="hub-title">Choose a Game</h2>
       <p class="hub-subtitle">Each game can be installed as its own app!</p>
+      <div class="category-filter" id="categoryFilter" role="tablist" aria-label="Filter games by category">
+        <button class="category-filter__btn is-active" data-category-filter="all">All Games</button>
+        <button class="category-filter__btn" data-category-filter="islamic">🕌 Islamic Studies</button>
+        <button class="category-filter__btn" data-category-filter="math">🔢 Math</button>
+        <button class="category-filter__btn" data-category-filter="learning">🧸 Early Learning</button>
+      </div>
     </header>
 
-    <main class="game-grid">
-      
-      <a href="/games/asma-match/" class="game-card" data-game="asma-match">
+    <main class="game-grid" id="gameGrid">
+
+      <a href="/games/asma-match/" class="game-card" data-game="asma-match" data-category="islamic">
         <div class="game-card__thumb" style="background: linear-gradient(135deg, #0d2b26, #16413a);">
           <img
             src="/games/asma-match/assets/icons/icon-512.png"
@@ -100,7 +106,7 @@
         </div>
       </a>
 
-      <a href="/games/huruf-builder/" class="game-card" data-game="huruf-builder">
+      <a href="/games/huruf-builder/" class="game-card" data-game="huruf-builder" data-category="islamic">
         <div class="game-card__thumb" style="background: linear-gradient(135deg, #0e1730, #16223d);">
           <img
             src="/games/huruf-builder/assets/icons/icon.svg"
@@ -116,7 +122,7 @@
         </div>
       </a>
 
-      <a href="/games/pillars-builder/" class="game-card" data-game="pillars-builder">
+      <a href="/games/pillars-builder/" class="game-card" data-game="pillars-builder" data-category="islamic">
         <div class="game-card__thumb" style="background: linear-gradient(135deg, #1c1108, #3d2a16);">
           <img
             src="/games/pillars-builder/assets/icons/icon.svg"
@@ -132,7 +138,7 @@
         </div>
       </a>
 
-      <a href="/games/prophets-builder/" class="game-card" data-game="prophets-builder">
+      <a href="/games/prophets-builder/" class="game-card" data-game="prophets-builder" data-category="islamic">
         <div class="game-card__thumb" style="background: linear-gradient(135deg, #140d1c, #2a163d);">
           <img
             src="/games/prophets-builder/assets/icons/icon.svg"
@@ -148,7 +154,7 @@
         </div>
       </a>
 
-      <a href="/games/phrases-builder/" class="game-card" data-game="phrases-builder">
+      <a href="/games/phrases-builder/" class="game-card" data-game="phrases-builder" data-category="islamic">
         <div class="game-card__thumb" style="background: linear-gradient(135deg, #0d1f18, #163d2e);">
           <img
             src="/games/phrases-builder/assets/icons/icon.svg"
@@ -164,7 +170,7 @@
         </div>
       </a>
 
-      <a href="/games/salah-builder/" class="game-card" data-game="salah-builder">
+      <a href="/games/salah-builder/" class="game-card" data-game="salah-builder" data-category="islamic">
         <div class="game-card__thumb" style="background: linear-gradient(135deg, #1c0e13, #3d1620);">
           <img
             src="/games/salah-builder/assets/icons/icon.svg"
@@ -180,7 +186,7 @@
         </div>
       </a>
 
-      <a href="/games/months-builder/" class="game-card" data-game="months-builder">
+      <a href="/games/months-builder/" class="game-card" data-game="months-builder" data-category="islamic">
         <div class="game-card__thumb" style="background: linear-gradient(135deg, #0d1c21, #16333d);">
           <img
             src="/games/months-builder/assets/icons/icon.svg"
@@ -196,7 +202,7 @@
         </div>
       </a>
 
-      <a href="/games/letter-trace/" class="game-card" data-game="letter-trace">
+      <a href="/games/letter-trace/" class="game-card" data-game="letter-trace" data-category="islamic">
         <div class="game-card__thumb" style="background: linear-gradient(135deg, #0a0e1a, #1c2440);">
           <img
             src="/games/letter-trace/assets/icons/icon.svg"
@@ -208,6 +214,214 @@
         <div class="game-card__body">
           <h2 class="game-card__title">Letter Trace</h2>
           <p class="game-card__desc">Practice handwriting by tracing the Arabic and English alphabets</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/games/number-basics/" class="game-card" data-game="number-basics" data-category="math">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #08170e, #163d20);">
+          <img
+            src="/games/number-basics/assets/icons/icon.svg"
+            alt="Number Basics icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Number Basics</h2>
+          <p class="game-card__desc">Addition and subtraction practice, from counting to two-digit sums</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/games/times-table-dojo/" class="game-card" data-game="times-table-dojo" data-category="math">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #171208, #3d3016);">
+          <img
+            src="/games/times-table-dojo/assets/icons/icon.svg"
+            alt="Times Table Dojo icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Times Table Dojo</h2>
+          <p class="game-card__desc">Master the multiplication tables from 1 to 12</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/games/math-tricks-lab/" class="game-card" data-game="math-tricks-lab" data-category="math">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #170817, #3d163d);">
+          <img
+            src="/games/math-tricks-lab/assets/icons/icon.svg"
+            alt="Math Tricks Lab icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Math Tricks Lab</h2>
+          <p class="game-card__desc">Learn classic mental-math shortcuts (×11, ×9 fingers, squares ending in 5, Chinese line multiplication) and drill them</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/games/mental-math-sprint/" class="game-card" data-game="mental-math-sprint" data-category="math">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #081715, #163d3a);">
+          <img
+            src="/games/mental-math-sprint/assets/icons/icon.svg"
+            alt="Mental Math Sprint icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Mental Math Sprint</h2>
+          <p class="game-card__desc">Timed mixed-operation speed drills that ramp up in difficulty</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/games/math-mastery/" class="game-card" data-game="math-mastery" data-category="math">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #170b08, #3d1f16);">
+          <img
+            src="/games/math-mastery/assets/icons/icon.svg"
+            alt="Math Mastery icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Math Mastery</h2>
+          <p class="game-card__desc">Multi-digit multiplication, square roots, fractions and trigonometry</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/games/shapes-colors/" class="game-card" data-game="shapes-colors" data-category="learning">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #081619, #163540);">
+          <img
+            src="/games/shapes-colors/assets/icons/icon.svg"
+            alt="Shapes & Colors icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Shapes & Colors</h2>
+          <p class="game-card__desc">Learn shapes and colors through simple matching games</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/games/counting-fun/" class="game-card" data-game="counting-fun" data-category="learning">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #170f08, #3d2a16);">
+          <img
+            src="/games/counting-fun/assets/icons/icon.svg"
+            alt="Counting Fun icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Counting Fun</h2>
+          <p class="game-card__desc">Counting and number recognition for early learners</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/games/pattern-play/" class="game-card" data-game="pattern-play" data-category="learning">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #170a11, #3d1628);">
+          <img
+            src="/games/pattern-play/assets/icons/icon.svg"
+            alt="Pattern Play icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Pattern Play</h2>
+          <p class="game-card__desc">Spot the pattern and figure out what comes next</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/games/wonder-why/" class="game-card" data-game="wonder-why" data-category="learning">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #0b1708, #1c3d16);">
+          <img
+            src="/games/wonder-why/assets/icons/icon.svg"
+            alt="Wonder Why icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Wonder Why</h2>
+          <p class="game-card__desc">Fun science facts about animals, weather and the world</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/games/kind-hearts/" class="game-card" data-game="kind-hearts" data-category="learning">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #170b0f, #3d1c26);">
+          <img
+            src="/games/kind-hearts/assets/icons/icon.svg"
+            alt="Kind Hearts icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Kind Hearts</h2>
+          <p class="game-card__desc">Simple lessons in kindness, sharing and feelings</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/games/duas-builder/" class="game-card" data-game="duas-builder" data-category="islamic">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #081416, #163538);">
+          <img
+            src="/games/duas-builder/assets/icons/icon.svg"
+            alt="Duas Builder icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Duas Builder</h2>
+          <p class="game-card__desc">Learn short daily duas by building each one word by word</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/games/juz-amma-match/" class="game-card" data-game="juz-amma-match" data-category="islamic">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #141208, #3d3816);">
+          <img
+            src="/games/juz-amma-match/assets/icons/icon.svg"
+            alt="Quran Juz Amma Match icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Quran Juz Amma Match</h2>
+          <p class="game-card__desc">Learn short surahs from Juz' Amma by matching each name to its meaning</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/games/memory-match/" class="game-card" data-game="memory-match" data-category="learning">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #170d08, #3d2416);">
+          <img
+            src="/games/memory-match/assets/icons/icon.svg"
+            alt="Memory Match icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Memory Match</h2>
+          <p class="game-card__desc">Flip the cards and match each picture to its name</p>
           <span class="game-card__install-badge">📲 Open game to install (optional)</span>
         </div>
       </a>
@@ -294,6 +508,38 @@
         }
       }
       renderAuthChip();
+
+      // Category filter — remembers the last choice per visitor so
+      // returning to the hub keeps their filter instead of resetting to "All".
+      (function initCategoryFilter() {
+        const filterBar = document.getElementById('categoryFilter');
+        const grid = document.getElementById('gameGrid');
+        if (!filterBar || !grid) return;
+        const cards = Array.from(grid.querySelectorAll('.game-card[data-category]'));
+        const buttons = Array.from(filterBar.querySelectorAll('[data-category-filter]'));
+        const STORE_KEY = 'darsislam:hub-category-filter';
+
+        function applyFilter(category) {
+          cards.forEach((card) => {
+            card.hidden = category !== 'all' && card.getAttribute('data-category') !== category;
+          });
+          buttons.forEach((btn) => {
+            btn.classList.toggle('is-active', btn.dataset.categoryFilter === category);
+          });
+        }
+
+        buttons.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const category = btn.dataset.categoryFilter;
+            try { localStorage.setItem(STORE_KEY, category); } catch {}
+            applyFilter(category);
+          });
+        });
+
+        let saved = 'all';
+        try { saved = localStorage.getItem(STORE_KEY) || 'all'; } catch {}
+        if (buttons.some((btn) => btn.dataset.categoryFilter === saved)) applyFilter(saved);
+      })();
 
       (async () => {
       // Init sync / auth — wrapped so a failing API never blocks ads or UI
