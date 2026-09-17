@@ -1,19 +1,4 @@
-import Phaser from 'phaser';
-import { QuizScene } from '@shared/quiz-kit';
+import { QuizScene, bootQuizGame } from '@shared/quiz-kit';
 import { MenuScene } from './scenes/MenuScene';
 
-const config: Phaser.Types.Core.GameConfig = {
-  type: Phaser.AUTO,
-  parent: 'game',
-  width: 720,
-  height: 1280,
-  backgroundColor: '#171208',
-  scale: {
-    mode: Phaser.Scale.FIT,
-    autoCenter: Phaser.Scale.CENTER_BOTH,
-  },
-  scene: [new MenuScene(), new QuizScene()],
-};
-
-// eslint-disable-next-line no-new
-new Phaser.Game(config);
+bootQuizGame('#171208', [new MenuScene(), new QuizScene()]);

@@ -402,3 +402,24 @@ export function createButton(
 
   return { container, text, bg };
 }
+
+/**
+ * The Phaser.Game bootstrap every quiz-kit game duplicated identically —
+ * fixed 720x1280 portrait canvas, FIT-scaled and centered. Callers supply
+ * only their background color and scene list (already-instantiated, e.g.
+ * `[new MenuScene(), new QuizScene()]`).
+ */
+export function bootQuizGame(backgroundColor: string, scenes: Phaser.Scene[]): Phaser.Game {
+  return new Phaser.Game({
+    type: Phaser.AUTO,
+    parent: 'game',
+    width: 720,
+    height: 1280,
+    backgroundColor,
+    scale: {
+      mode: Phaser.Scale.FIT,
+      autoCenter: Phaser.Scale.CENTER_BOTH,
+    },
+    scene: scenes,
+  });
+}
