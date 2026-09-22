@@ -45,6 +45,10 @@ einzelner statischer Ordner, überall einsetzbar, wo statische Dateien
 ausgeliefert werden. Die App spricht direkt aus dem Browser mit Supabase;
 in der Produktion muss kein Serverprozess laufen.
 
+Nach dem Ausführen der SQL-Migrationen sind außerdem zwei Supabase-**Dashboard**-Einstellungen (kein SQL) nötig, bevor Konten funktionieren:
+- **Authentication → Providers**: bestätige, dass E-Mail (Magic Link) aktiviert ist, und aktiviere **Anonymous sign-ins** (nötig für den E-Mail-losen Schüler-Beitritt).
+- **Authentication → Emails**: richte einen echten SMTP-Anbieter ein, bevor du dich über reines Testen hinaus darauf verlässt — der eingebaute Absender von Supabase hat strenge Ratenlimits.
+
 **Docker** (schnellster Weg zum Self-Hosting — baut die Seite und serviert sie mit nginx, im Container läuft sonst nichts):
 
 ```bash

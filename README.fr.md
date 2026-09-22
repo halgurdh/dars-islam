@@ -45,6 +45,10 @@ seul dossier statique, déployable partout où des fichiers statiques peuvent
 être servis. L'application communique directement avec Supabase depuis le
 navigateur ; aucun processus serveur à faire tourner en production.
 
+Après avoir exécuté les migrations SQL, deux réglages du **tableau de bord** Supabase (pas du SQL) sont aussi nécessaires pour que les comptes fonctionnent :
+- **Authentication → Providers** : confirme que l'e-mail (lien magique) est activé, et active **Anonymous sign-ins** (nécessaire pour le parcours d'inscription des élèves sans e-mail).
+- **Authentication → Emails** : configure un vrai fournisseur SMTP avant de t'y fier au-delà de tests — l'expéditeur intégré de Supabase a des limites de débit strictes.
+
 **Docker** (le moyen le plus rapide de s'auto-héberger — construit le site et le sert avec nginx, rien d'autre ne tourne dans le conteneur) :
 
 ```bash

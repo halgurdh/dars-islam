@@ -45,6 +45,10 @@ npm test                     # ejecutar la suite de pruebas
 estáticos. La app habla directamente con Supabase desde el navegador; no
 hay ningún proceso de servidor que ejecutar en producción.
 
+Después de ejecutar las migraciones SQL, también se necesitan dos ajustes del **panel de control** de Supabase (no SQL) para que las cuentas funcionen:
+- **Authentication → Providers**: confirma que el correo (enlace mágico) esté habilitado, y activa **Anonymous sign-ins** (necesario para el flujo de unión de alumnos sin correo).
+- **Authentication → Emails**: configura un proveedor SMTP real antes de confiar en esto más allá de pruebas — el remitente integrado de Supabase tiene límites de frecuencia estrictos.
+
 **Docker** (la forma más rápida de autoalojarlo — construye el sitio y lo sirve con nginx, no se ejecuta nada más en el contenedor):
 
 ```bash

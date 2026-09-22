@@ -45,6 +45,10 @@ single static folder, deployable anywhere that serves static files. The
 app talks to Supabase directly from the browser; there's no server process
 to run in production.
 
+After running the SQL migrations, two Supabase **dashboard** settings (not SQL) are also required before accounts work:
+- **Authentication → Providers**: confirm Email (magic link) is enabled, and enable **Anonymous sign-ins** (required for the no-email student join flow).
+- **Authentication → Emails**: set up a real SMTP provider before relying on this beyond testing — Supabase's built-in sender has strict rate limits.
+
 **Docker** (fastest way to self-host — builds the site and serves it with nginx, nothing else runs in the container):
 
 ```bash

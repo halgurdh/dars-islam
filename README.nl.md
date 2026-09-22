@@ -45,6 +45,10 @@ statische map, overal te deployen waar statische bestanden worden geserveerd.
 De app praat rechtstreeks vanuit de browser met Supabase; er hoeft geen
 serverproces in productie te draaien.
 
+Na het uitvoeren van de SQL-migraties zijn er ook twee Supabase **dashboard**-instellingen nodig (geen SQL) voordat accounts werken:
+- **Authentication → Providers**: bevestig dat E-mail (magic link) is ingeschakeld, en schakel **Anonymous sign-ins** in (nodig voor de leerlingflow zonder e-mail).
+- **Authentication → Emails**: stel een echte SMTP-provider in voordat je hier voor meer dan testen op vertrouwt — de ingebouwde afzender van Supabase heeft strikte ratelimieten.
+
 **Docker** (snelste manier om self-hosted te draaien — bouwt de site en serveert 'm met nginx, er draait verder niets in de container):
 
 ```bash
