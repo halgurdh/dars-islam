@@ -157,3 +157,53 @@ export function generateSequenceRound(difficulty: Difficulty, count: number): Se
   const problems = distinctMoneyProblems(difficulty, count).sort((a, b) => a.value - b.value);
   return problems.map((p, i) => ({ id: i, label: p.label }));
 }
+
+// This game's "items" are procedurally generated math problems, not a
+// fixed vocabulary list — so True/False and Fill-in-the-Blank are adapted
+// here (rather than reusing shared/quiz-variants.ts's item-list-based
+// helpers) to work on a generated {label, value} problem instead. Listen &
+// Identify and Flashcard Review are skipped for this game: there's no
+// Arabic audio to identify and no deck of fixed terms to review, so both
+// would be a forced fit for a procedural math format (see MenuScene.ts).
+
+/** Pairs a generated money problem with either its real answer (true) or a
+ *  deliberately wrong one (false), as a raw {equation, isTrue} fact — the
+ *  caller applies its own localized phrasing before turning it into a
+ *  QuizQuestion via shared/quiz-variants.ts's toTrueFalseQuestion(). */
+export function generateTrueFalseStatement(difficulty: Difficulty): { equation: string; isTrue: boolean } {
+  const problem = moneyProblem(difficulty);
+  const isTrue = Math.random() < 0.5;
+  let statedValue = problem.value;
+  if (!isTrue) {
+    const delta = randInt(1, Math.max(2, Math.round(problem.value * 0.2)));
+    statedValue = Math.random() < 0.5 ? problem.value + delta : Math.max(0, problem.value - delta);
+    if (statedValue === problem.value) statedValue += 1;
+  }
+  return { equation: `${problem.label} = $${statedValue}`, isTrue };
+}
+
+const DIGIT_POOL = '0123456789';
+
+/** Masks one digit of a generated problem's numeric answer (e.g. 25 →
+ *  "2_", correct "5") — the digit equivalent of quiz-variants.ts's
+ *  letter-blanking, since this game's answers are numbers, not words. */
+function blankOneDigit(value: number): { prompt: string; correctDigit: string } {
+  const str = String(value);
+  const idx = randInt(0, str.length - 1);
+  const correctDigit = str[idx];
+  return { prompt: str.slice(0, idx) + '_' + str.slice(idx + 1), correctDigit };
+}
+
+function buildDigitChoices(correctDigit: string): { choices: string[]; correctIndex: number } {
+  const set = new Set<string>([correctDigit]);
+  while (set.size < 4) set.add(DIGIT_POOL[randInt(0, DIGIT_POOL.length - 1)]);
+  const arr = shuffle([...set]);
+  return { choices: arr, correctIndex: arr.indexOf(correctDigit) };
+}
+
+export function generateFillBlankQuestion(difficulty: Difficulty): QuizQuestion {
+  const problem = moneyProblem(difficulty);
+  const blanked = blankOneDigit(problem.value);
+  const { choices, correctIndex } = buildDigitChoices(blanked.correctDigit);
+  return { prompt: `${problem.label} = $${blanked.prompt}`, choices, correctIndex };
+}

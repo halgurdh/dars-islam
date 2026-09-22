@@ -33,6 +33,10 @@ export interface QuizQuestion {
   sub?: string;
   choices: string[];
   correctIndex: number;
+  /** Optional: audio to auto-play for this question — used by "Listen &
+   *  Identify"-style modes via onQuestionShown, which receives this same
+   *  question object. */
+  speak?: { text: string; lang: string };
 }
 
 export interface QuizStrings {
@@ -55,9 +59,35 @@ export interface QuizRunConfig {
   menuSceneKey?: string;
   /** Optional per-question countdown; a timeout counts as a wrong answer. */
   timeLimitMs?: number;
+  /** Optional: called right after each question renders — used by "Listen &
+   *  Identify"-style modes to auto-play the prompt's audio instead of
+   *  showing text. Receives the question and its index. */
+  onQuestionShown?: (question: QuizQuestion, index: number) => void;
+  /** Optional: if set (together with onQuestionShown), shows a small replay
+   *  button that re-invokes onQuestionShown for the current question. */
+  replayLabel?: string;
 }
 
 const ADVANCE_DELAY_MS = 900;
+
+// Most quiz content here is short (a number, a name, a word) but a few
+// games' content is full sentences (e.g. True/False statements built from a
+// dua's whole translation) — those would otherwise overflow the fixed-size
+// prompt/choice boxes and overlap neighboring rows. Scaling the font down
+// by length keeps both cases readable without needing per-game layout code.
+function promptFontSize(text: string): string {
+  if (text.length <= 20) return '54px';
+  if (text.length <= 50) return '36px';
+  if (text.length <= 100) return '26px';
+  return '20px';
+}
+
+function choiceFontSize(text: string): string {
+  if (text.length <= 15) return '30px';
+  if (text.length <= 35) return '22px';
+  if (text.length <= 60) return '17px';
+  return '14px';
+}
 
 export class QuizScene extends Phaser.Scene {
   private cfg!: QuizRunConfig;
@@ -160,6 +190,13 @@ export class QuizScene extends Phaser.Scene {
       wordWrap: { width: width * 0.82 },
     }).setOrigin(0.5);
 
+    // "Listen & Identify" mode: the prompt text doubles as a tap-to-replay
+    // button instead of showing the answer in writing.
+    if (this.cfg.replayLabel) {
+      this.promptText.setInteractive({ useHandCursor: true });
+      this.promptText.on('pointerdown', () => this.cfg.onQuestionShown?.(this.currentQuestion, this.index));
+    }
+
     if (this.cfg.timeLimitMs) {
       const barY = this.scale.height * QuizScene.TIMER_Y_FRAC;
       const barW = width * 0.7;
@@ -179,7 +216,9 @@ export class QuizScene extends Phaser.Scene {
     this.locked = false;
     this.currentQuestion = this.cfg.generateQuestion(this.index);
     this.refreshHud();
-    this.promptText.setText(this.currentQuestion.prompt);
+    const promptStr = this.cfg.replayLabel ?? this.currentQuestion.prompt;
+    this.promptText.setText(promptStr);
+    this.promptText.setFontSize(promptFontSize(promptStr));
     this.subText.setText(this.currentQuestion.sub ?? '');
 
     this.choiceViews.forEach((v) => v.container.destroy());
@@ -202,6 +241,7 @@ export class QuizScene extends Phaser.Scene {
     });
 
     this.startTimer();
+    this.cfg.onQuestionShown?.(this.currentQuestion, this.index);
   }
 
   private createChoice(
@@ -225,7 +265,7 @@ export class QuizScene extends Phaser.Scene {
     // instead of overflowing the button — numeric answers stay one line.
     const text = this.add.text(0, 0, label, {
       fontFamily,
-      fontSize: '30px',
+      fontSize: choiceFontSize(label),
       fontStyle: 'bold',
       color: theme.text,
       align: 'center',

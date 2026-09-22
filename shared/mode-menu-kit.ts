@@ -16,6 +16,8 @@ import type { QuizQuestion, QuizStrings } from './quiz-kit';
 import type { MatchTheme, MatchItem, MatchStrings } from './match-kit';
 import { getMatchSfx } from './match-kit';
 import type { SequenceTheme, SequenceStrings, SequenceItem } from './sequence-kit';
+import type { FlashcardTheme, FlashcardItem, FlashcardStrings } from './flashcard-kit';
+import { speak } from './tts';
 
 /** Combined theme shape so one game can define a single theme object usable by every mode. */
 export type GameTheme = QuizTheme & Partial<MatchTheme> & Partial<SequenceTheme>;
@@ -251,6 +253,103 @@ export function sequenceMode(opts: {
           fontFamily: opts.fontFamily,
           strings: opts.strings(),
           generateRound: d.generateRound,
+          menuSceneKey: opts.homeSceneKey ?? 'MenuScene',
+        });
+      },
+    })),
+  };
+}
+
+// "Listen & Identify" and "Fill-in-the-Blank" both reuse QuizScene as-is —
+// Fill-in-the-Blank is just quizMode() called again with a blank-style
+// prompt, and "True/False" is the same trick with choices fixed to
+// [trueLabel, falseLabel]. Neither needs a builder here; a game just calls
+// quizMode() a second/third time with a different generateQuestion and mode
+// id. Listen & Identify is the one variant that needs real wiring (it plays
+// audio instead of showing the prompt as text), via QuizScene's
+// onQuestionShown/replayLabel hooks — hence this one extra builder.
+
+export interface ListenModeDifficulty {
+  label: () => string;
+  totalQuestions: number;
+  /** Each returned QuizQuestion must set `speak` — the audio to auto-play,
+   *  usually the Arabic text the player must identify from the (written,
+   *  non-Arabic) choices on screen. */
+  generateQuestion: (index: number) => QuizQuestion;
+}
+
+export function listenMode(opts: {
+  id?: string;
+  label: () => string;
+  icon?: string;
+  gameId: string;
+  theme: QuizTheme;
+  fontFamily: string;
+  strings: () => QuizStrings;
+  /** Shown as the tap-to-replay prompt, e.g. "🔊 Tap to hear again". */
+  replayLabel: () => string;
+  difficulties: ListenModeDifficulty[];
+  quizSceneKey?: string;
+  homeSceneKey?: string;
+}): GameMode {
+  return {
+    id: opts.id ?? 'listen',
+    label: opts.label,
+    icon: opts.icon,
+    difficulties: opts.difficulties.map((d) => ({
+      label: d.label,
+      onSelect: (scene: Phaser.Scene) => {
+        scene.scene.start(opts.quizSceneKey ?? 'Quiz', {
+          gameId: opts.gameId,
+          totalQuestions: d.totalQuestions,
+          theme: opts.theme,
+          fontFamily: opts.fontFamily,
+          strings: opts.strings(),
+          generateQuestion: d.generateQuestion,
+          replayLabel: opts.replayLabel(),
+          onQuestionShown: (question: QuizQuestion) => {
+            if (question.speak) void speak(question.speak.text, question.speak.lang);
+          },
+          menuSceneKey: opts.homeSceneKey ?? 'MenuScene',
+        });
+      },
+    })),
+  };
+}
+
+export interface FlashcardModeDifficulty {
+  label: () => string;
+  /** A function, not a plain array — called fresh each time this
+   *  difficulty is selected, so the deck's text picks up the *current*
+   *  language rather than being baked in at module-load time. */
+  cards: () => FlashcardItem[];
+}
+
+export function flashcardMode(opts: {
+  id?: string;
+  label: () => string;
+  icon?: string;
+  gameId: string;
+  theme: FlashcardTheme;
+  fontFamily: string;
+  strings: () => FlashcardStrings;
+  difficulties: FlashcardModeDifficulty[];
+  flashcardSceneKey?: string;
+  homeSceneKey?: string;
+}): GameMode {
+  return {
+    id: opts.id ?? 'flashcard',
+    label: opts.label,
+    icon: opts.icon,
+    difficulties: opts.difficulties.map((d) => ({
+      label: d.label,
+      onSelect: (scene: Phaser.Scene) => {
+        scene.scene.start(opts.flashcardSceneKey ?? 'Flashcard', {
+          gameId: opts.gameId,
+          theme: opts.theme,
+          fontFamily: opts.fontFamily,
+          strings: opts.strings(),
+          cards: d.cards(),
           menuSceneKey: opts.homeSceneKey ?? 'MenuScene',
         });
       },

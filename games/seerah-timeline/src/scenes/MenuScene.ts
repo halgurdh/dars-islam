@@ -2,9 +2,11 @@ import { COLORS, FONT } from '../theme';
 import { DIFFICULTIES, EVENTS, generateRound } from '../questions';
 import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { t } from '../i18n';
-import { createModeMenuScene, matchMode, quizMode, sequenceMode } from '@shared/mode-menu-kit';
+import { createModeMenuScene, matchMode, quizMode, sequenceMode, flashcardMode } from '@shared/mode-menu-kit';
 import type { MatchItem } from '@shared/match-kit';
 import type { QuizQuestion } from '@shared/quiz-kit';
+import type { FlashcardItem } from '@shared/flashcard-kit';
+import { fillBlankWordQuestion, trueFalseStatement, toTrueFalseQuestion } from '@shared/quiz-variants';
 
 const GAME_ID = 'seerah-timeline';
 
@@ -35,6 +37,39 @@ function generateQuizQuestion(): QuizQuestion {
     choices,
     correctIndex: choices.indexOf(correct.era),
   };
+}
+
+// seerah-timeline's events have no per-item Arabic text or dedicated audio
+// content (EVENTS is just {label, era} in English) — unlike the other
+// games' Arabic-recognition "Listen & Identify" mode, there's nothing
+// meaningful to have the player identify by ear here, so that mode is
+// intentionally not wired up for this game (see report).
+
+function generateFlashcardDeck(): FlashcardItem[] {
+  return EVENTS.map((e) => ({
+    id: e.id,
+    primary: e.label,
+    meaning: e.era,
+  }));
+}
+
+function generateTrueFalseQuestion(): QuizQuestion {
+  const tf = trueFalseStatement(
+    EVENTS,
+    (e) => e.label,
+    (e) => e.era,
+    (label, era) => t().trueFalseStatement(label, era)
+  );
+  return toTrueFalseQuestion(tf, t().trueLabel, t().falseLabel);
+}
+
+// No dedicated transliteration field exists for this game's events, so
+// Fill-in-the-Blank masks one letter of the event's own English label
+// instead (e.g. "Born in Makkah" -> "B_rn in Makkah"), with its era shown
+// as context underneath — per the task's guidance for data shapes with no
+// romanized name field.
+function generateFillBlankQuestion(): QuizQuestion {
+  return fillBlankWordQuestion(EVENTS, (e) => e.label, (e) => e.era);
 }
 
 export const MenuScene = createModeMenuScene({
@@ -107,6 +142,71 @@ export const MenuScene = createModeMenuScene({
         { label: () => t().easy, totalQuestions: 6, generateQuestion: generateQuizQuestion },
         { label: () => t().medium, totalQuestions: 8, generateQuestion: generateQuizQuestion },
         { label: () => t().hard, totalQuestions: 10, generateQuestion: generateQuizQuestion },
+      ],
+    }),
+    flashcardMode({
+      label: () => t().modeFlashcard,
+      icon: '🗂️',
+      gameId: GAME_ID,
+      theme: COLORS,
+      fontFamily: FONT,
+      strings: () => ({
+        menu: t().menu,
+        progress: t().flashcardProgress,
+        hear: t().hear,
+        knowIt: t().flashcardKnowIt,
+        stillLearning: t().flashcardStillLearning,
+        wellDone: t().wellDone,
+        roundSummary: t().flashcardRoundSummary,
+        playAgain: t().playAgain,
+        backToMenu: t().backToMenu,
+      }),
+      difficulties: [
+        { label: () => t().hard, cards: generateFlashcardDeck },
+      ],
+    }),
+    quizMode({
+      id: 'truefalse',
+      label: () => t().modeTrueFalse,
+      icon: '✓✗',
+      gameId: GAME_ID,
+      theme: COLORS,
+      fontFamily: FONT,
+      strings: () => ({
+        round: t().round,
+        score: t().score,
+        menu: t().menu,
+        wellDone: t().wellDone,
+        roundSummary: t().quizRoundSummary,
+        playAgain: t().playAgain,
+        backToMenu: t().backToMenu,
+      }),
+      difficulties: [
+        { label: () => t().easy, totalQuestions: 6, generateQuestion: generateTrueFalseQuestion },
+        { label: () => t().medium, totalQuestions: 8, generateQuestion: generateTrueFalseQuestion },
+        { label: () => t().hard, totalQuestions: 10, generateQuestion: generateTrueFalseQuestion },
+      ],
+    }),
+    quizMode({
+      id: 'fillblank',
+      label: () => t().modeFillBlank,
+      icon: '✏️',
+      gameId: GAME_ID,
+      theme: COLORS,
+      fontFamily: FONT,
+      strings: () => ({
+        round: t().round,
+        score: t().score,
+        menu: t().menu,
+        wellDone: t().wellDone,
+        roundSummary: t().quizRoundSummary,
+        playAgain: t().playAgain,
+        backToMenu: t().backToMenu,
+      }),
+      difficulties: [
+        { label: () => t().easy, totalQuestions: 6, generateQuestion: generateFillBlankQuestion },
+        { label: () => t().medium, totalQuestions: 8, generateQuestion: generateFillBlankQuestion },
+        { label: () => t().hard, totalQuestions: 10, generateQuestion: generateFillBlankQuestion },
       ],
     }),
   ],

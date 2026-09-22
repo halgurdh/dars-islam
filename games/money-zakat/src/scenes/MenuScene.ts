@@ -1,9 +1,26 @@
 import { COLORS, FONT } from '../theme';
-import { DIFFICULTIES, generateQuestion, generateMatchItems, generateSequenceRound } from '../questions';
+import { DIFFICULTIES, generateQuestion, generateMatchItems, generateSequenceRound, generateTrueFalseStatement, generateFillBlankQuestion, type Difficulty } from '../questions';
 import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { t } from '../i18n';
 import { createModeMenuScene, quizMode, sequenceMode, type GameMode } from '@shared/mode-menu-kit';
 import { getMatchSfx } from '@shared/match-kit';
+import { toTrueFalseQuestion } from '@shared/quiz-variants';
+import type { QuizQuestion } from '@shared/quiz-kit';
+
+// True/False and Fill-in-the-Blank are adapted for this procedural math
+// game (a generated equation to judge, or a masked digit of its answer)
+// rather than reusing shared/quiz-variants.ts's item-list helpers — see
+// questions.ts for why. Listen & Identify and Flashcard Review are skipped
+// entirely: this game has no fixed Arabic vocabulary or Arabic audio, so
+// neither mode has a natural fit here (unlike fiqh-essentials/asma-match).
+function generateTrueFalseQuestion(difficulty: Difficulty): QuizQuestion {
+  const tf = generateTrueFalseStatement(difficulty);
+  return toTrueFalseQuestion(
+    { statement: t().trueFalseStatement(tf.equation), isTrue: tf.isTrue },
+    t().trueLabel,
+    t().falseLabel
+  );
+}
 
 const GAME_ID = 'money-zakat';
 
@@ -96,6 +113,50 @@ export const MenuScene = createModeMenuScene({
         label: TIER_LABELS[i],
         totalRounds: 4,
         generateRound: () => generateSequenceRound(d, [4, 5, 6][i] ?? 4),
+      })),
+    }),
+    quizMode({
+      id: 'truefalse',
+      label: () => t().modeTrueFalse,
+      icon: '✓✗',
+      gameId: GAME_ID,
+      theme: COLORS,
+      fontFamily: FONT,
+      strings: () => ({
+        round: t().round,
+        score: t().score,
+        menu: t().menu,
+        wellDone: t().wellDone,
+        roundSummary: t().roundSummary,
+        playAgain: t().playAgain,
+        backToMenu: t().backToMenu,
+      }),
+      difficulties: DIFFICULTIES.map((d) => ({
+        label: QUIZ_LABELS[d.id],
+        totalQuestions: d.totalQuestions,
+        generateQuestion: () => generateTrueFalseQuestion(d),
+      })),
+    }),
+    quizMode({
+      id: 'fillblank',
+      label: () => t().modeFillBlank,
+      icon: '✏️',
+      gameId: GAME_ID,
+      theme: COLORS,
+      fontFamily: FONT,
+      strings: () => ({
+        round: t().round,
+        score: t().score,
+        menu: t().menu,
+        wellDone: t().wellDone,
+        roundSummary: t().roundSummary,
+        playAgain: t().playAgain,
+        backToMenu: t().backToMenu,
+      }),
+      difficulties: DIFFICULTIES.map((d) => ({
+        label: QUIZ_LABELS[d.id],
+        totalQuestions: d.totalQuestions,
+        generateQuestion: () => generateFillBlankQuestion(d),
       })),
     }),
   ],

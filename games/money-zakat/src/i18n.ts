@@ -30,6 +30,13 @@ interface Strings {
   mistakes: (n: number) => string;
   instruction: string;
   sequenceRoundSummary: (perfect: number, total: number) => string;
+
+  modeTrueFalse: string;
+  trueLabel: string;
+  falseLabel: string;
+  trueFalseStatement: (equation: string) => string;
+
+  modeFillBlank: string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
@@ -62,6 +69,13 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Mistakes: ${n}`,
     instruction: 'Tap the amounts from smallest to largest',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rounds perfect`,
+
+    modeTrueFalse: '✓✗ True/False',
+    trueLabel: 'True',
+    falseLabel: 'False',
+    trueFalseStatement: (equation) => `${equation} — true or false?`,
+
+    modeFillBlank: '✏️ Fill in the Blank',
   },
   nl: {
     title: 'Money & Zakat Math',
@@ -92,6 +106,13 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Fouten: ${n}`,
     instruction: 'Tik de bedragen van klein naar groot aan',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondes perfect`,
+
+    modeTrueFalse: '✓✗ Waar/Niet waar',
+    trueLabel: 'Waar',
+    falseLabel: 'Niet waar',
+    trueFalseStatement: (equation) => `${equation} — waar of niet waar?`,
+
+    modeFillBlank: '✏️ Vul het Cijfer In',
   },
   de: {
     title: 'Money & Zakat Math',
@@ -122,6 +143,13 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Fehler: ${n}`,
     instruction: 'Tippe die Beträge vom kleinsten zum größten an',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} Runden perfekt`,
+
+    modeTrueFalse: '✓✗ Wahr/Falsch',
+    trueLabel: 'Wahr',
+    falseLabel: 'Falsch',
+    trueFalseStatement: (equation) => `${equation} — wahr oder falsch?`,
+
+    modeFillBlank: '✏️ Ziffer Einsetzen',
   },
   es: {
     title: 'Money & Zakat Math',
@@ -152,6 +180,13 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Errores: ${n}`,
     instruction: 'Toca las cantidades de menor a mayor',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondas perfectas`,
+
+    modeTrueFalse: '✓✗ Verdadero/Falso',
+    trueLabel: 'Verdadero',
+    falseLabel: 'Falso',
+    trueFalseStatement: (equation) => `${equation} — ¿verdadero o falso?`,
+
+    modeFillBlank: '✏️ Completa el Dígito',
   },
   fr: {
     title: 'Money & Zakat Math',
@@ -182,6 +217,13 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Erreurs : ${n}`,
     instruction: 'Touche les montants du plus petit au plus grand',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
+
+    modeTrueFalse: '✓✗ Vrai/Faux',
+    trueLabel: 'Vrai',
+    falseLabel: 'Faux',
+    trueFalseStatement: (equation) => `${equation} — vrai ou faux ?`,
+
+    modeFillBlank: '✏️ Complète le Chiffre',
   },
   ar: {
     title: 'Money & Zakat Math',
@@ -212,6 +254,13 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `الأخطاء: ${n}`,
     instruction: 'اضغط على المبالغ من الأصغر إلى الأكبر',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولات مثالية`,
+
+    modeTrueFalse: '✓✗ صح/خطأ',
+    trueLabel: 'صح',
+    falseLabel: 'خطأ',
+    trueFalseStatement: (equation) => `${equation} — صح أم خطأ؟`,
+
+    modeFillBlank: '✏️ أكمل الرقم',
   },
 };
 

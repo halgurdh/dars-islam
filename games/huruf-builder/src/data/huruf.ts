@@ -13,7 +13,10 @@ export interface BuilderItem {
 // The 28 primary letters of the Arabic alphabet. `arabic` is each letter's
 // own full, diacritized name (e.g. ب → باء "Ba"), not the bare glyph — that
 // gives real spelling pieces for the builder mechanic instead of a
-// single-tile non-task. Order follows the traditional abjad sequence.
+// single-tile non-task. Order follows the modern alphabetical (hijai)
+// sequence grouped by letter shape (alif-ba-ta-tha, jim-ha-kha, ...) —
+// this is the standard dictionary/school order, not the older abjad
+// numeral sequence (alif-ba-jim-dal-ha-waw-zay...).
 //
 // The pronunciation clues reference whichever language actually has the
 // closest native sound (e.g. Spanish "z"/soft "d" for the English "th"
