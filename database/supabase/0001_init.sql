@@ -359,10 +359,9 @@ begin
     raise exception 'Already in a class';
   end if;
 
-  select c.*, s.name into v_class, v_school_name
-    from public.classes c join public.schools s on s.id = c.school_id
-    where c.join_code = upper(trim(p_join_code));
+  select c.* into v_class from public.classes c where c.join_code = upper(trim(p_join_code));
   if not found then raise exception 'Class code not found'; end if;
+  select s.name into v_school_name from public.schools s where s.id = v_class.school_id;
 
   v_clean_name := left(trim(regexp_replace(p_display_name, '[^[:alnum:][:space:]_.''\-]', '', 'g')), 24);
   if v_clean_name = '' then raise exception 'A display name is required'; end if;

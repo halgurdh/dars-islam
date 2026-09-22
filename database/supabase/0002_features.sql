@@ -218,7 +218,11 @@ grant execute on function public.list_class_assignments(uuid) to authenticated;
 -- message/org type, so a student (who has no direct read access to
 -- `schools` — only school_members/teachers do) can see it via this
 -- already-SECURITY-DEFINER, student-facing RPC instead of a new grant.
-create or replace function public.my_class_standing()
+-- Return shape changed (2 new columns), so this must be dropped first —
+-- CREATE OR REPLACE FUNCTION cannot change a function's OUT-parameter row type.
+drop function if exists public.my_class_standing();
+
+create function public.my_class_standing()
 returns table (
   in_class boolean, class_name text, school_name text, rank int, class_size int, avg_xp numeric, my_xp int,
   org_type text, welcome_message text
