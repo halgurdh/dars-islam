@@ -8,90 +8,161 @@ interface Strings {
   medium: string;
   hard: string;
   menu: string;
-  moves: (n: number) => string;
+  playAgain: string;
   wellDone: string;
-  roundSummary: (pairs: number, moves: number, time: string, learned: number, total: number) => string;
-  nextLevelHint: string;
-  soundOn: string;
-  soundOff: string;
   footer: string;
+
+  modeMatch: string;
+  moves: (n: number) => string;
+  matchRoundSummary: (pairs: number, moves: number, time: string, learned: number, total: number) => string;
+  nextLevelHint: string;
+
+  modeQuiz: string;
+  round: (i: number, total: number) => string;
+  score: (n: number) => string;
+  quizRoundSummary: (score: number, total: number) => string;
+
+  modeSequence: string;
+  mistakes: (n: number) => string;
+  instruction: string;
+  sequenceRoundSummary: (perfect: number, total: number) => string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
   en: {
     title: 'Health & The Body',
-    tagline: 'Match each body part\nto what it does.',
-    easy: 'Easy · 6 pairs',
-    medium: 'Medium · 8 pairs',
-    hard: 'Hard · 10 pairs',
+    tagline: 'Match body parts, answer quizzes, or sort by\nweight — three ways to learn how your body works.',
+    easy: 'Easy · 6',
+    medium: 'Medium · 8',
+    hard: 'Hard · 10',
     menu: '☰ Menu',
-    moves: (n) => `Moves: ${n}`,
+    playAgain: 'Play Again',
     wellDone: 'Healthy habits! 💪',
-    roundSummary: (pairs, moves, time, learned, total) => `${pairs} pairs matched in ${moves} moves\nTime: ${time}\n${learned} / ${total} body parts learned overall`,
+    footer: 'Point to each part on yourself as you play — it helps it stick.',
+
+    modeMatch: 'Match',
+    moves: (n) => `Moves: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} pairs matched in ${moves} moves\nTime: ${time}\n${learned} / ${total} body parts learned overall`,
     nextLevelHint: 'Next round starting…',
-    soundOn: '🔈 Sound On',
-    soundOff: '🔇 Sound Off',
-    footer: 'Point to each part on yourself as you match it — it helps it stick.',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Question ${i}/${total}`,
+    score: (n) => `Score: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} correct`,
+
+    modeSequence: 'Weight Sort',
+    mistakes: (n) => `Mistakes: ${n}`,
+    instruction: 'Tap the body parts lightest to heaviest',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rounds perfect`,
   },
   nl: {
     title: 'Health & The Body',
-    tagline: 'Koppel elk lichaamsdeel aan\nwat het doet.',
-    easy: 'Makkelijk · 6 paren',
-    medium: 'Gemiddeld · 8 paren',
-    hard: 'Moeilijk · 10 paren',
+    tagline: 'Koppel lichaamsdelen, beantwoord quizvragen\nof sorteer op gewicht.',
+    easy: 'Makkelijk · 6',
+    medium: 'Gemiddeld · 8',
+    hard: 'Moeilijk · 10',
     menu: '☰ Menu',
-    moves: (n) => `Zetten: ${n}`,
+    playAgain: 'Opnieuw spelen',
     wellDone: 'Gezonde gewoontes! 💪',
-    roundSummary: (pairs, moves, time, learned, total) => `${pairs} paren gematcht in ${moves} zetten\nTijd: ${time}\n${learned} / ${total} lichaamsdelen in totaal geleerd`,
+    footer: 'Wijs naar elk lichaamsdeel bij jezelf terwijl je speelt — dat helpt om te onthouden.',
+
+    modeMatch: 'Koppelen',
+    moves: (n) => `Zetten: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} paren gematcht in ${moves} zetten\nTijd: ${time}\n${learned} / ${total} lichaamsdelen in totaal geleerd`,
     nextLevelHint: 'Volgende ronde begint…',
-    soundOn: '🔈 Geluid Aan',
-    soundOff: '🔇 Geluid Uit',
-    footer: 'Wijs naar elk lichaamsdeel bij jezelf terwijl je matcht — dat helpt om te onthouden.',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Vraag ${i}/${total}`,
+    score: (n) => `Score: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} goed`,
+
+    modeSequence: 'Gewicht Sorteren',
+    mistakes: (n) => `Fouten: ${n}`,
+    instruction: 'Tik de lichaamsdelen van licht naar zwaar aan',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondes perfect`,
   },
   de: {
     title: 'Health & The Body',
-    tagline: 'Ordne jedem Körperteil\nseine Funktion zu.',
-    easy: 'Leicht · 6 Paare',
-    medium: 'Mittel · 8 Paare',
-    hard: 'Schwer · 10 Paare',
+    tagline: 'Ordne Körperteile zu, beantworte Quizfragen\noder sortiere nach Gewicht.',
+    easy: 'Leicht · 6',
+    medium: 'Mittel · 8',
+    hard: 'Schwer · 10',
     menu: '☰ Menü',
-    moves: (n) => `Züge: ${n}`,
+    playAgain: 'Nochmal spielen',
     wellDone: 'Gesunde Gewohnheiten! 💪',
-    roundSummary: (pairs, moves, time, learned, total) => `${pairs} Paare gefunden in ${moves} Zügen\nZeit: ${time}\n${learned} / ${total} Körperteile insgesamt gelernt`,
+    footer: 'Zeig beim Spielen auf dich selbst — das hilft beim Merken.',
+
+    modeMatch: 'Zuordnen',
+    moves: (n) => `Züge: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} Paare gefunden in ${moves} Zügen\nZeit: ${time}\n${learned} / ${total} Körperteile insgesamt gelernt`,
     nextLevelHint: 'Nächste Runde startet…',
-    soundOn: '🔈 Ton An',
-    soundOff: '🔇 Ton Aus',
-    footer: 'Zeig beim Zuordnen auf dich selbst — das hilft beim Merken.',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Frage ${i}/${total}`,
+    score: (n) => `Punkte: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} richtig`,
+
+    modeSequence: 'Gewicht Sortieren',
+    mistakes: (n) => `Fehler: ${n}`,
+    instruction: 'Tippe die Körperteile von leicht nach schwer an',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} Runden perfekt`,
   },
   es: {
     title: 'Health & The Body',
-    tagline: 'Une cada parte del cuerpo\ncon su función.',
-    easy: 'Fácil · 6 pares',
-    medium: 'Medio · 8 pares',
-    hard: 'Difícil · 10 pares',
+    tagline: 'Empareja partes del cuerpo, responde preguntas\no ordena por peso.',
+    easy: 'Fácil · 6',
+    medium: 'Medio · 8',
+    hard: 'Difícil · 10',
     menu: '☰ Menú',
-    moves: (n) => `Movimientos: ${n}`,
+    playAgain: 'Jugar de nuevo',
     wellDone: '¡Hábitos saludables! 💪',
-    roundSummary: (pairs, moves, time, learned, total) => `${pairs} pares emparejados en ${moves} movimientos\nTiempo: ${time}\n${learned} / ${total} partes del cuerpo aprendidas en total`,
-    nextLevelHint: 'Comienza la siguiente ronda…',
-    soundOn: '🔈 Sonido Activado',
-    soundOff: '🔇 Sonido Desactivado',
     footer: 'Señala cada parte en ti mismo mientras juegas — ayuda a recordarlo.',
+
+    modeMatch: 'Emparejar',
+    moves: (n) => `Movimientos: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} pares emparejados en ${moves} movimientos\nTiempo: ${time}\n${learned} / ${total} partes del cuerpo aprendidas en total`,
+    nextLevelHint: 'Comienza la siguiente ronda…',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Pregunta ${i}/${total}`,
+    score: (n) => `Puntuación: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} correctas`,
+
+    modeSequence: 'Orden por Peso',
+    mistakes: (n) => `Errores: ${n}`,
+    instruction: 'Toca las partes del cuerpo de más ligera a más pesada',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondas perfectas`,
   },
   fr: {
     title: 'Health & The Body',
-    tagline: 'Associe chaque partie du corps\nà sa fonction.',
-    easy: 'Facile · 6 paires',
-    medium: 'Moyen · 8 paires',
-    hard: 'Difficile · 10 paires',
+    tagline: 'Associe des parties du corps, réponds à un quiz\nou trie par poids.',
+    easy: 'Facile · 6',
+    medium: 'Moyen · 8',
+    hard: 'Difficile · 10',
     menu: '☰ Menu',
-    moves: (n) => `Coups : ${n}`,
+    playAgain: 'Rejouer',
     wellDone: 'Bonnes habitudes ! 💪',
-    roundSummary: (pairs, moves, time, learned, total) => `${pairs} paires trouvées en ${moves} coups\nTemps : ${time}\n${learned} / ${total} parties du corps apprises au total`,
-    nextLevelHint: 'La manche suivante commence…',
-    soundOn: '🔈 Son Activé',
-    soundOff: '🔇 Son Désactivé',
     footer: 'Montre chaque partie sur toi en jouant — ça aide à mémoriser.',
+
+    modeMatch: 'Associer',
+    moves: (n) => `Coups : ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} paires trouvées en ${moves} coups\nTemps : ${time}\n${learned} / ${total} parties du corps apprises au total`,
+    nextLevelHint: 'La manche suivante commence…',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Question ${i}/${total}`,
+    score: (n) => `Score : ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} correctes`,
+
+    modeSequence: 'Tri par Poids',
+    mistakes: (n) => `Erreurs : ${n}`,
+    instruction: 'Touche les parties du corps de la plus légère à la plus lourde',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
 };
 

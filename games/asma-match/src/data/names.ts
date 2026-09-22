@@ -1,3 +1,5 @@
+import { getLang } from '../systems/Locale';
+
 export interface AsmaName {
   id: number;
   arabic: string;
@@ -112,3 +114,13 @@ export const ASMA_UL_HUSNA: AsmaName[] = [
   { id: 98, arabic: 'الرَّشِيد', transliteration: 'Ar-Rashid', meaningEn: 'The Guide to the Right Path', meaningNl: 'De Gids naar het Rechte Pad', meaningDe: 'Der Rechtleiter', meaningEs: 'El Guía al Camino Recto', meaningFr: 'Le Guide vers le Droit Chemin' },
   { id: 99, arabic: 'الصَّبُور', transliteration: 'As-Sabur', meaningEn: 'The Most Patient', meaningNl: 'De Meest Geduldige', meaningDe: 'Der Geduldigste', meaningEs: 'El Paciente', meaningFr: 'Le Très Patient' },
 ];
+
+export function meaningFor(name: AsmaName): string {
+  switch (getLang()) {
+    case 'nl': return name.meaningNl;
+    case 'de': return name.meaningDe;
+    case 'es': return name.meaningEs;
+    case 'fr': return name.meaningFr;
+    default: return name.meaningEn;
+  }
+}

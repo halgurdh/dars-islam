@@ -7,14 +7,26 @@ interface Strings {
   easy: string;
   medium: string;
   hard: string;
-  round: (i: number, total: number) => string;
-  score: (n: number) => string;
   menu: string;
   wellDone: string;
-  roundSummary: (score: number, total: number) => string;
   playAgain: string;
   backToMenu: string;
   footer: string;
+
+  modeQuiz: string;
+  round: (i: number, total: number) => string;
+  score: (n: number) => string;
+  roundSummary: (score: number, total: number) => string;
+
+  modeMatch: string;
+  moves: (n: number) => string;
+  matchRoundSummary: (pairs: number, moves: number, time: string) => string;
+  nextLevelHint: string;
+
+  modeSequence: string;
+  mistakes: (n: number) => string;
+  instruction: string;
+  sequenceRoundSummary: (perfect: number, total: number) => string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
@@ -24,14 +36,26 @@ const STRINGS: Record<LangMode, Strings> = {
     easy: 'Easy · up to 5',
     medium: 'Medium · up to 10',
     hard: 'Hard · up to 20',
-    round: (i, total) => `Round ${i} / ${total}`,
-    score: (n) => `Score: ${n}`,
     menu: '☰ Menu',
     wellDone: 'Well counted! 🔢',
-    roundSummary: (score, total) => `${score} / ${total} correct`,
     playAgain: '↻ Play Again',
     backToMenu: '☰ Back to Menu',
     footer: 'Count carefully, then tap the right number.',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Round ${i} / ${total}`,
+    score: (n) => `Score: ${n}`,
+    roundSummary: (score, total) => `${score} / ${total} correct`,
+
+    modeMatch: 'Match',
+    moves: (n) => `Moves: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} pairs matched in ${moves} moves\nTime: ${time}`,
+    nextLevelHint: 'Next round starting…',
+
+    modeSequence: 'Sort',
+    mistakes: (n) => `Mistakes: ${n}`,
+    instruction: 'Tap the groups from fewest to most',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rounds perfect`,
   },
   nl: {
     title: 'Counting Fun',
@@ -39,14 +63,26 @@ const STRINGS: Record<LangMode, Strings> = {
     easy: 'Makkelijk · tot 5',
     medium: 'Gemiddeld · tot 10',
     hard: 'Moeilijk · tot 20',
-    round: (i, total) => `Ronde ${i} / ${total}`,
-    score: (n) => `Score: ${n}`,
     menu: '☰ Menu',
     wellDone: 'Goed geteld! 🔢',
-    roundSummary: (score, total) => `${score} / ${total} goed`,
     playAgain: '↻ Opnieuw spelen',
     backToMenu: '☰ Terug naar menu',
     footer: 'Tel goed en tik dan op het juiste getal.',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Ronde ${i} / ${total}`,
+    score: (n) => `Score: ${n}`,
+    roundSummary: (score, total) => `${score} / ${total} goed`,
+
+    modeMatch: 'Koppelen',
+    moves: (n) => `Zetten: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} paren gematcht in ${moves} zetten\nTijd: ${time}`,
+    nextLevelHint: 'Volgende ronde begint…',
+
+    modeSequence: 'Sorteren',
+    mistakes: (n) => `Fouten: ${n}`,
+    instruction: 'Tik de groepjes van minste naar meeste aan',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondes perfect`,
   },
   de: {
     title: 'Counting Fun',
@@ -54,14 +90,26 @@ const STRINGS: Record<LangMode, Strings> = {
     easy: 'Leicht · bis 5',
     medium: 'Mittel · bis 10',
     hard: 'Schwer · bis 20',
-    round: (i, total) => `Runde ${i} / ${total}`,
-    score: (n) => `Punkte: ${n}`,
     menu: '☰ Menü',
     wellDone: 'Gut gezählt! 🔢',
-    roundSummary: (score, total) => `${score} / ${total} richtig`,
     playAgain: '↻ Nochmal spielen',
     backToMenu: '☰ Zurück zum Menü',
     footer: 'Zähle sorgfältig, dann tippe die richtige Zahl an.',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Runde ${i} / ${total}`,
+    score: (n) => `Punkte: ${n}`,
+    roundSummary: (score, total) => `${score} / ${total} richtig`,
+
+    modeMatch: 'Zuordnen',
+    moves: (n) => `Züge: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} Paare gefunden in ${moves} Zügen\nZeit: ${time}`,
+    nextLevelHint: 'Nächste Runde startet…',
+
+    modeSequence: 'Sortieren',
+    mistakes: (n) => `Fehler: ${n}`,
+    instruction: 'Tippe die Gruppen von wenigsten zu meisten an',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} Runden perfekt`,
   },
   es: {
     title: 'Counting Fun',
@@ -69,14 +117,26 @@ const STRINGS: Record<LangMode, Strings> = {
     easy: 'Fácil · hasta 5',
     medium: 'Medio · hasta 10',
     hard: 'Difícil · hasta 20',
-    round: (i, total) => `Ronda ${i} / ${total}`,
-    score: (n) => `Puntos: ${n}`,
     menu: '☰ Menú',
     wellDone: '¡Bien contado! 🔢',
-    roundSummary: (score, total) => `${score} / ${total} correctas`,
     playAgain: '↻ Jugar de nuevo',
     backToMenu: '☰ Volver al menú',
     footer: 'Cuenta con cuidado y toca el número correcto.',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Ronda ${i} / ${total}`,
+    score: (n) => `Puntos: ${n}`,
+    roundSummary: (score, total) => `${score} / ${total} correctas`,
+
+    modeMatch: 'Emparejar',
+    moves: (n) => `Movimientos: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} pares emparejados en ${moves} movimientos\nTiempo: ${time}`,
+    nextLevelHint: 'Comienza la siguiente ronda…',
+
+    modeSequence: 'Ordenar',
+    mistakes: (n) => `Errores: ${n}`,
+    instruction: 'Toca los grupos de menos a más',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondas perfectas`,
   },
   fr: {
     title: 'Counting Fun',
@@ -84,14 +144,26 @@ const STRINGS: Record<LangMode, Strings> = {
     easy: 'Facile · jusqu’à 5',
     medium: 'Moyen · jusqu’à 10',
     hard: 'Difficile · jusqu’à 20',
-    round: (i, total) => `Manche ${i} / ${total}`,
-    score: (n) => `Score : ${n}`,
     menu: '☰ Menu',
     wellDone: 'Bien compté ! 🔢',
-    roundSummary: (score, total) => `${score} / ${total} correctes`,
     playAgain: '↻ Rejouer',
     backToMenu: '☰ Retour au menu',
     footer: 'Compte bien, puis touche le bon nombre.',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Manche ${i} / ${total}`,
+    score: (n) => `Score : ${n}`,
+    roundSummary: (score, total) => `${score} / ${total} correctes`,
+
+    modeMatch: 'Associer',
+    moves: (n) => `Coups : ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} paires trouvées en ${moves} coups\nTemps : ${time}`,
+    nextLevelHint: 'La manche suivante commence…',
+
+    modeSequence: 'Trier',
+    mistakes: (n) => `Erreurs : ${n}`,
+    instruction: 'Touche les groupes du moins nombreux au plus nombreux',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
 };
 

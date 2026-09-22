@@ -1,3 +1,5 @@
+import { getLang } from '../systems/Locale';
+
 export interface SurahEntry {
   id: number;
   arabic: string;
@@ -26,3 +28,13 @@ export const JUZ_AMMA_SURAHS: SurahEntry[] = [
   { id: 11, arabic: 'الْفِيل', transliteration: 'Al-Fil', meaningEn: 'The Elephant — the story of the elephant army', meaningNl: 'De Olifant — het verhaal van het olifantenleger', meaningDe: 'Der Elefant — die Geschichte der Elefantenarmee', meaningEs: 'El Elefante — la historia del ejército de elefantes', meaningFr: "L'Éléphant — l'histoire de l'armée des éléphants" },
   { id: 12, arabic: 'الْعَصْر', transliteration: 'Al-Asr', meaningEn: 'Time — believe, do good, and be patient', meaningNl: 'De Tijd — geloven, goed doen en geduldig zijn', meaningDe: 'Die Zeit — glauben, Gutes tun und geduldig sein', meaningEs: 'El Tiempo — creer, hacer el bien y ser paciente', meaningFr: "Le Temps — croire, faire le bien et être patient" },
 ];
+
+export function meaningFor(name: SurahEntry): string {
+  switch (getLang()) {
+    case 'nl': return name.meaningNl;
+    case 'de': return name.meaningDe;
+    case 'es': return name.meaningEs;
+    case 'fr': return name.meaningFr;
+    default: return name.meaningEn;
+  }
+}

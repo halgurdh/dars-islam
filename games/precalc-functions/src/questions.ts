@@ -1,4 +1,6 @@
 import type { QuizQuestion } from '@shared/quiz-kit';
+import type { MatchItem } from '@shared/match-kit';
+import type { SequenceItem } from '@shared/sequence-kit';
 
 export interface Difficulty {
   id: string;
@@ -81,4 +83,45 @@ export function makeRunGenerator(difficulty: Difficulty): (index: number) => Qui
     if (index === 0) pool = shuffle(BANKS[difficulty.id]).slice(0, difficulty.totalQuestions);
     return buildQuestion(pool[index]);
   };
+}
+
+function randInt(min: number, max: number): number {
+  return min + Math.floor(Math.random() * (max - min + 1));
+}
+
+// Match and Sequence use "evaluate f(x)" problems instead of the Quiz
+// banks — those banks mix vocabulary ("A parabola", "Inverse functions")
+// with numbers, which isn't sortable as one set. Evaluating a function is
+// exactly what several Quiz items already test, just generated freely here.
+const FN_TEMPLATES: ((x: number) => { label: string; value: number })[] = [
+  (x) => ({ label: `f(x) = x + 3, f(${x})`, value: x + 3 }),
+  (x) => ({ label: `f(x) = 2x, f(${x})`, value: 2 * x }),
+  (x) => ({ label: `f(x) = 3x - 1, f(${x})`, value: 3 * x - 1 }),
+  (x) => ({ label: `f(x) = x², f(${x})`, value: x * x }),
+];
+
+function distinctFnProblems(count: number): { label: string; value: number }[] {
+  const used = new Set<number>();
+  const out: { label: string; value: number }[] = [];
+  let attempts = 0;
+  while (out.length < count && attempts < count * 50) {
+    attempts++;
+    const template = FN_TEMPLATES[randInt(0, FN_TEMPLATES.length - 1)];
+    const p = template(randInt(1, 10));
+    if (used.has(p.value)) continue;
+    used.add(p.value);
+    out.push(p);
+  }
+  return out;
+}
+
+export function generateMatchItems(pairs: number): MatchItem[] {
+  return distinctFnProblems(pairs).map((p, i) => ({ id: i, sideA: p.label, sideB: String(p.value) }));
+}
+
+// Sorting problems by their answer is the whole challenge — you have to
+// actually evaluate each function to know where it belongs in the order.
+export function generateSequenceRound(count: number): SequenceItem[] {
+  const problems = distinctFnProblems(count).sort((a, b) => a.value - b.value);
+  return problems.map((p, i) => ({ id: i, label: p.label }));
 }

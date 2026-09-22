@@ -1,4 +1,6 @@
 import type { QuizQuestion } from '@shared/quiz-kit';
+import type { MatchItem } from '@shared/match-kit';
+import type { SequenceItem } from '@shared/sequence-kit';
 
 export interface Difficulty {
   id: string;
@@ -106,4 +108,52 @@ export function generateQuestion(difficulty: Difficulty): QuizQuestion {
   if (difficulty.id === 'easy') return easyQuestion();
   if (difficulty.id === 'medium') return mediumQuestion();
   return hardQuestion();
+}
+
+// Match and Sequence need a purely numeric problem/value pair per
+// difficulty (the Quiz's easy tier also asks needs-vs-wants questions,
+// whose answers are words, not amounts — not sortable alongside dollars).
+interface MoneyProblem {
+  label: string;
+  value: number;
+}
+
+function moneyProblem(difficulty: Difficulty): MoneyProblem {
+  if (difficulty.id === 'easy') {
+    const haveA = [1, 2, 5, 10][randInt(0, 3)];
+    const haveB = [1, 2, 5][randInt(0, 2)];
+    return { label: `$${haveA} + $${haveB}`, value: haveA + haveB };
+  }
+  if (difficulty.id === 'medium') {
+    const price = [20, 40, 60, 80, 100, 120, 140][randInt(0, 6)];
+    const percent = [10, 20, 25, 50][randInt(0, 3)];
+    return { label: `${percent}% of $${price}`, value: (price * percent) / 100 };
+  }
+  const base = randInt(2, 50) * 40; // multiples of 40 make 2.5% a whole number
+  return { label: `$${base} saved a year`, value: (base * 2.5) / 100 };
+}
+
+function distinctMoneyProblems(difficulty: Difficulty, count: number): MoneyProblem[] {
+  const used = new Set<number>();
+  const out: MoneyProblem[] = [];
+  let attempts = 0;
+  while (out.length < count && attempts < count * 50) {
+    attempts++;
+    const p = moneyProblem(difficulty);
+    if (used.has(p.value)) continue;
+    used.add(p.value);
+    out.push(p);
+  }
+  return out;
+}
+
+export function generateMatchItems(difficulty: Difficulty, pairs: number): MatchItem[] {
+  return distinctMoneyProblems(difficulty, pairs).map((p, i) => ({ id: i, sideA: p.label, sideB: `$${p.value}` }));
+}
+
+// Sorting problems by their answer is the whole challenge — you have to
+// actually work out each amount to know where it belongs in the order.
+export function generateSequenceRound(difficulty: Difficulty, count: number): SequenceItem[] {
+  const problems = distinctMoneyProblems(difficulty, count).sort((a, b) => a.value - b.value);
+  return problems.map((p, i) => ({ id: i, label: p.label }));
 }

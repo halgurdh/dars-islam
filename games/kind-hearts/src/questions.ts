@@ -1,4 +1,6 @@
 import type { QuizQuestion } from '@shared/quiz-kit';
+import type { MatchItem } from '@shared/match-kit';
+import type { SequenceItem } from '@shared/sequence-kit';
 
 export const TOTAL_QUESTIONS = 10;
 
@@ -62,4 +64,37 @@ export function makeRunGenerator(): (index: number) => QuizQuestion {
     if (index === 0) pool = shuffle(ITEMS).slice(0, TOTAL_QUESTIONS);
     return buildQuestion(pool[index]);
   };
+}
+
+// Match: a few scenarios share an answer ("Comfort them", "Thank you"
+// appear twice) — deduped by answer so no two cards show identical text.
+export function generateMatchItems(pairs: number): MatchItem[] {
+  const seen = new Set<string>();
+  const unique = shuffle(ITEMS).filter((item) => {
+    if (seen.has(item.answer)) return false;
+    seen.add(item.answer);
+    return true;
+  });
+  return unique.slice(0, Math.min(pairs, unique.length)).map((item, i) => ({
+    id: i,
+    sideA: item.prompt.replace(/\n/g, ' '),
+    sideB: item.answer,
+  }));
+}
+
+// Sequence: these answers have no natural magnitude (an emotion isn't
+// "bigger" than a kindness) — ordering by answer length is the one honest
+// orderable property, deduped so no two cards tie on length.
+export function generateSequenceRound(count: number): SequenceItem[] {
+  const seen = new Set<number>();
+  const unique = shuffle(ITEMS).filter((item) => {
+    if (seen.has(item.answer.length)) return false;
+    seen.add(item.answer.length);
+    return true;
+  });
+  const n = Math.min(count, unique.length);
+  return unique
+    .slice(0, n)
+    .sort((a, b) => a.answer.length - b.answer.length)
+    .map((item, i) => ({ id: i, label: item.answer }));
 }

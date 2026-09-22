@@ -7,14 +7,29 @@ interface Strings {
   shapes: string;
   numbers: string;
   oddOneOut: string;
-  round: (i: number, total: number) => string;
-  score: (n: number) => string;
   menu: string;
   wellDone: string;
-  roundSummary: (score: number, total: number) => string;
   playAgain: string;
   backToMenu: string;
   footer: string;
+  tierEasy: string;
+  tierMedium: string;
+  tierHard: string;
+
+  modeQuiz: string;
+  round: (i: number, total: number) => string;
+  score: (n: number) => string;
+  roundSummary: (score: number, total: number) => string;
+
+  modeMatch: string;
+  moves: (n: number) => string;
+  matchRoundSummary: (pairs: number, moves: number, time: string) => string;
+  nextLevelHint: string;
+
+  modeSequence: string;
+  mistakes: (n: number) => string;
+  instruction: string;
+  sequenceRoundSummary: (perfect: number, total: number) => string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
@@ -24,14 +39,29 @@ const STRINGS: Record<LangMode, Strings> = {
     shapes: 'Shape Patterns',
     numbers: 'Number Patterns',
     oddOneOut: 'Odd One Out',
-    round: (i, total) => `Round ${i} / ${total}`,
-    score: (n) => `Score: ${n}`,
     menu: '☰ Menu',
     wellDone: 'Pattern spotted! 🧩',
-    roundSummary: (score, total) => `${score} / ${total} correct`,
     playAgain: '↻ Play Again',
     backToMenu: '☰ Back to Menu',
     footer: 'Look for what repeats, then guess what comes next.',
+    tierEasy: 'Easy',
+    tierMedium: 'Medium',
+    tierHard: 'Hard',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Round ${i} / ${total}`,
+    score: (n) => `Score: ${n}`,
+    roundSummary: (score, total) => `${score} / ${total} correct`,
+
+    modeMatch: 'Match',
+    moves: (n) => `Moves: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} pairs matched in ${moves} moves\nTime: ${time}`,
+    nextLevelHint: 'Next round starting…',
+
+    modeSequence: 'Sort',
+    mistakes: (n) => `Mistakes: ${n}`,
+    instruction: 'Tap the numbers in counting order',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rounds perfect`,
   },
   nl: {
     title: 'Pattern Play',
@@ -39,14 +69,29 @@ const STRINGS: Record<LangMode, Strings> = {
     shapes: 'Vormpatronen',
     numbers: 'Getalpatronen',
     oddOneOut: 'Wat hoort er niet bij?',
-    round: (i, total) => `Ronde ${i} / ${total}`,
-    score: (n) => `Score: ${n}`,
     menu: '☰ Menu',
     wellDone: 'Patroon gevonden! 🧩',
-    roundSummary: (score, total) => `${score} / ${total} goed`,
     playAgain: '↻ Opnieuw spelen',
     backToMenu: '☰ Terug naar menu',
     footer: 'Zoek wat zich herhaalt en raad wat erna komt.',
+    tierEasy: 'Makkelijk',
+    tierMedium: 'Gemiddeld',
+    tierHard: 'Moeilijk',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Ronde ${i} / ${total}`,
+    score: (n) => `Score: ${n}`,
+    roundSummary: (score, total) => `${score} / ${total} goed`,
+
+    modeMatch: 'Koppelen',
+    moves: (n) => `Zetten: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} paren gematcht in ${moves} zetten\nTijd: ${time}`,
+    nextLevelHint: 'Volgende ronde begint…',
+
+    modeSequence: 'Sorteren',
+    mistakes: (n) => `Fouten: ${n}`,
+    instruction: 'Tik de getallen op telvolgorde aan',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondes perfect`,
   },
   de: {
     title: 'Pattern Play',
@@ -54,14 +99,29 @@ const STRINGS: Record<LangMode, Strings> = {
     shapes: 'Formmuster',
     numbers: 'Zahlenmuster',
     oddOneOut: 'Was passt nicht?',
-    round: (i, total) => `Runde ${i} / ${total}`,
-    score: (n) => `Punkte: ${n}`,
     menu: '☰ Menü',
     wellDone: 'Muster erkannt! 🧩',
-    roundSummary: (score, total) => `${score} / ${total} richtig`,
     playAgain: '↻ Nochmal spielen',
     backToMenu: '☰ Zurück zum Menü',
     footer: 'Suche, was sich wiederholt, und rate, was als Nächstes kommt.',
+    tierEasy: 'Leicht',
+    tierMedium: 'Mittel',
+    tierHard: 'Schwer',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Runde ${i} / ${total}`,
+    score: (n) => `Punkte: ${n}`,
+    roundSummary: (score, total) => `${score} / ${total} richtig`,
+
+    modeMatch: 'Zuordnen',
+    moves: (n) => `Züge: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} Paare gefunden in ${moves} Zügen\nZeit: ${time}`,
+    nextLevelHint: 'Nächste Runde startet…',
+
+    modeSequence: 'Sortieren',
+    mistakes: (n) => `Fehler: ${n}`,
+    instruction: 'Tippe die Zahlen in Zählreihenfolge an',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} Runden perfekt`,
   },
   es: {
     title: 'Pattern Play',
@@ -69,14 +129,29 @@ const STRINGS: Record<LangMode, Strings> = {
     shapes: 'Patrones de formas',
     numbers: 'Patrones de números',
     oddOneOut: '¿Cuál no encaja?',
-    round: (i, total) => `Ronda ${i} / ${total}`,
-    score: (n) => `Puntos: ${n}`,
     menu: '☰ Menú',
     wellDone: '¡Patrón encontrado! 🧩',
-    roundSummary: (score, total) => `${score} / ${total} correctas`,
     playAgain: '↻ Jugar de nuevo',
     backToMenu: '☰ Volver al menú',
     footer: 'Busca lo que se repite y adivina qué sigue.',
+    tierEasy: 'Fácil',
+    tierMedium: 'Medio',
+    tierHard: 'Difícil',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Ronda ${i} / ${total}`,
+    score: (n) => `Puntos: ${n}`,
+    roundSummary: (score, total) => `${score} / ${total} correctas`,
+
+    modeMatch: 'Emparejar',
+    moves: (n) => `Movimientos: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} pares emparejados en ${moves} movimientos\nTiempo: ${time}`,
+    nextLevelHint: 'Comienza la siguiente ronda…',
+
+    modeSequence: 'Ordenar',
+    mistakes: (n) => `Errores: ${n}`,
+    instruction: 'Toca los números en orden de conteo',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondas perfectas`,
   },
   fr: {
     title: 'Pattern Play',
@@ -84,14 +159,29 @@ const STRINGS: Record<LangMode, Strings> = {
     shapes: 'Motifs de formes',
     numbers: 'Suites de nombres',
     oddOneOut: 'L’intrus',
-    round: (i, total) => `Manche ${i} / ${total}`,
-    score: (n) => `Score : ${n}`,
     menu: '☰ Menu',
     wellDone: 'Motif trouvé ! 🧩',
-    roundSummary: (score, total) => `${score} / ${total} correctes`,
     playAgain: '↻ Rejouer',
     backToMenu: '☰ Retour au menu',
     footer: 'Cherche ce qui se répète, puis devine ce qui vient après.',
+    tierEasy: 'Facile',
+    tierMedium: 'Moyen',
+    tierHard: 'Difficile',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Manche ${i} / ${total}`,
+    score: (n) => `Score : ${n}`,
+    roundSummary: (score, total) => `${score} / ${total} correctes`,
+
+    modeMatch: 'Associer',
+    moves: (n) => `Coups : ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} paires trouvées en ${moves} coups\nTemps : ${time}`,
+    nextLevelHint: 'La manche suivante commence…',
+
+    modeSequence: 'Trier',
+    mistakes: (n) => `Erreurs : ${n}`,
+    instruction: 'Touche les nombres dans l’ordre de comptage',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
 };
 

@@ -1,4 +1,6 @@
 import type { QuizQuestion } from '@shared/quiz-kit';
+import type { MatchItem } from '@shared/match-kit';
+import type { SequenceItem } from '@shared/sequence-kit';
 
 export interface Difficulty {
   id: string;
@@ -60,4 +62,35 @@ export function generateQuestion(difficulty: Difficulty): QuizQuestion {
     choices,
     correctIndex,
   };
+}
+
+// Distinct products, so Match never shows two different card pairs with the
+// same answer (which would look like a second valid match).
+function distinctProblems(count: number, maxTable: number): { a: number; b: number; product: number }[] {
+  const used = new Set<number>();
+  const problems: { a: number; b: number; product: number }[] = [];
+  while (problems.length < count) {
+    const a = randInt(1, maxTable);
+    const b = randInt(1, maxTable);
+    const product = a * b;
+    if (used.has(product)) continue;
+    used.add(product);
+    problems.push({ a, b, product });
+  }
+  return problems;
+}
+
+export function generateMatchItems(pairs: number, maxTable: number): MatchItem[] {
+  return distinctProblems(pairs, maxTable).map((p, i) => ({
+    id: i,
+    sideA: `${p.a} × ${p.b}`,
+    sideB: String(p.product),
+  }));
+}
+
+// Sorting problems by their answer is the whole challenge — you have to
+// actually multiply each one out to know where it belongs in the order.
+export function generateSequenceRound(count: number, maxTable: number): SequenceItem[] {
+  const problems = distinctProblems(count, maxTable).sort((a, b) => a.product - b.product);
+  return problems.map((p, i) => ({ id: i, label: `${p.a} × ${p.b}` }));
 }

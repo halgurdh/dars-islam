@@ -1,4 +1,6 @@
 import type { QuizQuestion } from '@shared/quiz-kit';
+import type { MatchItem } from '@shared/match-kit';
+import type { SequenceItem } from '@shared/sequence-kit';
 
 export interface Difficulty {
   id: string;
@@ -11,7 +13,7 @@ export const DIFFICULTIES: Difficulty[] = [
   { id: 'mixed', totalQuestions: 10 },
 ];
 
-interface Named { name: string; emoji: string; }
+interface Named { name: string; emoji: string; brightness?: number; }
 
 const SHAPES: Named[] = [
   { name: 'Circle', emoji: '⚪' },
@@ -22,14 +24,18 @@ const SHAPES: Named[] = [
   { name: 'Diamond', emoji: '🔷' },
 ];
 
+// brightness = perceived luminance (0.299R + 0.587G + 0.114B) of each
+// dot's typical color, darkest to lightest — used by Sequence mode so
+// ordering tests real "which looks lighter?" judgment instead of reciting
+// the rainbow (ROYGBIV is just as rote-memorizable as the alphabet).
 const HUES: Named[] = [
-  { name: 'Red', emoji: '🔴' },
-  { name: 'Orange', emoji: '🟠' },
-  { name: 'Yellow', emoji: '🟡' },
-  { name: 'Green', emoji: '🟢' },
-  { name: 'Blue', emoji: '🔵' },
-  { name: 'Purple', emoji: '🟣' },
-  { name: 'Brown', emoji: '🟤' },
+  { name: 'Red', emoji: '🔴', brightness: 75 },
+  { name: 'Orange', emoji: '🟠', brightness: 164 },
+  { name: 'Yellow', emoji: '🟡', brightness: 196 },
+  { name: 'Green', emoji: '🟢', brightness: 162 },
+  { name: 'Blue', emoji: '🔵', brightness: 101 },
+  { name: 'Purple', emoji: '🟣', brightness: 126 },
+  { name: 'Brown', emoji: '🟤', brightness: 107 },
 ];
 
 function randInt(min: number, max: number): number {
@@ -81,4 +87,22 @@ export function generateQuestion(difficulty: Difficulty, index: number): QuizQue
   if (kind === 0) return shapeQuestion();
   if (kind === 1) return colorQuestion();
   return oddOneOutQuestion();
+}
+
+// Match: every shape and color is already a unique emoji/name pair, so no
+// distinct-value dedup is needed — just shuffle the combined pool.
+const MATCH_POOL: Named[] = [...SHAPES, ...HUES];
+
+export function generateMatchItems(pairs: number): MatchItem[] {
+  return shuffle(MATCH_POOL).slice(0, Math.min(pairs, MATCH_POOL.length)).map((n, i) => ({
+    id: i,
+    sideA: n.emoji,
+    sideB: n.name,
+  }));
+}
+
+export function generateSequenceRound(count: number): SequenceItem[] {
+  const n = Math.min(count, HUES.length);
+  const picked = shuffle(HUES).slice(0, n).sort((a, b) => (a.brightness ?? 0) - (b.brightness ?? 0));
+  return picked.map((h, i) => ({ id: i, label: `${h.emoji} ${h.name}` }));
 }

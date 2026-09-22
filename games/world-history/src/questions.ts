@@ -13,21 +13,31 @@ export const DIFFICULTIES: Difficulty[] = [
 
 // A single, widely-agreed chronological backbone of broad world history —
 // every round below is a hand-picked subset, so "correct order" is always
-// just the relative order these ids already have here.
-const MASTER: SequenceItem[] = [
-  { id: 1, label: 'Invention of writing (cuneiform)' },
-  { id: 2, label: 'The Egyptian pyramids are built' },
-  { id: 3, label: 'Ancient Greek city-states flourish' },
-  { id: 4, label: 'The Roman Empire rises' },
-  { id: 5, label: 'The Roman Empire falls' },
-  { id: 6, label: 'The Middle Ages in Europe' },
-  { id: 7, label: 'The Renaissance begins' },
-  { id: 8, label: 'Columbus reaches the Americas' },
-  { id: 9, label: 'The Industrial Revolution begins' },
-  { id: 10, label: 'World War I' },
-  { id: 11, label: 'World War II' },
-  { id: 12, label: 'The first Moon landing' },
+// just the relative order these ids already have here. `era` is the same
+// widely-cited approximate dating used in general textbooks, shared with
+// the Match and Quiz modes below.
+export interface HistoryEvent {
+  id: number;
+  label: string;
+  era: string;
+}
+
+export const EVENTS: HistoryEvent[] = [
+  { id: 1, label: 'Invention of writing (cuneiform)', era: '~3200 BCE' },
+  { id: 2, label: 'The Egyptian pyramids are built', era: '~2600 BCE' },
+  { id: 3, label: 'Ancient Greek city-states flourish', era: '~500 BCE' },
+  { id: 4, label: 'The Roman Empire rises', era: '~27 BCE' },
+  { id: 5, label: 'The Roman Empire falls', era: '476 CE' },
+  { id: 6, label: 'The Middle Ages in Europe', era: '500–1500 CE' },
+  { id: 7, label: 'The Renaissance begins', era: '~1400 CE' },
+  { id: 8, label: 'Columbus reaches the Americas', era: '1492 CE' },
+  { id: 9, label: 'The Industrial Revolution begins', era: '~1760 CE' },
+  { id: 10, label: 'World War I', era: '1914–1918' },
+  { id: 11, label: 'World War II', era: '1939–1945' },
+  { id: 12, label: 'The first Moon landing', era: '1969' },
 ];
+
+const MASTER: SequenceItem[] = EVENTS.map(({ id, label }) => ({ id, label }));
 
 function pick(ids: number[]): SequenceItem[] {
   return ids.map((id) => MASTER.find((m) => m.id === id)!);

@@ -1,4 +1,6 @@
 import type { QuizQuestion } from '@shared/quiz-kit';
+import type { MatchItem } from '@shared/match-kit';
+import type { SequenceItem } from '@shared/sequence-kit';
 
 export interface Difficulty {
   id: string;
@@ -104,4 +106,72 @@ export function generateQuestion(difficulty: Difficulty): QuizQuestion {
   if (difficulty.id === 'easy') return easyQuestion();
   if (difficulty.id === 'medium') return mediumQuestion();
   return hardQuestion();
+}
+
+// Match and Sequence need a compact label/value pair per difficulty — the
+// "which is prime" Quiz variant answers with a word choice, not a
+// computed number, so easy sticks to the multiplication variant here.
+interface NumberTheoryProblem {
+  label: string;
+  value: number;
+}
+
+function easyProblem(): NumberTheoryProblem {
+  const n = randInt(2, 9);
+  const k = randInt(2, 9);
+  return { label: `${n} × ${k}`, value: n * k };
+}
+
+function mediumProblem(): NumberTheoryProblem {
+  if (Math.random() < 0.5) {
+    const a = randInt(4, 30);
+    const b = randInt(4, 30);
+    return { label: `GCF of ${a}, ${b}`, value: gcd(a, b) };
+  }
+  const a = randInt(2, 12);
+  const b = randInt(2, 12);
+  return { label: `LCM of ${a}, ${b}`, value: lcm(a, b) };
+}
+
+function hardProblem(): NumberTheoryProblem {
+  if (Math.random() < 0.5) {
+    const start = randInt(1, 20);
+    const diff = randInt(2, 9);
+    const terms = [start, start + diff, start + 2 * diff, start + 3 * diff];
+    return { label: `${terms.join(', ')}, ?`, value: start + 4 * diff };
+  }
+  const b = randInt(3, 9);
+  const a = randInt(b * 3, b * 8) + randInt(1, b - 1);
+  return { label: `${a} ÷ ${b} remainder`, value: a % b };
+}
+
+function problemFor(difficulty: Difficulty): NumberTheoryProblem {
+  if (difficulty.id === 'easy') return easyProblem();
+  if (difficulty.id === 'medium') return mediumProblem();
+  return hardProblem();
+}
+
+function distinctProblems(difficulty: Difficulty, count: number): NumberTheoryProblem[] {
+  const used = new Set<number>();
+  const out: NumberTheoryProblem[] = [];
+  let attempts = 0;
+  while (out.length < count && attempts < count * 50) {
+    attempts++;
+    const p = problemFor(difficulty);
+    if (used.has(p.value)) continue;
+    used.add(p.value);
+    out.push(p);
+  }
+  return out;
+}
+
+export function generateMatchItems(difficulty: Difficulty, pairs: number): MatchItem[] {
+  return distinctProblems(difficulty, pairs).map((p, i) => ({ id: i, sideA: p.label, sideB: String(p.value) }));
+}
+
+// Sorting problems by their answer is the whole challenge — you have to
+// actually work each one out to know where it belongs in the order.
+export function generateSequenceRound(difficulty: Difficulty, count: number): SequenceItem[] {
+  const problems = distinctProblems(difficulty, count).sort((a, b) => a.value - b.value);
+  return problems.map((p, i) => ({ id: i, label: p.label }));
 }

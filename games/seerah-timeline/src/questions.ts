@@ -14,25 +14,35 @@ export const DIFFICULTIES: Difficulty[] = [
 // A single, widely-agreed chronological backbone of the Seerah — every round
 // below is a hand-picked subset of this master list, so "correct order" is
 // never ambiguous: it's always the relative order these ids already have
-// here, no matter which subset a round pulls.
-const MASTER: SequenceItem[] = [
-  { id: 1, label: 'Born in Makkah' },
-  { id: 3, label: 'Marries Khadijah' },
-  { id: 4, label: 'First revelation in the Cave of Hira' },
-  { id: 5, label: 'Preaches privately to family' },
-  { id: 6, label: 'Begins preaching publicly' },
-  { id: 7, label: 'Faces persecution in Makkah' },
-  { id: 8, label: 'Some followers migrate to Abyssinia' },
-  { id: 9, label: 'The Hijra to Madinah' },
-  { id: 10, label: 'Builds the mosque in Madinah' },
-  { id: 11, label: 'The Battle of Badr' },
-  { id: 12, label: 'The Battle of Uhud' },
-  { id: 13, label: 'The Battle of the Trench' },
-  { id: 14, label: 'The Treaty of Hudaybiyyah' },
-  { id: 15, label: 'The Conquest of Makkah' },
-  { id: 16, label: 'The Farewell Pilgrimage' },
-  { id: 17, label: 'Passes away in Madinah' },
+// here, no matter which subset a round pulls. `era` is the same widely-cited
+// approximate CE dating used in general Seerah texts, shared with the Match
+// and Quiz modes below.
+export interface SeerahEvent {
+  id: number;
+  label: string;
+  era: string;
+}
+
+export const EVENTS: SeerahEvent[] = [
+  { id: 1, label: 'Born in Makkah', era: '570 CE' },
+  { id: 3, label: 'Marries Khadijah', era: '~595 CE' },
+  { id: 4, label: 'First revelation in the Cave of Hira', era: '610 CE' },
+  { id: 5, label: 'Preaches privately to family', era: '~611 CE' },
+  { id: 6, label: 'Begins preaching publicly', era: '613 CE' },
+  { id: 7, label: 'Faces persecution in Makkah', era: '~615 CE' },
+  { id: 8, label: 'Some followers migrate to Abyssinia', era: '615 CE' },
+  { id: 9, label: 'The Hijra to Madinah', era: '622 CE' },
+  { id: 10, label: 'Builds the mosque in Madinah', era: '622 CE' },
+  { id: 11, label: 'The Battle of Badr', era: '624 CE' },
+  { id: 12, label: 'The Battle of Uhud', era: '625 CE' },
+  { id: 13, label: 'The Battle of the Trench', era: '627 CE' },
+  { id: 14, label: 'The Treaty of Hudaybiyyah', era: '628 CE' },
+  { id: 15, label: 'The Conquest of Makkah', era: '630 CE' },
+  { id: 16, label: 'The Farewell Pilgrimage', era: '632 CE' },
+  { id: 17, label: 'Passes away in Madinah', era: '632 CE' },
 ];
+
+const MASTER: SequenceItem[] = EVENTS.map(({ id, label }) => ({ id, label }));
 
 function pick(ids: number[]): SequenceItem[] {
   return ids.map((id) => MASTER.find((m) => m.id === id)!);

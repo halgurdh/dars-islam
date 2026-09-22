@@ -1,4 +1,6 @@
 import type { QuizQuestion } from '@shared/quiz-kit';
+import type { MatchItem } from '@shared/match-kit';
+import type { SequenceItem } from '@shared/sequence-kit';
 
 export interface Difficulty {
   id: string;
@@ -94,4 +96,70 @@ export function generateQuestion(difficulty: Difficulty): QuizQuestion {
   if (difficulty.id === 'easy') return easyQuestion();
   if (difficulty.id === 'medium') return mediumQuestion();
   return hardQuestion();
+}
+
+// Match and Sequence need a compact label/value pair per difficulty.
+interface GeometryProblem {
+  label: string;
+  value: number;
+}
+
+function easyProblem(): GeometryProblem {
+  const w = randInt(3, 12);
+  const h = randInt(3, 12);
+  if (Math.random() < 0.5) return { label: `${w} × ${h} rectangle — area`, value: w * h };
+  return { label: `${w} × ${h} rectangle — perimeter`, value: 2 * (w + h) };
+}
+
+function mediumProblem(): GeometryProblem {
+  const kind = randInt(0, 2);
+  if (kind === 0) {
+    const b = randInt(4, 16);
+    const h = [4, 6, 8, 10, 12][randInt(0, 4)];
+    return { label: `Triangle base ${b}, height ${h} — area`, value: (b * h) / 2 };
+  }
+  if (kind === 1) {
+    const r = randInt(2, 10);
+    return { label: `Circle radius ${r} — area`, value: Math.round(3.14 * r * r) };
+  }
+  const a = randInt(30, 100);
+  const b = randInt(30, 150 - a > 30 ? 150 - a : 31);
+  return { label: `Triangle angles ${a}°, ${b}° — third angle`, value: 180 - a - b };
+}
+
+function hardProblem(): GeometryProblem {
+  const [a, b, c] = TRIPLES[randInt(0, TRIPLES.length - 1)];
+  if (Math.random() < 0.5) return { label: `Right triangle legs ${a}, ${b} — hypotenuse`, value: c };
+  return { label: `Right triangle leg ${b}, hypotenuse ${c} — other leg`, value: a };
+}
+
+function problemFor(difficulty: Difficulty): GeometryProblem {
+  if (difficulty.id === 'easy') return easyProblem();
+  if (difficulty.id === 'medium') return mediumProblem();
+  return hardProblem();
+}
+
+function distinctProblems(difficulty: Difficulty, count: number): GeometryProblem[] {
+  const used = new Set<number>();
+  const out: GeometryProblem[] = [];
+  let attempts = 0;
+  while (out.length < count && attempts < count * 50) {
+    attempts++;
+    const p = problemFor(difficulty);
+    if (used.has(p.value)) continue;
+    used.add(p.value);
+    out.push(p);
+  }
+  return out;
+}
+
+export function generateMatchItems(difficulty: Difficulty, pairs: number): MatchItem[] {
+  return distinctProblems(difficulty, pairs).map((p, i) => ({ id: i, sideA: p.label, sideB: String(p.value) }));
+}
+
+// Sorting problems by their answer is the whole challenge — you have to
+// actually work each one out to know where it belongs in the order.
+export function generateSequenceRound(difficulty: Difficulty, count: number): SequenceItem[] {
+  const problems = distinctProblems(difficulty, count).sort((a, b) => a.value - b.value);
+  return problems.map((p, i) => ({ id: i, label: p.label }));
 }

@@ -1,4 +1,6 @@
 import type { QuizQuestion } from '@shared/quiz-kit';
+import type { MatchItem } from '@shared/match-kit';
+import type { SequenceItem } from '@shared/sequence-kit';
 
 export interface Difficulty {
   id: string;
@@ -81,4 +83,43 @@ export function makeRunGenerator(difficulty: Difficulty): (index: number) => Qui
     if (index === 0) pool = shuffle(BANKS[difficulty.id]).slice(0, difficulty.totalQuestions);
     return buildQuestion(pool[index]);
   };
+}
+
+// Match: same fact banks as the Quiz, deduped by answer text first — the
+// special-angle bank in particular has real repeats (sin 30° and cos 60°
+// both equal 1/2), which would otherwise put two non-matching cards on the
+// board showing the identical answer.
+export function generateMatchItems(difficulty: Difficulty, pairs: number): MatchItem[] {
+  const seen = new Set<string>();
+  const unique = shuffle(BANKS[difficulty.id]).filter((item) => {
+    if (seen.has(item.answer)) return false;
+    seen.add(item.answer);
+    return true;
+  });
+  return unique.slice(0, Math.min(pairs, unique.length)).map((item, i) => ({
+    id: i,
+    sideA: item.prompt,
+    sideB: item.answer,
+  }));
+}
+
+// Sequence: a hand-picked set of distinct trig values (no two special
+// angles here evaluate to the same number) so ordering them smallest to
+// largest is a genuine "which is bigger?" trig-magnitude test.
+const TRIG_VALUES: { label: string; value: number }[] = [
+  { label: 'sin(0°)', value: 0 },
+  { label: 'sin(30°)', value: 0.5 },
+  { label: 'tan(30°)', value: 1 / Math.sqrt(3) },
+  { label: 'sin(45°)', value: Math.SQRT1_2 },
+  { label: 'sin(60°)', value: Math.sqrt(3) / 2 },
+  { label: 'tan(45°)', value: 1 },
+  { label: 'tan(60°)', value: Math.sqrt(3) },
+];
+
+export function generateSequenceRound(count: number): SequenceItem[] {
+  const n = Math.min(count, TRIG_VALUES.length);
+  return shuffle(TRIG_VALUES)
+    .slice(0, n)
+    .sort((a, b) => a.value - b.value)
+    .map((v, i) => ({ id: i, label: v.label }));
 }

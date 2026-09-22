@@ -1,4 +1,6 @@
 import type { QuizQuestion } from '@shared/quiz-kit';
+import type { MatchItem } from '@shared/match-kit';
+import type { SequenceItem } from '@shared/sequence-kit';
 
 export const TOTAL_QUESTIONS = 15;
 
@@ -47,7 +49,7 @@ function tierForIndex(i: number): 1 | 2 | 3 {
   return 3;
 }
 
-function tier1(): QuizQuestion {
+export function tier1(): QuizQuestion {
   const ops: ('+' | '−' | '×')[] = ['+', '−', '×'];
   const op = ops[randInt(0, 2)];
   if (op === '×') {
@@ -64,7 +66,7 @@ function tier1(): QuizQuestion {
   return { prompt: `${a} ${op} ${b} = ?`, choices, correctIndex };
 }
 
-function tier2(): QuizQuestion {
+export function tier2(): QuizQuestion {
   const ops: ('+' | '−' | '×' | '÷')[] = ['+', '−', '×', '÷'];
   const op = ops[randInt(0, 3)];
   if (op === '×') {
@@ -88,7 +90,7 @@ function tier2(): QuizQuestion {
   return { prompt: `${a} ${op} ${b} = ?`, choices, correctIndex };
 }
 
-function tier3(): QuizQuestion {
+export function tier3(): QuizQuestion {
   const kind = randInt(0, 3);
   if (kind === 0) {
     // ×11 trick territory
@@ -123,4 +125,31 @@ export function generateQuestion(index: number): QuizQuestion {
   if (tier === 1) return tier1();
   if (tier === 2) return tier2();
   return tier3();
+}
+
+// Match and Sequence reuse the same tier generators as the timed Sprint —
+// distinct answers only, so Match never shows two pairs with the same
+// value, and Sequence has an unambiguous order to solve for.
+function distinctFromGenerator(gen: () => QuizQuestion, count: number): { prompt: string; answer: string }[] {
+  const used = new Set<string>();
+  const out: { prompt: string; answer: string }[] = [];
+  let attempts = 0;
+  while (out.length < count && attempts < count * 50) {
+    attempts++;
+    const q = gen();
+    const answer = q.choices[q.correctIndex];
+    if (used.has(answer)) continue;
+    used.add(answer);
+    out.push({ prompt: q.prompt.replace(/\s*=\s*\?$/, ''), answer });
+  }
+  return out;
+}
+
+export function generateMatchItems(gen: () => QuizQuestion, pairs: number): MatchItem[] {
+  return distinctFromGenerator(gen, pairs).map((p, i) => ({ id: i, sideA: p.prompt, sideB: p.answer }));
+}
+
+export function generateSequenceRound(gen: () => QuizQuestion, count: number): SequenceItem[] {
+  const problems = distinctFromGenerator(gen, count).sort((a, b) => Number(a.answer) - Number(b.answer));
+  return problems.map((p, i) => ({ id: i, label: p.prompt }));
 }

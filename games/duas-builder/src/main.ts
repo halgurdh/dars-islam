@@ -1,19 +1,8 @@
-import Phaser from 'phaser';
+import { bootQuizGame } from '@shared/quiz-kit';
+import { MatchScene } from '@shared/match-kit';
+import { SequenceScene } from '@shared/sequence-kit';
+import { HomeScene } from './scenes/HomeScene';
 import { BuilderMenuScene } from './scenes/BuilderMenuScene';
 import { BuilderScene } from './scenes/BuilderScene';
 
-const config: Phaser.Types.Core.GameConfig = {
-  type: Phaser.AUTO,
-  parent: 'game',
-  width: 720,
-  height: 1280,
-  backgroundColor: '#0d1f18',
-  scale: {
-    mode: Phaser.Scale.FIT,
-    autoCenter: Phaser.Scale.CENTER_BOTH,
-  },
-  scene: [BuilderMenuScene, BuilderScene],
-};
-
-// eslint-disable-next-line no-new
-new Phaser.Game(config);
+bootQuizGame('#0d1f18', [new HomeScene(), new BuilderMenuScene(), new BuilderScene(), new MatchScene(), new SequenceScene()]);

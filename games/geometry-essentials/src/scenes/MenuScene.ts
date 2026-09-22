@@ -1,9 +1,11 @@
-import type { QuizRunConfig } from '@shared/quiz-kit';
-import { createDifficultyMenuScene } from '@shared/quiz-menu-kit';
 import { COLORS, FONT } from '../theme';
-import { DIFFICULTIES, generateQuestion, type Difficulty } from '../questions';
+import { DIFFICULTIES, generateQuestion, generateMatchItems, generateSequenceRound } from '../questions';
 import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { t } from '../i18n';
+import { createModeMenuScene, quizMode, sequenceMode, type GameMode } from '@shared/mode-menu-kit';
+import { getMatchSfx } from '@shared/match-kit';
+
+const GAME_ID = 'geometry-essentials';
 
 const LABELS: Record<string, () => string> = {
   easy: () => t().easy,
@@ -11,36 +13,85 @@ const LABELS: Record<string, () => string> = {
   hard: () => t().hard,
 };
 
-function startQuiz(scene: Phaser.Scene, difficulty: Difficulty): void {
-  const cfg: QuizRunConfig = {
-    gameId: 'geometry-essentials',
-    totalQuestions: difficulty.totalQuestions,
-    theme: COLORS,
-    fontFamily: FONT,
-    strings: {
-      round: t().round,
-      score: t().score,
-      menu: t().menu,
-      wellDone: t().wellDone,
-      roundSummary: t().roundSummary,
-      playAgain: t().playAgain,
-      backToMenu: t().backToMenu,
+const matchMode: GameMode = {
+  id: 'match',
+  label: () => t().modeMatch,
+  icon: '🎴',
+  difficulties: DIFFICULTIES.map((d, i) => ({
+    label: LABELS[d.id],
+    onSelect: (scene) => {
+      getMatchSfx(GAME_ID).flip();
+      scene.scene.start('Match', {
+        gameId: GAME_ID,
+        pairs: [6, 8, 10][i] ?? 6,
+        theme: COLORS,
+        fontFamily: FONT,
+        strings: {
+          menu: t().menu,
+          moves: t().moves,
+          wellDone: t().wellDone,
+          roundSummary: t().matchRoundSummary,
+          nextLevelHint: t().nextLevelHint,
+        },
+        items: generateMatchItems(d, [6, 8, 10][i] ?? 6),
+        menuSceneKey: 'MenuScene',
+      });
     },
-    generateQuestion: () => generateQuestion(difficulty),
-  };
-  scene.scene.start('Quiz', cfg);
-}
+  })),
+};
 
-export const MenuScene = createDifficultyMenuScene({
+export const MenuScene = createModeMenuScene({
   theme: COLORS,
   fontFamily: FONT,
-  titleFontSize: '38px',
+  titleFontSize: '34px',
   title: () => t().title,
   tagline: () => t().tagline,
   footer: () => t().footer,
   locale: { getLang, setLang, detectDefaultLang },
-  difficulties: DIFFICULTIES.map((d) => ({
-    label: LABELS[d.id],
-    onSelect: (scene) => startQuiz(scene, d),
-  })),
+  modes: [
+    quizMode({
+      label: () => t().modeQuiz,
+      icon: '❓',
+      gameId: GAME_ID,
+      theme: COLORS,
+      fontFamily: FONT,
+      strings: () => ({
+        round: t().round,
+        score: t().score,
+        menu: t().menu,
+        wellDone: t().wellDone,
+        roundSummary: t().roundSummary,
+        playAgain: t().playAgain,
+        backToMenu: t().backToMenu,
+      }),
+      difficulties: DIFFICULTIES.map((d) => ({
+        label: LABELS[d.id],
+        totalQuestions: d.totalQuestions,
+        generateQuestion: () => generateQuestion(d),
+      })),
+    }),
+    matchMode,
+    sequenceMode({
+      label: () => t().modeSequence,
+      icon: '📏',
+      gameId: GAME_ID,
+      theme: COLORS,
+      fontFamily: FONT,
+      strings: () => ({
+        round: t().round,
+        mistakes: t().mistakes,
+        menu: t().menu,
+        instruction: t().instruction,
+        wellDone: t().wellDone,
+        roundSummary: t().sequenceRoundSummary,
+        playAgain: t().playAgain,
+        backToMenu: t().backToMenu,
+      }),
+      difficulties: DIFFICULTIES.map((d, i) => ({
+        label: LABELS[d.id],
+        totalRounds: 4,
+        generateRound: () => generateSequenceRound(d, [4, 5, 6][i] ?? 4),
+      })),
+    }),
+  ],
 });

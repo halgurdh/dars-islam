@@ -13,17 +13,26 @@ export const DIFFICULTIES: Difficulty[] = [
 
 // The 8 planets in order of distance from the sun — every round is a
 // hand-picked subset, so the correct order is always just the relative
-// order these ids already have here.
-const MASTER: SequenceItem[] = [
-  { id: 1, label: 'Mercury' },
-  { id: 2, label: 'Venus' },
-  { id: 3, label: 'Earth' },
-  { id: 4, label: 'Mars' },
-  { id: 5, label: 'Jupiter' },
-  { id: 6, label: 'Saturn' },
-  { id: 7, label: 'Uranus' },
-  { id: 8, label: 'Neptune' },
+// order these ids already have here. `fact` is a well-known one-line
+// distinguishing feature, shared with the Match and Quiz modes below.
+export interface Planet {
+  id: number;
+  name: string;
+  fact: string;
+}
+
+export const PLANETS: Planet[] = [
+  { id: 1, name: 'Mercury', fact: 'The smallest planet' },
+  { id: 2, name: 'Venus', fact: 'The hottest planet' },
+  { id: 3, name: 'Earth', fact: 'The only planet known to have life' },
+  { id: 4, name: 'Mars', fact: 'Known as the Red Planet' },
+  { id: 5, name: 'Jupiter', fact: 'The largest planet' },
+  { id: 6, name: 'Saturn', fact: 'Famous for its wide rings' },
+  { id: 7, name: 'Uranus', fact: 'Spins on its side' },
+  { id: 8, name: 'Neptune', fact: 'The windiest planet' },
 ];
+
+const MASTER: SequenceItem[] = PLANETS.map(({ id, name }) => ({ id, label: name }));
 
 function pick(ids: number[]): SequenceItem[] {
   return ids.map((id) => MASTER.find((m) => m.id === id)!);

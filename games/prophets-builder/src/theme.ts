@@ -10,6 +10,12 @@ export const COLORS = {
   slotFilled: 0x3e2a5c,
   tile: 0x2a163d,
   tileWrong: 0x7a2f3a,
+  correct: 0x3d8f4f,
+  wrong: 0x7a2f3a,
+  choiceBg: 0x2a163d,
+  cardBack: 0x2a163d,
+  cardFront: 0x3a2054,
+  placedBg: 0x3a2054,
 };
 
 export const ARABIC_FONT = "'Noto Naskh Arabic', 'Scheherazade New', 'Traditional Arabic', 'Segoe UI', sans-serif";

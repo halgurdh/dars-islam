@@ -7,14 +7,29 @@ interface Strings {
   easy: string;
   medium: string;
   hard: string;
-  round: (i: number, total: number) => string;
-  score: (n: number) => string;
   menu: string;
   wellDone: string;
-  roundSummary: (score: number, total: number) => string;
   playAgain: string;
   backToMenu: string;
   footer: string;
+  tierEasy: string;
+  tierMedium: string;
+  tierHard: string;
+
+  modeQuiz: string;
+  round: (i: number, total: number) => string;
+  score: (n: number) => string;
+  roundSummary: (score: number, total: number) => string;
+
+  modeMatch: string;
+  moves: (n: number) => string;
+  matchRoundSummary: (pairs: number, moves: number, time: string) => string;
+  nextLevelHint: string;
+
+  modeSequence: string;
+  mistakes: (n: number) => string;
+  instruction: string;
+  sequenceRoundSummary: (perfect: number, total: number) => string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
@@ -24,14 +39,29 @@ const STRINGS: Record<LangMode, Strings> = {
     easy: 'Easy · Needs, Wants & Money',
     medium: 'Medium · Percentages & Discounts',
     hard: 'Hard · Zakat Calculation',
-    round: (i, total) => `Round ${i} / ${total}`,
-    score: (n) => `Score: ${n}`,
     menu: '☰ Menu',
     wellDone: 'Smart with money! 💰',
-    roundSummary: (score, total) => `${score} / ${total} correct`,
     playAgain: '↻ Play Again',
     backToMenu: '☰ Back to Menu',
     footer: 'Zakat here uses the simplified 2.5%-of-savings rule taught to beginners.',
+    tierEasy: 'Easy',
+    tierMedium: 'Medium',
+    tierHard: 'Hard',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Round ${i} / ${total}`,
+    score: (n) => `Score: ${n}`,
+    roundSummary: (score, total) => `${score} / ${total} correct`,
+
+    modeMatch: 'Match',
+    moves: (n) => `Moves: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} pairs matched in ${moves} moves\nTime: ${time}`,
+    nextLevelHint: 'Next round starting…',
+
+    modeSequence: 'Sort',
+    mistakes: (n) => `Mistakes: ${n}`,
+    instruction: 'Tap the amounts from smallest to largest',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rounds perfect`,
   },
   nl: {
     title: 'Money & Zakat Math',
@@ -39,14 +69,29 @@ const STRINGS: Record<LangMode, Strings> = {
     easy: 'Makkelijk · Behoeften, Wensen & Geld',
     medium: 'Gemiddeld · Procenten & Korting',
     hard: 'Moeilijk · Zakat Berekenen',
-    round: (i, total) => `Ronde ${i} / ${total}`,
-    score: (n) => `Score: ${n}`,
     menu: '☰ Menu',
     wellDone: 'Slim met geld! 💰',
-    roundSummary: (score, total) => `${score} / ${total} goed`,
     playAgain: '↻ Opnieuw spelen',
     backToMenu: '☰ Terug naar menu',
     footer: 'Zakat gebruikt hier de vereenvoudigde regel van 2,5% over spaargeld.',
+    tierEasy: 'Makkelijk',
+    tierMedium: 'Gemiddeld',
+    tierHard: 'Moeilijk',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Ronde ${i} / ${total}`,
+    score: (n) => `Score: ${n}`,
+    roundSummary: (score, total) => `${score} / ${total} goed`,
+
+    modeMatch: 'Koppelen',
+    moves: (n) => `Zetten: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} paren gematcht in ${moves} zetten\nTijd: ${time}`,
+    nextLevelHint: 'Volgende ronde begint…',
+
+    modeSequence: 'Sorteren',
+    mistakes: (n) => `Fouten: ${n}`,
+    instruction: 'Tik de bedragen van klein naar groot aan',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondes perfect`,
   },
   de: {
     title: 'Money & Zakat Math',
@@ -54,14 +99,29 @@ const STRINGS: Record<LangMode, Strings> = {
     easy: 'Leicht · Bedürfnisse, Wünsche & Geld',
     medium: 'Mittel · Prozente & Rabatte',
     hard: 'Schwer · Zakat-Berechnung',
-    round: (i, total) => `Runde ${i} / ${total}`,
-    score: (n) => `Punkte: ${n}`,
     menu: '☰ Menü',
     wellDone: 'Klug mit Geld! 💰',
-    roundSummary: (score, total) => `${score} / ${total} richtig`,
     playAgain: '↻ Nochmal spielen',
     backToMenu: '☰ Zurück zum Menü',
     footer: 'Zakat nutzt hier die vereinfachte Regel: 2,5% des Ersparten.',
+    tierEasy: 'Leicht',
+    tierMedium: 'Mittel',
+    tierHard: 'Schwer',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Runde ${i} / ${total}`,
+    score: (n) => `Punkte: ${n}`,
+    roundSummary: (score, total) => `${score} / ${total} richtig`,
+
+    modeMatch: 'Zuordnen',
+    moves: (n) => `Züge: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} Paare gefunden in ${moves} Zügen\nZeit: ${time}`,
+    nextLevelHint: 'Nächste Runde startet…',
+
+    modeSequence: 'Sortieren',
+    mistakes: (n) => `Fehler: ${n}`,
+    instruction: 'Tippe die Beträge vom kleinsten zum größten an',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} Runden perfekt`,
   },
   es: {
     title: 'Money & Zakat Math',
@@ -69,14 +129,29 @@ const STRINGS: Record<LangMode, Strings> = {
     easy: 'Fácil · Necesidades, deseos y dinero',
     medium: 'Medio · Porcentajes y descuentos',
     hard: 'Difícil · Cálculo del zakat',
-    round: (i, total) => `Ronda ${i} / ${total}`,
-    score: (n) => `Puntos: ${n}`,
     menu: '☰ Menú',
     wellDone: '¡Listo con el dinero! 💰',
-    roundSummary: (score, total) => `${score} / ${total} correctas`,
     playAgain: '↻ Jugar de nuevo',
     backToMenu: '☰ Volver al menú',
     footer: 'Aquí el zakat usa la regla simplificada del 2,5% de los ahorros.',
+    tierEasy: 'Fácil',
+    tierMedium: 'Medio',
+    tierHard: 'Difícil',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Ronda ${i} / ${total}`,
+    score: (n) => `Puntos: ${n}`,
+    roundSummary: (score, total) => `${score} / ${total} correctas`,
+
+    modeMatch: 'Emparejar',
+    moves: (n) => `Movimientos: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} pares emparejados en ${moves} movimientos\nTiempo: ${time}`,
+    nextLevelHint: 'Comienza la siguiente ronda…',
+
+    modeSequence: 'Ordenar',
+    mistakes: (n) => `Errores: ${n}`,
+    instruction: 'Toca las cantidades de menor a mayor',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondas perfectas`,
   },
   fr: {
     title: 'Money & Zakat Math',
@@ -84,14 +159,29 @@ const STRINGS: Record<LangMode, Strings> = {
     easy: 'Facile · Besoins, envies et argent',
     medium: 'Moyen · Pourcentages et remises',
     hard: 'Difficile · Calcul de la zakat',
-    round: (i, total) => `Manche ${i} / ${total}`,
-    score: (n) => `Score : ${n}`,
     menu: '☰ Menu',
     wellDone: 'Malin avec l’argent ! 💰',
-    roundSummary: (score, total) => `${score} / ${total} correctes`,
     playAgain: '↻ Rejouer',
     backToMenu: '☰ Retour au menu',
     footer: 'Ici, la zakat suit la règle simplifiée de 2,5 % de l’épargne.',
+    tierEasy: 'Facile',
+    tierMedium: 'Moyen',
+    tierHard: 'Difficile',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Manche ${i} / ${total}`,
+    score: (n) => `Score : ${n}`,
+    roundSummary: (score, total) => `${score} / ${total} correctes`,
+
+    modeMatch: 'Associer',
+    moves: (n) => `Coups : ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} paires trouvées en ${moves} coups\nTemps : ${time}`,
+    nextLevelHint: 'La manche suivante commence…',
+
+    modeSequence: 'Trier',
+    mistakes: (n) => `Erreurs : ${n}`,
+    instruction: 'Touche les montants du plus petit au plus grand',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
 };
 

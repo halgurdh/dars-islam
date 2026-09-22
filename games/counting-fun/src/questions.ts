@@ -1,4 +1,6 @@
 import type { QuizQuestion } from '@shared/quiz-kit';
+import type { MatchItem } from '@shared/match-kit';
+import type { SequenceItem } from '@shared/sequence-kit';
 
 export interface Difficulty {
   id: string;
@@ -72,4 +74,24 @@ export function generateQuestion(difficulty: Difficulty, index: number): QuizQue
     choices: options.map((c) => dots(c, icon)),
     correctIndex: options.indexOf(n),
   };
+}
+
+function pickDistinctNumbers(max: number, count: number): number[] {
+  return shuffle(Array.from({ length: max }, (_, i) => i + 1)).slice(0, Math.min(count, max));
+}
+
+export function generateMatchItems(difficulty: Difficulty, pairs: number): MatchItem[] {
+  return pickDistinctNumbers(difficulty.max, pairs).map((n, i) => ({
+    id: i,
+    sideA: dots(n, ICONS[randInt(0, ICONS.length - 1)]),
+    sideB: String(n),
+  }));
+}
+
+// Ordering the dot-groups by count is the whole challenge — you have to
+// actually count each group to know where it belongs.
+export function generateSequenceRound(difficulty: Difficulty, count: number): SequenceItem[] {
+  const icon = ICONS[randInt(0, ICONS.length - 1)];
+  const nums = pickDistinctNumbers(difficulty.max, count).sort((a, b) => a - b);
+  return nums.map((n, i) => ({ id: i, label: dots(n, icon) }));
 }

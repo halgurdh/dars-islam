@@ -1,128 +1,109 @@
-import Phaser from 'phaser';
-import { COLORS, ARABIC_FONT, LATIN_FONT, hex } from '../theme';
-import { progress } from '../systems/Progress';
+import { COLORS, ARABIC_FONT, LATIN_FONT } from '../theme';
+import { JUZ_AMMA_SURAHS, meaningFor, type SurahEntry } from '../data/names';
+import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { sfx } from '../systems/Sfx';
-import { JUZ_AMMA_SURAHS } from '../data/names';
-import { getLang, toggleLang, detectDefaultLang } from '../systems/Locale';
 import { t } from '../i18n';
+import { createModeMenuScene, quizMode, sequenceMode, type GameMode } from '@shared/mode-menu-kit';
+import type { QuizQuestion } from '@shared/quiz-kit';
+import type { SequenceItem } from '@shared/sequence-kit';
 
-interface DifficultyOption {
-  label: () => string;
-  pairs: number;
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
 
-const DIFFICULTIES: DifficultyOption[] = [
-  { label: () => t().easy, pairs: 6 },
-  { label: () => t().medium, pairs: 8 },
-  { label: () => t().hard, pairs: 10 },
-];
+// The existing Match scene (GameScene) has Arabic text-to-speech on tile
+// flip, a feature the generic shared match-kit doesn't have — so Match mode
+// keeps using it directly instead of migrating to match-kit, and only Quiz
+// + Order (new) are built on the shared kits.
+const matchMode: GameMode = {
+  id: 'match',
+  label: () => t().modeMatch,
+  icon: '🎴',
+  difficulties: [
+    { label: () => t().easy, onSelect: (scene) => { sfx.flip(); scene.scene.start('GameScene', { pairs: 6 }); } },
+    { label: () => t().medium, onSelect: (scene) => { sfx.flip(); scene.scene.start('GameScene', { pairs: 8 }); } },
+    { label: () => t().hard, onSelect: (scene) => { sfx.flip(); scene.scene.start('GameScene', { pairs: 10 }); } },
+  ],
+};
 
-export class MenuScene extends Phaser.Scene {
-  constructor() {
-    super('MenuScene');
-  }
+function generateQuizQuestion(): QuizQuestion {
+  const [correct, ...distractors] = shuffle(JUZ_AMMA_SURAHS).slice(0, 4);
+  const choices = shuffle([correct, ...distractors].map((n) => meaningFor(n)));
+  return {
+    prompt: correct.arabic,
+    sub: correct.transliteration,
+    choices,
+    correctIndex: choices.indexOf(meaningFor(correct)),
+  };
+}
 
-  create(): void {
-    const { width, height } = this.scale;
-    this.cameras.main.setBackgroundColor(COLORS.bg);
+// JUZ_AMMA_SURAHS is already ordered the way children traditionally
+// memorize Juz' Amma (starting from An-Nas and working back toward
+// Al-Fatihah) — a contiguous slice tests real recall of that order.
+function generateSequenceRound(count: number): () => SequenceItem[] {
+  return () => {
+    const start = Math.floor(Math.random() * (JUZ_AMMA_SURAHS.length - count + 1));
+    const slice = JUZ_AMMA_SURAHS.slice(start, start + count) as SurahEntry[];
+    return slice.map((n) => ({ id: n.id, label: `${n.arabic}  ·  ${n.transliteration}` }));
+  };
+}
 
-    // First-ever visit: default NL visitors to the Dutch pairing (free IP
-    // lookup, no key). No-op — and no flicker — once a preference exists.
-    const langBefore = getLang();
-    void detectDefaultLang().then(() => {
-      if (this.scene.isActive() && getLang() !== langBefore) {
-        this.scene.restart();
-      }
-    });
-
-    this.add.text(width / 2, height * 0.12, 'جُزْءُ عَمَّ', {
+export const MenuScene = createModeMenuScene({
+  theme: COLORS,
+  fontFamily: LATIN_FONT,
+  title: () => t().subtitle,
+  tagline: () => t().tagline,
+  footer: () => t().footer,
+  locale: { getLang, setLang, detectDefaultLang },
+  modes: [
+    matchMode,
+    quizMode({
+      label: () => t().modeQuiz,
+      icon: '❓',
+      gameId: 'juz-amma-match',
+      theme: COLORS,
       fontFamily: ARABIC_FONT,
-      fontSize: '40px',
-      color: hex(COLORS.accent),
-    }).setOrigin(0.5);
-
-    this.add.text(width / 2, height * 0.17, t().subtitle, {
-      fontFamily: LATIN_FONT,
-      fontSize: '34px',
-      fontStyle: 'bold',
-      color: COLORS.text,
-    }).setOrigin(0.5);
-
-    this.add.text(width / 2, height * 0.215, t().tagline, {
-      fontFamily: LATIN_FONT,
-      fontSize: '17px',
-      color: COLORS.textMuted,
-      align: 'center',
-    }).setOrigin(0.5);
-
-    const learned = progress.count();
-    this.add.text(width / 2, height * 0.27, t().surahsLearned(learned, JUZ_AMMA_SURAHS.length), {
-      fontFamily: LATIN_FONT,
-      fontSize: '15px',
-      color: hex(COLORS.accent),
-    }).setOrigin(0.5);
-
-    const startY = height * 0.38;
-    const gap = height * 0.1;
-    DIFFICULTIES.forEach((d, i) => {
-      this.createButton(width / 2, startY + i * gap, 300, 64, d.label(), () => {
-        sfx.flip();
-        this.scene.start('GameScene', { pairs: d.pairs });
-      });
-    });
-
-    // Language toggle: English+Arabic <-> Dutch+Arabic
-    this.createButton(width / 2, height * 0.655, 280, 52, t().langToggle, () => {
-      toggleLang();
-      sfx.flip();
-      this.scene.restart();
-    });
-
-    // Mute toggle
-    const muteLabel = () => (sfx.isMuted() ? t().soundOff : t().soundOn);
-    const muteBtn = this.createButton(width / 2, height * 0.735, 220, 52, muteLabel(), () => {
-      const muted = sfx.toggleMuted();
-      muteBtn.text.setText(muted ? t().soundOff : t().soundOn);
-      if (!muted) sfx.flip();
-    });
-
-    this.add.text(width / 2, height * 0.92, t().footer, {
-      fontFamily: LATIN_FONT,
-      fontSize: '13px',
-      color: COLORS.textMuted,
-      align: 'center',
-      wordWrap: { width: width * 0.8 },
-    }).setOrigin(0.5);
-  }
-
-  private createButton(
-    x: number,
-    y: number,
-    w: number,
-    h: number,
-    label: string,
-    onClick: () => void
-  ): { container: Phaser.GameObjects.Container; text: Phaser.GameObjects.Text } {
-    const container = this.add.container(x, y);
-    const bg = this.add.graphics();
-    bg.fillStyle(COLORS.panel, 1);
-    bg.fillRoundedRect(-w / 2, -h / 2, w, h, 14);
-    bg.lineStyle(2, COLORS.accent, 0.6);
-    bg.strokeRoundedRect(-w / 2, -h / 2, w, h, 14);
-
-    const text = this.add.text(0, 0, label, {
-      fontFamily: LATIN_FONT,
-      fontSize: '19px',
-      color: COLORS.text,
-    }).setOrigin(0.5);
-
-    container.add([bg, text]);
-    container.setSize(w, h);
-    container.setInteractive({ useHandCursor: true });
-    container.on('pointerover', () => bg.setAlpha(0.85));
-    container.on('pointerout', () => bg.setAlpha(1));
-    container.on('pointerdown', onClick);
-
-    return { container, text };
-  }
-}
+      strings: () => ({
+        round: t().quizRound,
+        score: t().quizScore,
+        menu: t().menu,
+        wellDone: t().wellDone,
+        roundSummary: t().quizRoundSummary,
+        playAgain: t().playAgain,
+        backToMenu: t().menu,
+      }),
+      difficulties: [
+        { label: () => t().easy, totalQuestions: 6, generateQuestion: generateQuizQuestion },
+        { label: () => t().medium, totalQuestions: 8, generateQuestion: generateQuizQuestion },
+        { label: () => t().hard, totalQuestions: 10, generateQuestion: generateQuizQuestion },
+      ],
+    }),
+    sequenceMode({
+      label: () => t().modeSequence,
+      icon: '📜',
+      gameId: 'juz-amma-match',
+      theme: COLORS,
+      fontFamily: ARABIC_FONT,
+      strings: () => ({
+        round: t().quizRound,
+        mistakes: t().sequenceMistakes,
+        menu: t().menu,
+        instruction: t().sequenceInstruction,
+        wellDone: t().wellDone,
+        roundSummary: t().sequenceRoundSummary,
+        playAgain: t().playAgain,
+        backToMenu: t().menu,
+      }),
+      difficulties: [
+        { label: () => t().easy, totalRounds: 4, generateRound: generateSequenceRound(4) },
+        { label: () => t().medium, totalRounds: 4, generateRound: generateSequenceRound(6) },
+        { label: () => t().hard, totalRounds: 4, generateRound: generateSequenceRound(8) },
+      ],
+    }),
+  ],
+});

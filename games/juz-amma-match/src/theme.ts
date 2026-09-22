@@ -9,6 +9,10 @@ export const COLORS = {
   cardBack: 0x332f16,
   cardFront: 0x494322,
   matched: 0x6b632f,
+  correct: 0x5fa678,
+  wrong: 0xc0503a,
+  choiceBg: 0x5a521e,
+  placedBg: 0x6b632f,
 };
 
 export const ARABIC_FONT = "'Noto Naskh Arabic', 'Scheherazade New', 'Traditional Arabic', 'Segoe UI', sans-serif";

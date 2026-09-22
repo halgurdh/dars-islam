@@ -4,117 +4,171 @@ import { getLang, type LangMode } from './systems/Locale';
 interface Strings {
   subtitle: string;
   tagline: string;
-  namesLearned: (n: number, total: number) => string;
   easy: string;
   medium: string;
   hard: string;
-  soundOn: string;
-  soundOff: string;
-  langToggle: string;
   footer: string;
   menu: string;
-  moves: (n: number) => string;
+  playAgain: string;
   wellDone: string;
+  hear: string;
+
+  modeMatch: string;
+  moves: (n: number) => string;
   roundSummary: (pairs: number, moves: number, time: string, learned: number, total: number) => string;
   nextLevelHint: string;
-  hear: string;
+
+  modeQuiz: string;
+  quizRound: (i: number, total: number) => string;
+  quizScore: (n: number) => string;
+  quizRoundSummary: (score: number, total: number) => string;
+
+  modeSequence: string;
+  sequenceMistakes: (n: number) => string;
+  sequenceInstruction: string;
+  sequenceRoundSummary: (perfect: number, total: number) => string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
   en: {
     subtitle: 'Asma Match',
-    tagline: 'Learn the 99 Beautiful Names of Allah\nby matching each name to its meaning.',
-    namesLearned: (n, total) => `${n} / ${total} names learned`,
-    easy: 'Easy · 6 pairs',
-    medium: 'Medium · 8 pairs',
-    hard: 'Hard · 10 pairs',
-    soundOn: '🔈 Sound On',
-    soundOff: '🔇 Sound Off',
-    langToggle: '🇳🇱 Switch to Dutch',
+    tagline: 'Flip cards, answer quizzes, or recall the\ntraditional order — three ways to learn the 99 Names.',
+    easy: 'Easy · 6',
+    medium: 'Medium · 8',
+    hard: 'Hard · 10',
     footer: 'No music. Sound effects are minimal and optional.',
     menu: '☰ Menu',
-    moves: (n) => `Moves: ${n}`,
+    playAgain: 'Play Again',
     wellDone: 'Well done! 🌿',
+    hear: '🔊 Hear it',
+
+    modeMatch: 'Match',
+    moves: (n) => `Moves: ${n}`,
     roundSummary: (pairs, moves, time, learned, total) =>
       `${pairs} names matched in ${moves} moves\nTime: ${time}\n${learned} / ${total} names learned overall`,
     nextLevelHint: 'Next level starting…',
-    hear: '🔊 Hear it',
+
+    modeQuiz: 'Quiz',
+    quizRound: (i, total) => `Question ${i}/${total}`,
+    quizScore: (n) => `Score: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} correct`,
+
+    modeSequence: 'Order',
+    sequenceMistakes: (n) => `Mistakes: ${n}`,
+    sequenceInstruction: 'Tap the Names in their traditional order',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rounds perfect`,
   },
   nl: {
     subtitle: 'Asma Match',
-    tagline: 'Leer de 99 Mooie Namen van Allah\ndoor elke naam aan de betekenis te koppelen.',
-    namesLearned: (n, total) => `${n} / ${total} namen geleerd`,
-    easy: 'Makkelijk · 6 paren',
-    medium: 'Gemiddeld · 8 paren',
-    hard: 'Moeilijk · 10 paren',
-    soundOn: '🔈 Geluid Aan',
-    soundOff: '🔇 Geluid Uit',
-    langToggle: '🇩🇪 Naar Duits wisselen',
+    tagline: 'Draai kaarten om, beantwoord quizvragen of\nleer de traditionele volgorde — drie manieren om te leren.',
+    easy: 'Makkelijk · 6',
+    medium: 'Gemiddeld · 8',
+    hard: 'Moeilijk · 10',
     footer: 'Geen muziek. Geluidseffecten zijn minimaal en optioneel.',
     menu: '☰ Menu',
-    moves: (n) => `Zetten: ${n}`,
+    playAgain: 'Opnieuw spelen',
     wellDone: 'Goed gedaan! 🌿',
+    hear: '🔊 Uitspraak',
+
+    modeMatch: 'Koppelen',
+    moves: (n) => `Zetten: ${n}`,
     roundSummary: (pairs, moves, time, learned, total) =>
       `${pairs} namen gematcht in ${moves} zetten\nTijd: ${time}\n${learned} / ${total} namen in totaal geleerd`,
     nextLevelHint: 'Volgend level begint…',
-    hear: '🔊 Uitspraak',
+
+    modeQuiz: 'Quiz',
+    quizRound: (i, total) => `Vraag ${i}/${total}`,
+    quizScore: (n) => `Score: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} goed`,
+
+    modeSequence: 'Volgorde',
+    sequenceMistakes: (n) => `Fouten: ${n}`,
+    sequenceInstruction: 'Tik de Namen in de traditionele volgorde aan',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondes perfect`,
   },
   de: {
     subtitle: 'Asma Match',
-    tagline: 'Lerne die 99 Schönen Namen Allahs,\nindem du jeden Namen mit seiner Bedeutung verbindest.',
-    namesLearned: (n, total) => `${n} / ${total} Namen gelernt`,
-    easy: 'Leicht · 6 Paare',
-    medium: 'Mittel · 8 Paare',
-    hard: 'Schwer · 10 Paare',
-    soundOn: '🔈 Ton An',
-    soundOff: '🔇 Ton Aus',
-    langToggle: '🇪🇸 Zu Spanisch wechseln',
+    tagline: 'Karten umdrehen, Quizfragen beantworten oder\ndie traditionelle Reihenfolge lernen — drei Lernwege.',
+    easy: 'Leicht · 6',
+    medium: 'Mittel · 8',
+    hard: 'Schwer · 10',
     footer: 'Keine Musik. Soundeffekte sind minimal und optional.',
     menu: '☰ Menü',
-    moves: (n) => `Züge: ${n}`,
+    playAgain: 'Nochmal spielen',
     wellDone: 'Gut gemacht! 🌿',
+    hear: '🔊 Anhören',
+
+    modeMatch: 'Zuordnen',
+    moves: (n) => `Züge: ${n}`,
     roundSummary: (pairs, moves, time, learned, total) =>
       `${pairs} Namen zugeordnet in ${moves} Zügen\nZeit: ${time}\n${learned} / ${total} Namen insgesamt gelernt`,
     nextLevelHint: 'Nächstes Level startet…',
-    hear: '🔊 Anhören',
+
+    modeQuiz: 'Quiz',
+    quizRound: (i, total) => `Frage ${i}/${total}`,
+    quizScore: (n) => `Punkte: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} richtig`,
+
+    modeSequence: 'Reihenfolge',
+    sequenceMistakes: (n) => `Fehler: ${n}`,
+    sequenceInstruction: 'Tippe die Namen in der traditionellen Reihenfolge an',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} Runden perfekt`,
   },
   es: {
     subtitle: 'Asma Match',
-    tagline: 'Aprende los 99 Hermosos Nombres de Allah\nasociando cada nombre con su significado.',
-    namesLearned: (n, total) => `${n} / ${total} nombres aprendidos`,
-    easy: 'Fácil · 6 pares',
-    medium: 'Medio · 8 pares',
-    hard: 'Difícil · 10 pares',
-    soundOn: '🔈 Sonido Activado',
-    soundOff: '🔇 Sonido Desactivado',
-    langToggle: '🇫🇷 Cambiar a francés',
+    tagline: 'Voltea cartas, responde preguntas o aprende\nel orden tradicional — tres formas de aprender.',
+    easy: 'Fácil · 6',
+    medium: 'Medio · 8',
+    hard: 'Difícil · 10',
     footer: 'Sin música. Los efectos de sonido son mínimos y opcionales.',
     menu: '☰ Menú',
-    moves: (n) => `Movimientos: ${n}`,
+    playAgain: 'Jugar de nuevo',
     wellDone: '¡Bien hecho! 🌿',
+    hear: '🔊 Escuchar',
+
+    modeMatch: 'Emparejar',
+    moves: (n) => `Movimientos: ${n}`,
     roundSummary: (pairs, moves, time, learned, total) =>
       `${pairs} nombres emparejados en ${moves} movimientos\nTiempo: ${time}\n${learned} / ${total} nombres aprendidos en total`,
     nextLevelHint: 'Comienza el siguiente nivel…',
-    hear: '🔊 Escuchar',
+
+    modeQuiz: 'Quiz',
+    quizRound: (i, total) => `Pregunta ${i}/${total}`,
+    quizScore: (n) => `Puntuación: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} correctas`,
+
+    modeSequence: 'Orden',
+    sequenceMistakes: (n) => `Errores: ${n}`,
+    sequenceInstruction: 'Toca los Nombres en su orden tradicional',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondas perfectas`,
   },
   fr: {
     subtitle: 'Asma Match',
-    tagline: 'Apprenez les 99 Plus Beaux Noms d\'Allah\nen associant chaque nom à sa signification.',
-    namesLearned: (n, total) => `${n} / ${total} noms appris`,
-    easy: 'Facile · 6 paires',
-    medium: 'Moyen · 8 paires',
-    hard: 'Difficile · 10 paires',
-    soundOn: '🔈 Son Activé',
-    soundOff: '🔇 Son Désactivé',
-    langToggle: '🇬🇧 Switch to English',
+    tagline: 'Retourne des cartes, réponds à un quiz ou\napprends l’ordre traditionnel — trois façons d’apprendre.',
+    easy: 'Facile · 6',
+    medium: 'Moyen · 8',
+    hard: 'Difficile · 10',
     footer: 'Pas de musique. Les effets sonores sont minimes et facultatifs.',
     menu: '☰ Menu',
-    moves: (n) => `Coups : ${n}`,
+    playAgain: 'Rejouer',
     wellDone: 'Bien joué ! 🌿',
+    hear: '🔊 Écouter',
+
+    modeMatch: 'Associer',
+    moves: (n) => `Coups : ${n}`,
     roundSummary: (pairs, moves, time, learned, total) =>
       `${pairs} noms associés en ${moves} coups\nTemps : ${time}\n${learned} / ${total} noms appris au total`,
     nextLevelHint: 'Le niveau suivant commence…',
-    hear: '🔊 Écouter',
+
+    modeQuiz: 'Quiz',
+    quizRound: (i, total) => `Question ${i}/${total}`,
+    quizScore: (n) => `Score : ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} correctes`,
+
+    modeSequence: 'Ordre',
+    sequenceMistakes: (n) => `Erreurs : ${n}`,
+    sequenceInstruction: 'Touche les Noms dans leur ordre traditionnel',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
 };
 

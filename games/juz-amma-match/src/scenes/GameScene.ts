@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { COLORS, ARABIC_FONT, LATIN_FONT, hex } from '../theme';
-import { JUZ_AMMA_SURAHS, SurahEntry } from '../data/names';
+import { JUZ_AMMA_SURAHS, SurahEntry, meaningFor } from '../data/names';
 import { progress } from '../systems/Progress';
 import { sfx } from '../systems/Sfx';
 import { getLang } from '../systems/Locale';
@@ -38,16 +38,6 @@ function shuffle<T>(arr: T[]): T[] {
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
-}
-
-function meaningFor(name: SurahEntry): string {
-  switch (getLang()) {
-    case 'nl': return name.meaningNl;
-    case 'de': return name.meaningDe;
-    case 'es': return name.meaningEs;
-    case 'fr': return name.meaningFr;
-    default: return name.meaningEn;
-  }
 }
 
 // What to say and in which language tag, for either side of a tile.

@@ -1,4 +1,6 @@
 import type { QuizQuestion } from '@shared/quiz-kit';
+import type { MatchItem } from '@shared/match-kit';
+import type { SequenceItem } from '@shared/sequence-kit';
 
 export interface Difficulty {
   id: string;
@@ -119,4 +121,60 @@ export function generateQuestion(difficulty: Difficulty): QuizQuestion {
   if (difficulty.id === 'easy') return easyQuestion();
   if (difficulty.id === 'medium') return mediumQuestion();
   return hardQuestion();
+}
+
+// Match and Sequence need a single consistent numeric format per
+// difficulty — one calculation type from each tier's quiz variants.
+interface StatsProblem {
+  label: string;
+  value: number;
+}
+
+function easyProblem(): StatsProblem {
+  const size = randInt(4, 5);
+  const nums = Array.from({ length: size }, () => randInt(1, 9));
+  const sum = nums.reduce((a, b) => a + b, 0);
+  return { label: `Mean of ${nums.join(', ')}`, value: Math.round(sum / nums.length) };
+}
+
+function mediumProblem(): StatsProblem {
+  const nums = Array.from({ length: 5 }, () => randInt(2, 20));
+  return { label: `Range of ${nums.join(', ')}`, value: Math.max(...nums) - Math.min(...nums) };
+}
+
+function hardProblem(): StatsProblem {
+  const games = randInt(3, 5);
+  const scores = Array.from({ length: games }, () => randInt(5, 20));
+  return { label: `${games} scores: ${scores.join(', ')}`, value: scores.reduce((a, b) => a + b, 0) };
+}
+
+function problemFor(difficulty: Difficulty): StatsProblem {
+  if (difficulty.id === 'easy') return easyProblem();
+  if (difficulty.id === 'medium') return mediumProblem();
+  return hardProblem();
+}
+
+function distinctProblems(difficulty: Difficulty, count: number): StatsProblem[] {
+  const used = new Set<number>();
+  const out: StatsProblem[] = [];
+  let attempts = 0;
+  while (out.length < count && attempts < count * 50) {
+    attempts++;
+    const p = problemFor(difficulty);
+    if (used.has(p.value)) continue;
+    used.add(p.value);
+    out.push(p);
+  }
+  return out;
+}
+
+export function generateMatchItems(difficulty: Difficulty, pairs: number): MatchItem[] {
+  return distinctProblems(difficulty, pairs).map((p, i) => ({ id: i, sideA: p.label, sideB: String(p.value) }));
+}
+
+// Sorting problems by their answer is the whole challenge — you have to
+// actually work each one out to know where it belongs in the order.
+export function generateSequenceRound(difficulty: Difficulty, count: number): SequenceItem[] {
+  const problems = distinctProblems(difficulty, count).sort((a, b) => a.value - b.value);
+  return problems.map((p, i) => ({ id: i, label: p.label }));
 }

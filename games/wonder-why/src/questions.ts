@@ -1,4 +1,6 @@
 import type { QuizQuestion } from '@shared/quiz-kit';
+import type { MatchItem } from '@shared/match-kit';
+import type { SequenceItem } from '@shared/sequence-kit';
 
 export const TOTAL_QUESTIONS = 10;
 
@@ -70,4 +72,37 @@ export function makeRunGenerator(): (index: number) => QuizQuestion {
     if (index === 0) pool = shuffle(FACTS).slice(0, TOTAL_QUESTIONS);
     return buildQuestion(pool[index]);
   };
+}
+
+// Match: a couple of facts share an answer (both "7 days in a week" and
+// "7 colors in a rainbow") — deduped by answer so no two cards tie.
+export function generateMatchItems(pairs: number): MatchItem[] {
+  const seen = new Set<string>();
+  const unique = shuffle(FACTS).filter((fact) => {
+    if (seen.has(fact.answer)) return false;
+    seen.add(fact.answer);
+    return true;
+  });
+  return unique.slice(0, Math.min(pairs, unique.length)).map((fact, i) => ({
+    id: i,
+    sideA: fact.prompt,
+    sideB: fact.answer,
+  }));
+}
+
+// Sequence: these facts span totally different topics with no shared
+// magnitude — ordering by answer length is the one honest orderable
+// property, deduped so no two cards tie on length.
+export function generateSequenceRound(count: number): SequenceItem[] {
+  const seen = new Set<number>();
+  const unique = shuffle(FACTS).filter((fact) => {
+    if (seen.has(fact.answer.length)) return false;
+    seen.add(fact.answer.length);
+    return true;
+  });
+  const n = Math.min(count, unique.length);
+  return unique
+    .slice(0, n)
+    .sort((a, b) => a.answer.length - b.answer.length)
+    .map((fact, i) => ({ id: i, label: fact.answer }));
 }

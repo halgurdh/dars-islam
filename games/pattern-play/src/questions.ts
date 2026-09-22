@@ -1,4 +1,6 @@
 import type { QuizQuestion } from '@shared/quiz-kit';
+import type { MatchItem } from '@shared/match-kit';
+import type { SequenceItem } from '@shared/sequence-kit';
 
 export interface Difficulty {
   id: string;
@@ -89,4 +91,38 @@ export function generateQuestion(difficulty: Difficulty, index: number): QuizQue
   if (difficulty.id === 'numbers') return numberSequenceQuestion();
   void index;
   return oddOneOutQuestion();
+}
+
+// Match and Sequence both build on the number-pattern family (shapes and
+// odd-one-out only have 4-6 possible answers, too few distinct values for
+// a pairs/order puzzle) — spotting the step is the challenge either way.
+const STEPS = [1, 2, 3, 5, 10];
+
+function distinctNextTerms(count: number): { context: string; next: number }[] {
+  const used = new Set<number>();
+  const out: { context: string; next: number }[] = [];
+  let attempts = 0;
+  while (out.length < count && attempts < count * 50) {
+    attempts++;
+    const step = STEPS[randInt(0, STEPS.length - 1)];
+    const start = randInt(1, 10);
+    const seq = [start, start + step, start + step * 2, start + step * 3];
+    const next = start + step * 4;
+    if (used.has(next)) continue;
+    used.add(next);
+    out.push({ context: `${seq.join(', ')}, ?`, next });
+  }
+  return out;
+}
+
+export function generateMatchItems(pairs: number): MatchItem[] {
+  return distinctNextTerms(pairs).map((p, i) => ({ id: i, sideA: p.context, sideB: String(p.next) }));
+}
+
+// One growing skip-counting sequence, shuffled — ordering it back correctly
+// means recognizing the step, not just sorting random numbers.
+export function generateSequenceRound(count: number): SequenceItem[] {
+  const step = STEPS[randInt(0, STEPS.length - 1)];
+  const start = randInt(1, 15);
+  return Array.from({ length: count }, (_, i) => ({ id: i, label: String(start + step * i) }));
 }

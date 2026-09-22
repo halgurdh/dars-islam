@@ -8,96 +8,167 @@ interface Strings {
   medium: string;
   hard: string;
   round: (i: number, total: number) => string;
-  mistakes: (n: number) => string;
   menu: string;
-  instruction: string;
   wellDone: string;
-  roundSummary: (perfectRounds: number, totalRounds: number) => string;
   playAgain: string;
   backToMenu: string;
   footer: string;
+
+  modeSequence: string;
+  mistakes: (n: number) => string;
+  instruction: string;
+  roundSummary: (perfectRounds: number, totalRounds: number) => string;
+
+  modeMatch: string;
+  moves: (n: number) => string;
+  matchRoundSummary: (pairs: number, moves: number, time: string, learned: number, total: number) => string;
+  nextLevelHint: string;
+
+  modeQuiz: string;
+  score: (n: number) => string;
+  quizRoundSummary: (score: number, total: number) => string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
   en: {
     title: 'Earth & Space Science',
-    tagline: 'Put the planets in order\nof distance from the sun.',
-    easy: 'Easy · 4 Planets',
-    medium: 'Medium · 5 Planets',
-    hard: 'Hard · 6 Planets',
+    tagline: 'Order the planets, answer quizzes, or match\neach one to what makes it special.',
+    easy: 'Easy · 4',
+    medium: 'Medium · 6',
+    hard: 'Hard · 8',
     round: (i, total) => `Round ${i} / ${total}`,
-    mistakes: (n) => `Mistakes: ${n}`,
     menu: '☰ Menu',
-    instruction: 'Tap the planets in order, starting closest to the sun.',
     wellDone: 'Stellar work! 🪐',
-    roundSummary: (perfectRounds, totalRounds) => `${perfectRounds} / ${totalRounds} rounds with no mistakes`,
     playAgain: '↻ Play Again',
     backToMenu: '☰ Back to Menu',
     footer: 'My Very Educated Mother Just Served Us Noodles — a classic memory trick for planet order.',
+
+    modeSequence: 'Order',
+    mistakes: (n) => `Mistakes: ${n}`,
+    instruction: 'Tap the planets in order, starting closest to the sun.',
+    roundSummary: (perfectRounds, totalRounds) => `${perfectRounds} / ${totalRounds} rounds with no mistakes`,
+
+    modeMatch: 'Match',
+    moves: (n) => `Moves: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} planets matched in ${moves} moves\nTime: ${time}\n${learned} / ${total} planets learned overall`,
+    nextLevelHint: 'Next level starting…',
+
+    modeQuiz: 'Quiz',
+    score: (n) => `Score: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} correct`,
   },
   nl: {
     title: 'Earth & Space Science',
-    tagline: 'Zet de planeten op volgorde\nvan afstand tot de zon.',
-    easy: 'Makkelijk · 4 Planeten',
-    medium: 'Gemiddeld · 5 Planeten',
-    hard: 'Moeilijk · 6 Planeten',
+    tagline: 'Zet de planeten op volgorde, beantwoord\nquizvragen of koppel elke planeet aan wat hem bijzonder maakt.',
+    easy: 'Makkelijk · 4',
+    medium: 'Gemiddeld · 6',
+    hard: 'Moeilijk · 8',
     round: (i, total) => `Ronde ${i} / ${total}`,
-    mistakes: (n) => `Fouten: ${n}`,
     menu: '☰ Menu',
-    instruction: 'Tik de planeten aan op volgorde, beginnend dichtst bij de zon.',
     wellDone: 'Stellair werk! 🪐',
-    roundSummary: (perfectRounds, totalRounds) => `${perfectRounds} / ${totalRounds} rondes zonder fouten`,
     playAgain: '↻ Opnieuw spelen',
     backToMenu: '☰ Terug naar menu',
     footer: 'Bedenk een eigen ezelsbruggetje voor de volgorde van de planeten — dat helpt echt.',
+
+    modeSequence: 'Volgorde',
+    mistakes: (n) => `Fouten: ${n}`,
+    instruction: 'Tik de planeten aan op volgorde, beginnend dichtst bij de zon.',
+    roundSummary: (perfectRounds, totalRounds) => `${perfectRounds} / ${totalRounds} rondes zonder fouten`,
+
+    modeMatch: 'Koppelen',
+    moves: (n) => `Zetten: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} planeten gematcht in ${moves} zetten\nTijd: ${time}\n${learned} / ${total} planeten in totaal geleerd`,
+    nextLevelHint: 'Volgend level begint…',
+
+    modeQuiz: 'Quiz',
+    score: (n) => `Score: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} goed`,
   },
   de: {
     title: 'Earth & Space Science',
-    tagline: 'Bring die Planeten in die Reihenfolge\nihrer Entfernung von der Sonne.',
-    easy: 'Leicht · 4 Planeten',
-    medium: 'Mittel · 5 Planeten',
-    hard: 'Schwer · 6 Planeten',
+    tagline: 'Bring die Planeten in die richtige Reihenfolge,\nbeantworte Quizfragen oder ordne jedem seine Besonderheit zu.',
+    easy: 'Leicht · 4',
+    medium: 'Mittel · 6',
+    hard: 'Schwer · 8',
     round: (i, total) => `Runde ${i} / ${total}`,
-    mistakes: (n) => `Fehler: ${n}`,
     menu: '☰ Menü',
-    instruction: 'Tippe die Planeten der Reihe nach an, beginnend bei der Sonne.',
     wellDone: 'Stellare Arbeit! 🪐',
-    roundSummary: (perfectRounds, totalRounds) => `${perfectRounds} / ${totalRounds} Runden ohne Fehler`,
     playAgain: '↻ Nochmal spielen',
     backToMenu: '☰ Zurück zum Menü',
     footer: 'Denk dir einen eigenen Merksatz für die Planetenreihenfolge aus — das hilft wirklich.',
+
+    modeSequence: 'Reihenfolge',
+    mistakes: (n) => `Fehler: ${n}`,
+    instruction: 'Tippe die Planeten der Reihe nach an, beginnend bei der Sonne.',
+    roundSummary: (perfectRounds, totalRounds) => `${perfectRounds} / ${totalRounds} Runden ohne Fehler`,
+
+    modeMatch: 'Zuordnen',
+    moves: (n) => `Züge: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} Planeten zugeordnet in ${moves} Zügen\nZeit: ${time}\n${learned} / ${total} Planeten insgesamt gelernt`,
+    nextLevelHint: 'Nächstes Level startet…',
+
+    modeQuiz: 'Quiz',
+    score: (n) => `Punkte: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} richtig`,
   },
   es: {
     title: 'Earth & Space Science',
-    tagline: 'Ordena los planetas según su\ndistancia al sol.',
-    easy: 'Fácil · 4 planetas',
-    medium: 'Medio · 5 planetas',
-    hard: 'Difícil · 6 planetas',
+    tagline: 'Ordena los planetas, responde preguntas o\nempareja cada uno con lo que lo hace especial.',
+    easy: 'Fácil · 4',
+    medium: 'Medio · 6',
+    hard: 'Difícil · 8',
     round: (i, total) => `Ronda ${i} / ${total}`,
-    mistakes: (n) => `Errores: ${n}`,
     menu: '☰ Menú',
-    instruction: 'Toca los planetas en orden, empezando por el más cercano al sol.',
     wellDone: '¡Trabajo estelar! 🪐',
-    roundSummary: (perfectRounds, totalRounds) => `${perfectRounds} / ${totalRounds} rondas sin errores`,
     playAgain: '↻ Jugar de nuevo',
     backToMenu: '☰ Volver al menú',
     footer: 'Inventa tu propio truco para recordar el orden de los planetas — funciona de verdad.',
+
+    modeSequence: 'Orden',
+    mistakes: (n) => `Errores: ${n}`,
+    instruction: 'Toca los planetas en orden, empezando por el más cercano al sol.',
+    roundSummary: (perfectRounds, totalRounds) => `${perfectRounds} / ${totalRounds} rondas sin errores`,
+
+    modeMatch: 'Emparejar',
+    moves: (n) => `Movimientos: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} planetas emparejados en ${moves} movimientos\nTiempo: ${time}\n${learned} / ${total} planetas aprendidos en total`,
+    nextLevelHint: 'Comienza el siguiente nivel…',
+
+    modeQuiz: 'Quiz',
+    score: (n) => `Puntuación: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} correctas`,
   },
   fr: {
     title: 'Earth & Space Science',
-    tagline: 'Mets les planètes en ordre\nselon leur distance au soleil.',
-    easy: 'Facile · 4 planètes',
-    medium: 'Moyen · 5 planètes',
-    hard: 'Difficile · 6 planètes',
+    tagline: 'Mets les planètes en ordre, réponds à un\nquiz ou associe chacune à ce qui la rend spéciale.',
+    easy: 'Facile · 4',
+    medium: 'Moyen · 6',
+    hard: 'Difficile · 8',
     round: (i, total) => `Manche ${i} / ${total}`,
-    mistakes: (n) => `Erreurs : ${n}`,
     menu: '☰ Menu',
-    instruction: "Touche les planètes dans l'ordre, en commençant par la plus proche du soleil.",
     wellDone: 'Travail stellaire ! 🪐',
-    roundSummary: (perfectRounds, totalRounds) => `${perfectRounds} / ${totalRounds} manches sans erreur`,
     playAgain: '↻ Rejouer',
     backToMenu: '☰ Retour au menu',
     footer: "Invente ton propre moyen mnémotechnique pour l'ordre des planètes — ça marche vraiment.",
+
+    modeSequence: 'Ordre',
+    mistakes: (n) => `Erreurs : ${n}`,
+    instruction: "Touche les planètes dans l'ordre, en commençant par la plus proche du soleil.",
+    roundSummary: (perfectRounds, totalRounds) => `${perfectRounds} / ${totalRounds} manches sans erreur`,
+
+    modeMatch: 'Associer',
+    moves: (n) => `Coups : ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} planètes associées en ${moves} coups\nTemps : ${time}\n${learned} / ${total} planètes apprises au total`,
+    nextLevelHint: 'Le niveau suivant commence…',
+
+    modeQuiz: 'Quiz',
+    score: (n) => `Score : ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} correctes`,
   },
 };
 

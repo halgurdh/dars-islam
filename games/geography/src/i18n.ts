@@ -8,90 +8,161 @@ interface Strings {
   medium: string;
   hard: string;
   menu: string;
-  moves: (n: number) => string;
+  playAgain: string;
   wellDone: string;
-  roundSummary: (pairs: number, moves: number, time: string, learned: number, total: number) => string;
-  nextLevelHint: string;
-  soundOn: string;
-  soundOff: string;
   footer: string;
+
+  modeMatch: string;
+  moves: (n: number) => string;
+  matchRoundSummary: (pairs: number, moves: number, time: string, learned: number, total: number) => string;
+  nextLevelHint: string;
+
+  modeQuiz: string;
+  round: (i: number, total: number) => string;
+  score: (n: number) => string;
+  quizRoundSummary: (score: number, total: number) => string;
+
+  modeSequence: string;
+  mistakes: (n: number) => string;
+  instruction: string;
+  sequenceRoundSummary: (perfect: number, total: number) => string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
   en: {
     title: 'World Geography',
-    tagline: 'Match each country\nto its capital city.',
-    easy: 'Easy · 6 pairs',
-    medium: 'Medium · 8 pairs',
-    hard: 'Hard · 10 pairs',
+    tagline: 'Match countries to capitals, answer quizzes, or\nsort by land area — three ways to learn geography.',
+    easy: 'Easy · 6',
+    medium: 'Medium · 8',
+    hard: 'Hard · 10',
     menu: '☰ Menu',
-    moves: (n) => `Moves: ${n}`,
+    playAgain: 'Play Again',
     wellDone: 'World explorer! 🌍',
-    roundSummary: (pairs, moves, time, learned, total) => `${pairs} pairs matched in ${moves} moves\nTime: ${time}\n${learned} / ${total} capitals learned overall`,
-    nextLevelHint: 'Next round starting…',
-    soundOn: '🔈 Sound On',
-    soundOff: '🔇 Sound Off',
     footer: 'Picture a map in your head — it helps more than you think.',
+
+    modeMatch: 'Match',
+    moves: (n) => `Moves: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} pairs matched in ${moves} moves\nTime: ${time}\n${learned} / ${total} capitals learned overall`,
+    nextLevelHint: 'Next round starting…',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Question ${i}/${total}`,
+    score: (n) => `Score: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} correct`,
+
+    modeSequence: 'Size Sort',
+    mistakes: (n) => `Mistakes: ${n}`,
+    instruction: 'Tap the countries smallest to largest by area',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rounds perfect`,
   },
   nl: {
     title: 'World Geography',
-    tagline: 'Koppel elk land aan\nzijn hoofdstad.',
-    easy: 'Makkelijk · 6 paren',
-    medium: 'Gemiddeld · 8 paren',
-    hard: 'Moeilijk · 10 paren',
+    tagline: 'Koppel landen aan hoofdsteden, beantwoord\nquizvragen of sorteer op oppervlakte.',
+    easy: 'Makkelijk · 6',
+    medium: 'Gemiddeld · 8',
+    hard: 'Moeilijk · 10',
     menu: '☰ Menu',
-    moves: (n) => `Zetten: ${n}`,
+    playAgain: 'Opnieuw spelen',
     wellDone: 'Wereldontdekker! 🌍',
-    roundSummary: (pairs, moves, time, learned, total) => `${pairs} paren gematcht in ${moves} zetten\nTijd: ${time}\n${learned} / ${total} hoofdsteden in totaal geleerd`,
-    nextLevelHint: 'Volgende ronde begint…',
-    soundOn: '🔈 Geluid Aan',
-    soundOff: '🔇 Geluid Uit',
     footer: 'Stel je de kaart voor in je hoofd — dat helpt meer dan je denkt.',
+
+    modeMatch: 'Koppelen',
+    moves: (n) => `Zetten: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} paren gematcht in ${moves} zetten\nTijd: ${time}\n${learned} / ${total} hoofdsteden in totaal geleerd`,
+    nextLevelHint: 'Volgende ronde begint…',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Vraag ${i}/${total}`,
+    score: (n) => `Score: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} goed`,
+
+    modeSequence: 'Grootte Sorteren',
+    mistakes: (n) => `Fouten: ${n}`,
+    instruction: 'Tik de landen van klein naar groot aan qua oppervlakte',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondes perfect`,
   },
   de: {
     title: 'World Geography',
-    tagline: 'Ordne jedem Land\nseine Hauptstadt zu.',
-    easy: 'Leicht · 6 Paare',
-    medium: 'Mittel · 8 Paare',
-    hard: 'Schwer · 10 Paare',
+    tagline: 'Ordne Ländern ihre Hauptstadt zu, beantworte\nQuizfragen oder sortiere nach Fläche.',
+    easy: 'Leicht · 6',
+    medium: 'Mittel · 8',
+    hard: 'Schwer · 10',
     menu: '☰ Menü',
-    moves: (n) => `Züge: ${n}`,
+    playAgain: 'Nochmal spielen',
     wellDone: 'Weltentdecker! 🌍',
-    roundSummary: (pairs, moves, time, learned, total) => `${pairs} Paare gefunden in ${moves} Zügen\nZeit: ${time}\n${learned} / ${total} Hauptstädte insgesamt gelernt`,
-    nextLevelHint: 'Nächste Runde startet…',
-    soundOn: '🔈 Ton An',
-    soundOff: '🔇 Ton Aus',
     footer: 'Stell dir die Karte im Kopf vor — das hilft mehr, als du denkst.',
+
+    modeMatch: 'Zuordnen',
+    moves: (n) => `Züge: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} Paare gefunden in ${moves} Zügen\nZeit: ${time}\n${learned} / ${total} Hauptstädte insgesamt gelernt`,
+    nextLevelHint: 'Nächste Runde startet…',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Frage ${i}/${total}`,
+    score: (n) => `Punkte: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} richtig`,
+
+    modeSequence: 'Größe Sortieren',
+    mistakes: (n) => `Fehler: ${n}`,
+    instruction: 'Tippe die Länder von klein nach groß nach Fläche an',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} Runden perfekt`,
   },
   es: {
     title: 'World Geography',
-    tagline: 'Une cada país\ncon su capital.',
-    easy: 'Fácil · 6 pares',
-    medium: 'Medio · 8 pares',
-    hard: 'Difícil · 10 pares',
+    tagline: 'Empareja países con capitales, responde\npreguntas u ordena por superficie.',
+    easy: 'Fácil · 6',
+    medium: 'Medio · 8',
+    hard: 'Difícil · 10',
     menu: '☰ Menú',
-    moves: (n) => `Movimientos: ${n}`,
+    playAgain: 'Jugar de nuevo',
     wellDone: '¡Explorador del mundo! 🌍',
-    roundSummary: (pairs, moves, time, learned, total) => `${pairs} pares emparejados en ${moves} movimientos\nTiempo: ${time}\n${learned} / ${total} capitales aprendidas en total`,
-    nextLevelHint: 'Comienza la siguiente ronda…',
-    soundOn: '🔈 Sonido Activado',
-    soundOff: '🔇 Sonido Desactivado',
     footer: 'Imagina el mapa en tu mente — ayuda más de lo que crees.',
+
+    modeMatch: 'Emparejar',
+    moves: (n) => `Movimientos: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} pares emparejados en ${moves} movimientos\nTiempo: ${time}\n${learned} / ${total} capitales aprendidas en total`,
+    nextLevelHint: 'Comienza la siguiente ronda…',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Pregunta ${i}/${total}`,
+    score: (n) => `Puntuación: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} correctas`,
+
+    modeSequence: 'Orden por Tamaño',
+    mistakes: (n) => `Errores: ${n}`,
+    instruction: 'Toca los países de menor a mayor superficie',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondas perfectas`,
   },
   fr: {
     title: 'World Geography',
-    tagline: 'Associe chaque pays\nà sa capitale.',
-    easy: 'Facile · 6 paires',
-    medium: 'Moyen · 8 paires',
-    hard: 'Difficile · 10 paires',
+    tagline: 'Associe pays et capitales, réponds à un quiz\nou trie par superficie.',
+    easy: 'Facile · 6',
+    medium: 'Moyen · 8',
+    hard: 'Difficile · 10',
     menu: '☰ Menu',
-    moves: (n) => `Coups : ${n}`,
+    playAgain: 'Rejouer',
     wellDone: 'Explorateur du monde ! 🌍',
-    roundSummary: (pairs, moves, time, learned, total) => `${pairs} paires trouvées en ${moves} coups\nTemps : ${time}\n${learned} / ${total} capitales apprises au total`,
-    nextLevelHint: 'La manche suivante commence…',
-    soundOn: '🔈 Son Activé',
-    soundOff: '🔇 Son Désactivé',
     footer: 'Imagine la carte dans ta tête — ça aide plus que tu ne le penses.',
+
+    modeMatch: 'Associer',
+    moves: (n) => `Coups : ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} paires trouvées en ${moves} coups\nTemps : ${time}\n${learned} / ${total} capitales apprises au total`,
+    nextLevelHint: 'La manche suivante commence…',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Question ${i}/${total}`,
+    score: (n) => `Score : ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} correctes`,
+
+    modeSequence: 'Tri par Taille',
+    mistakes: (n) => `Erreurs : ${n}`,
+    instruction: 'Touche les pays du plus petit au plus grand par superficie',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
 };
 

@@ -1,4 +1,6 @@
 import type { QuizQuestion } from '@shared/quiz-kit';
+import type { MatchItem } from '@shared/match-kit';
+import type { SequenceItem } from '@shared/sequence-kit';
 
 export interface Difficulty {
   id: string;
@@ -95,4 +97,79 @@ export function generateQuestion(difficulty: Difficulty): QuizQuestion {
   if (difficulty.id === 'easy') return easyQuestion();
   if (difficulty.id === 'medium') return mediumQuestion();
   return hardQuestion();
+}
+
+// Match and Sequence need a compact label/value pair per difficulty — the
+// "combine like terms" quiz variant answers in "Nx" form, not a plain
+// number, so it's left out here in favor of the solve-for-x variants.
+interface AlgebraProblem {
+  label: string;
+  value: number;
+}
+
+function easyProblem(): AlgebraProblem {
+  const a = randInt(1, 15);
+  if (Math.random() < 0.5) {
+    const x = randInt(1, 20);
+    const b = a + x;
+    return { label: `x + ${a} = ${b}`, value: x };
+  }
+  const x = randInt(a + 1, a + 20);
+  const b = x - a;
+  return { label: `x - ${a} = ${b}`, value: x };
+}
+
+function mediumProblem(): AlgebraProblem {
+  const a = randInt(2, 9);
+  const x = randInt(1, 10);
+  const b = randInt(1, 20);
+  const c = a * x + b;
+  return { label: `${a}x + ${b} = ${c}`, value: x };
+}
+
+function hardProblem(): AlgebraProblem {
+  if (Math.random() < 0.5) {
+    const x = randInt(1, 10);
+    const a = randInt(3, 7);
+    const c = randInt(1, a - 1);
+    const b = randInt(1, 15);
+    const d = b + (a - c) * x;
+    return { label: `${a}x + ${b} = ${c}x + ${d}`, value: x };
+  }
+  const x = randInt(2, 10);
+  const a = randInt(2, 8);
+  const b = randInt(1, 15);
+  const value = a * x + b;
+  return { label: `If x = ${x}: ${a}x + ${b}`, value };
+}
+
+function problemFor(difficulty: Difficulty): AlgebraProblem {
+  if (difficulty.id === 'easy') return easyProblem();
+  if (difficulty.id === 'medium') return mediumProblem();
+  return hardProblem();
+}
+
+function distinctProblems(difficulty: Difficulty, count: number): AlgebraProblem[] {
+  const used = new Set<number>();
+  const out: AlgebraProblem[] = [];
+  let attempts = 0;
+  while (out.length < count && attempts < count * 50) {
+    attempts++;
+    const p = problemFor(difficulty);
+    if (used.has(p.value)) continue;
+    used.add(p.value);
+    out.push(p);
+  }
+  return out;
+}
+
+export function generateMatchItems(difficulty: Difficulty, pairs: number): MatchItem[] {
+  return distinctProblems(difficulty, pairs).map((p, i) => ({ id: i, sideA: p.label, sideB: String(p.value) }));
+}
+
+// Sorting problems by their answer is the whole challenge — you have to
+// actually solve each one to know where it belongs in the order.
+export function generateSequenceRound(difficulty: Difficulty, count: number): SequenceItem[] {
+  const problems = distinctProblems(difficulty, count).sort((a, b) => a.value - b.value);
+  return problems.map((p, i) => ({ id: i, label: p.label }));
 }

@@ -24,6 +24,20 @@ interface Strings {
   typeAnswerPlaceholder: string;
   checkAnswer: string;
   listenAndChoose: string;
+
+  modeBuilder: string;
+  startBuilder: string;
+
+  modeMatch: string;
+  moves: (n: number) => string;
+  matchRoundSummary: (pairs: number, moves: number, time: string) => string;
+
+  modeSequence: string;
+  round: (i: number, total: number) => string;
+  instruction: string;
+  sequenceRoundSummary: (perfect: number, total: number) => string;
+  playAgain: string;
+  backToMenu: string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
@@ -51,6 +65,20 @@ const STRINGS: Record<LangMode, Strings> = {
     typeAnswerPlaceholder: 'Type the meaning…',
     checkAnswer: 'Check',
     listenAndChoose: '🎧 Listen, then choose the answer',
+
+    modeBuilder: 'Builder',
+    startBuilder: '▶ Practice',
+
+    modeMatch: 'Match',
+    moves: (n) => `Moves: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} matched in ${moves} moves\nTime: ${time}`,
+
+    modeSequence: 'Order',
+    round: (i, total) => `Round ${i} / ${total}`,
+    instruction: 'Tap the duas in the order of a daily routine',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rounds perfect`,
+    playAgain: '↻ Play Again',
+    backToMenu: '☰ Back to Menu',
   },
   nl: {
     subtitle: 'Duas Builder',
@@ -76,6 +104,20 @@ const STRINGS: Record<LangMode, Strings> = {
     typeAnswerPlaceholder: 'Typ de betekenis…',
     checkAnswer: 'Controleer',
     listenAndChoose: '🎧 Luister en kies het antwoord',
+
+    modeBuilder: 'Bouwen',
+    startBuilder: '▶ Oefenen',
+
+    modeMatch: 'Koppelen',
+    moves: (n) => `Zetten: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} gematcht in ${moves} zetten\nTijd: ${time}`,
+
+    modeSequence: 'Volgorde',
+    round: (i, total) => `Ronde ${i} / ${total}`,
+    instruction: 'Tik de smeekbeden aan in de volgorde van een dagelijkse routine',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondes perfect`,
+    playAgain: '↻ Opnieuw spelen',
+    backToMenu: '☰ Terug naar menu',
   },
   de: {
     subtitle: 'Duas Builder',
@@ -101,6 +143,20 @@ const STRINGS: Record<LangMode, Strings> = {
     typeAnswerPlaceholder: 'Bedeutung eingeben…',
     checkAnswer: 'Prüfen',
     listenAndChoose: '🎧 Hör zu und wähle die Antwort',
+
+    modeBuilder: 'Bauen',
+    startBuilder: '▶ Üben',
+
+    modeMatch: 'Zuordnen',
+    moves: (n) => `Züge: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} gefunden in ${moves} Zügen\nZeit: ${time}`,
+
+    modeSequence: 'Reihenfolge',
+    round: (i, total) => `Runde ${i} / ${total}`,
+    instruction: 'Tippe die Bittgebete in der Reihenfolge einer täglichen Routine an',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} Runden perfekt`,
+    playAgain: '↻ Nochmal spielen',
+    backToMenu: '☰ Zurück zum Menü',
   },
   es: {
     subtitle: 'Duas Builder',
@@ -126,6 +182,20 @@ const STRINGS: Record<LangMode, Strings> = {
     typeAnswerPlaceholder: 'Escribe el significado…',
     checkAnswer: 'Comprobar',
     listenAndChoose: '🎧 Escucha y elige la respuesta',
+
+    modeBuilder: 'Construir',
+    startBuilder: '▶ Practicar',
+
+    modeMatch: 'Emparejar',
+    moves: (n) => `Movimientos: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} emparejadas en ${moves} movimientos\nTiempo: ${time}`,
+
+    modeSequence: 'Orden',
+    round: (i, total) => `Ronda ${i} / ${total}`,
+    instruction: 'Toca las súplicas en el orden de una rutina diaria',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondas perfectas`,
+    playAgain: '↻ Jugar de nuevo',
+    backToMenu: '☰ Volver al menú',
   },
   fr: {
     subtitle: 'Duas Builder',
@@ -151,6 +221,20 @@ const STRINGS: Record<LangMode, Strings> = {
     typeAnswerPlaceholder: 'Tapez la signification…',
     checkAnswer: 'Vérifier',
     listenAndChoose: '🎧 Écoute, puis choisis la réponse',
+
+    modeBuilder: 'Construction',
+    startBuilder: '▶ Pratiquer',
+
+    modeMatch: 'Associer',
+    moves: (n) => `Coups : ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} associées en ${moves} coups\nTemps : ${time}`,
+
+    modeSequence: 'Ordre',
+    round: (i, total) => `Manche ${i} / ${total}`,
+    instruction: "Touche les duas dans l'ordre d'une routine quotidienne",
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
+    playAgain: '↻ Rejouer',
+    backToMenu: '☰ Retour au menu',
   },
 };
 

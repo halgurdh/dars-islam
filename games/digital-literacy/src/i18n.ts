@@ -8,90 +8,161 @@ interface Strings {
   medium: string;
   hard: string;
   menu: string;
-  moves: (n: number) => string;
+  playAgain: string;
   wellDone: string;
-  roundSummary: (pairs: number, moves: number, time: string, learned: number, total: number) => string;
-  nextLevelHint: string;
-  soundOn: string;
-  soundOff: string;
   footer: string;
+
+  modeMatch: string;
+  moves: (n: number) => string;
+  matchRoundSummary: (pairs: number, moves: number, time: string, learned: number, total: number) => string;
+  nextLevelHint: string;
+
+  modeQuiz: string;
+  round: (i: number, total: number) => string;
+  score: (n: number) => string;
+  quizRoundSummary: (score: number, total: number) => string;
+
+  modeSequence: string;
+  mistakes: (n: number) => string;
+  instruction: string;
+  sequenceRoundSummary: (perfect: number, total: number) => string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
   en: {
     title: 'Digital Literacy',
-    tagline: 'Match each tech term\nto its meaning.',
-    easy: 'Easy · 6 pairs',
-    medium: 'Medium · 8 pairs',
-    hard: 'Hard · 10 pairs',
+    tagline: 'Match tech terms, answer quizzes, or sort\nfrom hardware to online behavior.',
+    easy: 'Easy · 6',
+    medium: 'Medium · 8',
+    hard: 'Hard · 10',
     menu: '☰ Menu',
-    moves: (n) => `Moves: ${n}`,
+    playAgain: 'Play Again',
     wellDone: 'Smart and safe! 💻',
-    roundSummary: (pairs, moves, time, learned, total) => `${pairs} pairs matched in ${moves} moves\nTime: ${time}\n${learned} / ${total} terms learned overall`,
-    nextLevelHint: 'Next round starting…',
-    soundOn: '🔈 Sound On',
-    soundOff: '🔇 Sound Off',
     footer: 'When in doubt online, ask a trusted adult before you click.',
+
+    modeMatch: 'Match',
+    moves: (n) => `Moves: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} pairs matched in ${moves} moves\nTime: ${time}\n${learned} / ${total} terms learned overall`,
+    nextLevelHint: 'Next round starting…',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Question ${i}/${total}`,
+    score: (n) => `Score: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} correct`,
+
+    modeSequence: 'Layer Sort',
+    mistakes: (n) => `Mistakes: ${n}`,
+    instruction: 'Tap them from internet hardware to online behavior',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rounds perfect`,
   },
   nl: {
     title: 'Digital Literacy',
-    tagline: 'Koppel elke techterm aan\nzijn betekenis.',
-    easy: 'Makkelijk · 6 paren',
-    medium: 'Gemiddeld · 8 paren',
-    hard: 'Moeilijk · 10 paren',
+    tagline: 'Koppel techtermen, beantwoord quizvragen of\nsorteer van hardware naar online gedrag.',
+    easy: 'Makkelijk · 6',
+    medium: 'Gemiddeld · 8',
+    hard: 'Moeilijk · 10',
     menu: '☰ Menu',
-    moves: (n) => `Zetten: ${n}`,
+    playAgain: 'Opnieuw spelen',
     wellDone: 'Slim en veilig! 💻',
-    roundSummary: (pairs, moves, time, learned, total) => `${pairs} paren gematcht in ${moves} zetten\nTijd: ${time}\n${learned} / ${total} termen in totaal geleerd`,
-    nextLevelHint: 'Volgende ronde begint…',
-    soundOn: '🔈 Geluid Aan',
-    soundOff: '🔇 Geluid Uit',
     footer: 'Twijfel je online ergens over? Vraag het eerst aan een volwassene die je vertrouwt.',
+
+    modeMatch: 'Koppelen',
+    moves: (n) => `Zetten: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} paren gematcht in ${moves} zetten\nTijd: ${time}\n${learned} / ${total} termen in totaal geleerd`,
+    nextLevelHint: 'Volgende ronde begint…',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Vraag ${i}/${total}`,
+    score: (n) => `Score: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} goed`,
+
+    modeSequence: 'Laag Sorteren',
+    mistakes: (n) => `Fouten: ${n}`,
+    instruction: 'Tik ze aan van hardware naar online gedrag',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondes perfect`,
   },
   de: {
     title: 'Digital Literacy',
-    tagline: 'Ordne jedem Technikbegriff\nseine Bedeutung zu.',
-    easy: 'Leicht · 6 Paare',
-    medium: 'Mittel · 8 Paare',
-    hard: 'Schwer · 10 Paare',
+    tagline: 'Ordne Technikbegriffe zu, beantworte Quizfragen\noder sortiere von Hardware zu Online-Verhalten.',
+    easy: 'Leicht · 6',
+    medium: 'Mittel · 8',
+    hard: 'Schwer · 10',
     menu: '☰ Menü',
-    moves: (n) => `Züge: ${n}`,
+    playAgain: 'Nochmal spielen',
     wellDone: 'Klug und sicher! 💻',
-    roundSummary: (pairs, moves, time, learned, total) => `${pairs} Paare gefunden in ${moves} Zügen\nZeit: ${time}\n${learned} / ${total} Begriffe insgesamt gelernt`,
-    nextLevelHint: 'Nächste Runde startet…',
-    soundOn: '🔈 Ton An',
-    soundOff: '🔇 Ton Aus',
     footer: 'Bist du dir online unsicher? Frag zuerst einen Erwachsenen, dem du vertraust.',
+
+    modeMatch: 'Zuordnen',
+    moves: (n) => `Züge: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} Paare gefunden in ${moves} Zügen\nZeit: ${time}\n${learned} / ${total} Begriffe insgesamt gelernt`,
+    nextLevelHint: 'Nächste Runde startet…',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Frage ${i}/${total}`,
+    score: (n) => `Punkte: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} richtig`,
+
+    modeSequence: 'Ebene Sortieren',
+    mistakes: (n) => `Fehler: ${n}`,
+    instruction: 'Tippe sie von Hardware bis Online-Verhalten an',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} Runden perfekt`,
   },
   es: {
     title: 'Digital Literacy',
-    tagline: 'Une cada término tecnológico\ncon su significado.',
-    easy: 'Fácil · 6 pares',
-    medium: 'Medio · 8 pares',
-    hard: 'Difícil · 10 pares',
+    tagline: 'Empareja términos tecnológicos, responde\npreguntas u ordena de hardware a comportamiento online.',
+    easy: 'Fácil · 6',
+    medium: 'Medio · 8',
+    hard: 'Difícil · 10',
     menu: '☰ Menú',
-    moves: (n) => `Movimientos: ${n}`,
+    playAgain: 'Jugar de nuevo',
     wellDone: '¡Inteligente y seguro! 💻',
-    roundSummary: (pairs, moves, time, learned, total) => `${pairs} pares emparejados en ${moves} movimientos\nTiempo: ${time}\n${learned} / ${total} términos aprendidos en total`,
-    nextLevelHint: 'Comienza la siguiente ronda…',
-    soundOn: '🔈 Sonido Activado',
-    soundOff: '🔇 Sonido Desactivado',
     footer: 'Si tienes dudas en línea, pregunta primero a un adulto de confianza.',
+
+    modeMatch: 'Emparejar',
+    moves: (n) => `Movimientos: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} pares emparejados en ${moves} movimientos\nTiempo: ${time}\n${learned} / ${total} términos aprendidos en total`,
+    nextLevelHint: 'Comienza la siguiente ronda…',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Pregunta ${i}/${total}`,
+    score: (n) => `Puntuación: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} correctas`,
+
+    modeSequence: 'Orden por Capa',
+    mistakes: (n) => `Errores: ${n}`,
+    instruction: 'Tócalos desde el hardware hasta el comportamiento en línea',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondas perfectas`,
   },
   fr: {
     title: 'Digital Literacy',
-    tagline: 'Associe chaque terme technique\nà sa signification.',
-    easy: 'Facile · 6 paires',
-    medium: 'Moyen · 8 paires',
-    hard: 'Difficile · 10 paires',
+    tagline: "Associe des termes techniques, réponds à un\nquiz ou trie du matériel au comportement en ligne.",
+    easy: 'Facile · 6',
+    medium: 'Moyen · 8',
+    hard: 'Difficile · 10',
     menu: '☰ Menu',
-    moves: (n) => `Coups : ${n}`,
+    playAgain: 'Rejouer',
     wellDone: 'Malin et prudent ! 💻',
-    roundSummary: (pairs, moves, time, learned, total) => `${pairs} paires trouvées en ${moves} coups\nTemps : ${time}\n${learned} / ${total} termes appris au total`,
-    nextLevelHint: 'La manche suivante commence…',
-    soundOn: '🔈 Son Activé',
-    soundOff: '🔇 Son Désactivé',
     footer: "En cas de doute en ligne, demande d'abord à un adulte de confiance.",
+
+    modeMatch: 'Associer',
+    moves: (n) => `Coups : ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} paires trouvées en ${moves} coups\nTemps : ${time}\n${learned} / ${total} termes appris au total`,
+    nextLevelHint: 'La manche suivante commence…',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Question ${i}/${total}`,
+    score: (n) => `Score : ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} correctes`,
+
+    modeSequence: 'Tri par Couche',
+    mistakes: (n) => `Erreurs : ${n}`,
+    instruction: 'Touche-les du matériel au comportement en ligne',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
 };
 

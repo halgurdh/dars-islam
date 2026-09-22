@@ -1,74 +1,66 @@
-import Phaser from 'phaser';
-import { createButton, type QuizRunConfig } from '@shared/quiz-kit';
-import { createLanguagePicker } from '@shared/language-picker';
-import { COLORS, FONT, hex } from '../theme';
-import { SPEED_MODES, TOTAL_QUESTIONS, generateQuestion, type SpeedMode } from '../questions';
+import { COLORS, FONT } from '../theme';
+import { SPEED_MODES, TOTAL_QUESTIONS, generateQuestion, tier1, tier2, tier3, generateMatchItems, generateSequenceRound } from '../questions';
 import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { t } from '../i18n';
+import { createModeMenuScene, quizMode, sequenceMode, type GameMode } from '@shared/mode-menu-kit';
+import { getMatchSfx } from '@shared/match-kit';
 
-const LABELS: Record<string, () => string> = {
+const GAME_ID = 'mental-math-sprint';
+
+const SPEED_LABELS: Record<string, () => string> = {
   relaxed: () => t().relaxed,
   normal: () => t().normal,
 };
 
-export class MenuScene extends Phaser.Scene {
-  constructor() {
-    super('MenuScene');
-  }
+const TIERS = [tier1, tier2, tier3];
+const TIER_LABELS = [() => t().easy, () => t().medium, () => t().hard];
 
-  create(): void {
-    const { width, height } = this.scale;
-    this.cameras.main.setBackgroundColor(COLORS.bg);
-
-    const langBefore = getLang();
-    void detectDefaultLang().then(() => {
-      if (this.scene.isActive() && getLang() !== langBefore) this.scene.restart();
-    });
-
-    createLanguagePicker(this, width / 2, height * 0.68, COLORS.accent, getLang(), (lang) => {
-      setLang(lang);
-      this.scene.restart();
-    });
-
-    this.add.text(width / 2, height * 0.16, t().title, {
-      fontFamily: FONT,
-      fontSize: '40px',
-      fontStyle: 'bold',
-      color: hex(COLORS.accent),
-    }).setOrigin(0.5);
-
-    this.add.text(width / 2, height * 0.25, t().tagline, {
-      fontFamily: FONT,
-      fontSize: '21px',
-      color: COLORS.textMuted,
-      align: 'center',
-    }).setOrigin(0.5);
-
-    const startY = height * 0.44;
-    const gap = height * 0.12;
-    SPEED_MODES.forEach((mode, i) => {
-      createButton(this, width / 2, startY + i * gap, 400, 84, LABELS[mode.id](), COLORS, FONT, () => {
-        this.startSprint(mode);
+// Match items are regenerated fresh at click-time (not baked into the menu)
+// because each tier needs its own generator — matchMode()'s static `items`
+// list can't vary per difficulty like that.
+const matchMode: GameMode = {
+  id: 'match',
+  label: () => t().modeMatch,
+  icon: '🎴',
+  difficulties: TIERS.map((tierFn, i) => ({
+    label: TIER_LABELS[i],
+    onSelect: (scene) => {
+      getMatchSfx(GAME_ID).flip();
+      scene.scene.start('Match', {
+        gameId: GAME_ID,
+        pairs: [6, 8, 10][i] ?? 6,
+        theme: COLORS,
+        fontFamily: FONT,
+        strings: {
+          menu: t().menu,
+          moves: t().moves,
+          wellDone: t().wellDone,
+          roundSummary: t().matchRoundSummary,
+          nextLevelHint: t().nextLevelHint,
+        },
+        items: generateMatchItems(tierFn, [6, 8, 10][i] ?? 6),
+        menuSceneKey: 'MenuScene',
       });
-    });
+    },
+  })),
+};
 
-    this.add.text(width / 2, height * 0.92, t().footer, {
-      fontFamily: FONT,
-      fontSize: '19px',
-      color: COLORS.textMuted,
-      align: 'center',
-      wordWrap: { width: width * 0.85 },
-    }).setOrigin(0.5);
-  }
-
-  private startSprint(mode: SpeedMode): void {
-    const cfg: QuizRunConfig = {
-      gameId: 'mental-math-sprint',
-      totalQuestions: TOTAL_QUESTIONS,
+export const MenuScene = createModeMenuScene({
+  theme: COLORS,
+  fontFamily: FONT,
+  titleFontSize: '40px',
+  title: () => t().title,
+  tagline: () => t().tagline,
+  footer: () => t().footer,
+  locale: { getLang, setLang, detectDefaultLang },
+  modes: [
+    quizMode({
+      label: () => t().modeQuiz,
+      icon: '⚡',
+      gameId: GAME_ID,
       theme: COLORS,
       fontFamily: FONT,
-      timeLimitMs: mode.timeLimitMs,
-      strings: {
+      strings: () => ({
         round: t().round,
         score: t().score,
         menu: t().menu,
@@ -76,9 +68,36 @@ export class MenuScene extends Phaser.Scene {
         roundSummary: t().roundSummary,
         playAgain: t().playAgain,
         backToMenu: t().backToMenu,
-      },
-      generateQuestion,
-    };
-    this.scene.start('Quiz', cfg);
-  }
-}
+      }),
+      difficulties: SPEED_MODES.map((mode) => ({
+        label: SPEED_LABELS[mode.id],
+        totalQuestions: TOTAL_QUESTIONS,
+        timeLimitMs: mode.timeLimitMs,
+        generateQuestion,
+      })),
+    }),
+    matchMode,
+    sequenceMode({
+      label: () => t().modeSequence,
+      icon: '📏',
+      gameId: GAME_ID,
+      theme: COLORS,
+      fontFamily: FONT,
+      strings: () => ({
+        round: t().round,
+        mistakes: t().mistakes,
+        menu: t().menu,
+        instruction: t().instruction,
+        wellDone: t().wellDone,
+        roundSummary: t().sequenceRoundSummary,
+        playAgain: t().playAgain,
+        backToMenu: t().backToMenu,
+      }),
+      difficulties: TIERS.map((tierFn, i) => ({
+        label: TIER_LABELS[i],
+        totalRounds: 4,
+        generateRound: () => generateSequenceRound(tierFn, [4, 5, 6][i] ?? 4),
+      })),
+    }),
+  ],
+});

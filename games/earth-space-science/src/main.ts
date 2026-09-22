@@ -1,5 +1,6 @@
-import { bootQuizGame } from '@shared/quiz-kit';
+import { bootQuizGame, QuizScene } from '@shared/quiz-kit';
+import { MatchScene } from '@shared/match-kit';
 import { SequenceScene } from '@shared/sequence-kit';
 import { MenuScene } from './scenes/MenuScene';
 
-bootQuizGame('#0a0f1f', [new MenuScene(), new SequenceScene()]);
+bootQuizGame('#0a0f1f', [new MenuScene(), new SequenceScene(), new MatchScene(), new QuizScene()]);

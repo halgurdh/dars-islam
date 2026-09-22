@@ -8,90 +8,161 @@ interface Strings {
   medium: string;
   hard: string;
   menu: string;
-  moves: (n: number) => string;
+  playAgain: string;
   wellDone: string;
-  roundSummary: (pairs: number, moves: number, time: string, learned: number, total: number) => string;
-  nextLevelHint: string;
-  soundOn: string;
-  soundOff: string;
   footer: string;
+
+  modeMatch: string;
+  moves: (n: number) => string;
+  matchRoundSummary: (pairs: number, moves: number, time: string, learned: number, total: number) => string;
+  nextLevelHint: string;
+
+  modeQuiz: string;
+  round: (i: number, total: number) => string;
+  score: (n: number) => string;
+  quizRoundSummary: (score: number, total: number) => string;
+
+  modeSequence: string;
+  mistakes: (n: number) => string;
+  instruction: string;
+  sequenceRoundSummary: (perfect: number, total: number) => string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
   en: {
     title: 'Language Arts',
-    tagline: 'Match each word\nto its synonym.',
-    easy: 'Easy · 6 pairs',
-    medium: 'Medium · 8 pairs',
-    hard: 'Hard · 10 pairs',
+    tagline: 'Match words to synonyms, answer quizzes, or\nsort them shortest to longest.',
+    easy: 'Easy · 6',
+    medium: 'Medium · 8',
+    hard: 'Hard · 10',
     menu: '☰ Menu',
-    moves: (n) => `Moves: ${n}`,
+    playAgain: 'Play Again',
     wellDone: 'Word wizard! ✏️',
-    roundSummary: (pairs, moves, time, learned, total) => `${pairs} pairs matched in ${moves} moves\nTime: ${time}\n${learned} / ${total} words learned overall`,
-    nextLevelHint: 'Next round starting…',
-    soundOn: '🔈 Sound On',
-    soundOff: '🔇 Sound Off',
     footer: 'Say each word out loud — your ear often knows the synonym first.',
+
+    modeMatch: 'Match',
+    moves: (n) => `Moves: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} pairs matched in ${moves} moves\nTime: ${time}\n${learned} / ${total} words learned overall`,
+    nextLevelHint: 'Next round starting…',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Question ${i}/${total}`,
+    score: (n) => `Score: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} correct`,
+
+    modeSequence: 'Word Sort',
+    mistakes: (n) => `Mistakes: ${n}`,
+    instruction: 'Tap the words shortest to longest',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rounds perfect`,
   },
   nl: {
     title: 'Language Arts',
-    tagline: 'Koppel elk woord aan\nzijn synoniem.',
-    easy: 'Makkelijk · 6 paren',
-    medium: 'Gemiddeld · 8 paren',
-    hard: 'Moeilijk · 10 paren',
+    tagline: 'Koppel woorden aan synoniemen, beantwoord\nquizvragen of sorteer van kort naar lang.',
+    easy: 'Makkelijk · 6',
+    medium: 'Gemiddeld · 8',
+    hard: 'Moeilijk · 10',
     menu: '☰ Menu',
-    moves: (n) => `Zetten: ${n}`,
+    playAgain: 'Opnieuw spelen',
     wellDone: 'Woordwonder! ✏️',
-    roundSummary: (pairs, moves, time, learned, total) => `${pairs} paren gematcht in ${moves} zetten\nTijd: ${time}\n${learned} / ${total} woorden in totaal geleerd`,
-    nextLevelHint: 'Volgende ronde begint…',
-    soundOn: '🔈 Geluid Aan',
-    soundOff: '🔇 Geluid Uit',
     footer: 'Zeg elk woord hardop — je oor weet het synoniem vaak als eerste.',
+
+    modeMatch: 'Koppelen',
+    moves: (n) => `Zetten: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} paren gematcht in ${moves} zetten\nTijd: ${time}\n${learned} / ${total} woorden in totaal geleerd`,
+    nextLevelHint: 'Volgende ronde begint…',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Vraag ${i}/${total}`,
+    score: (n) => `Score: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} goed`,
+
+    modeSequence: 'Woorden Sorteren',
+    mistakes: (n) => `Fouten: ${n}`,
+    instruction: 'Tik de woorden van kort naar lang aan',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondes perfect`,
   },
   de: {
     title: 'Language Arts',
-    tagline: 'Ordne jedem Wort\nsein Synonym zu.',
-    easy: 'Leicht · 6 Paare',
-    medium: 'Mittel · 8 Paare',
-    hard: 'Schwer · 10 Paare',
+    tagline: 'Ordne Wörtern ihr Synonym zu, beantworte\nQuizfragen oder sortiere von kurz nach lang.',
+    easy: 'Leicht · 6',
+    medium: 'Mittel · 8',
+    hard: 'Schwer · 10',
     menu: '☰ Menü',
-    moves: (n) => `Züge: ${n}`,
+    playAgain: 'Nochmal spielen',
     wellDone: 'Wortzauberer! ✏️',
-    roundSummary: (pairs, moves, time, learned, total) => `${pairs} Paare gefunden in ${moves} Zügen\nZeit: ${time}\n${learned} / ${total} Wörter insgesamt gelernt`,
-    nextLevelHint: 'Nächste Runde startet…',
-    soundOn: '🔈 Ton An',
-    soundOff: '🔇 Ton Aus',
     footer: 'Sprich jedes Wort laut aus — dein Ohr kennt das Synonym oft zuerst.',
+
+    modeMatch: 'Zuordnen',
+    moves: (n) => `Züge: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} Paare gefunden in ${moves} Zügen\nZeit: ${time}\n${learned} / ${total} Wörter insgesamt gelernt`,
+    nextLevelHint: 'Nächste Runde startet…',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Frage ${i}/${total}`,
+    score: (n) => `Punkte: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} richtig`,
+
+    modeSequence: 'Wörter Sortieren',
+    mistakes: (n) => `Fehler: ${n}`,
+    instruction: 'Tippe die Wörter von kurz nach lang an',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} Runden perfekt`,
   },
   es: {
     title: 'Language Arts',
-    tagline: 'Une cada palabra\ncon su sinónimo.',
-    easy: 'Fácil · 6 pares',
-    medium: 'Medio · 8 pares',
-    hard: 'Difícil · 10 pares',
+    tagline: 'Empareja palabras con sinónimos, responde\npreguntas u ordénalas de corta a larga.',
+    easy: 'Fácil · 6',
+    medium: 'Medio · 8',
+    hard: 'Difícil · 10',
     menu: '☰ Menú',
-    moves: (n) => `Movimientos: ${n}`,
+    playAgain: 'Jugar de nuevo',
     wellDone: '¡Mago de las palabras! ✏️',
-    roundSummary: (pairs, moves, time, learned, total) => `${pairs} pares emparejados en ${moves} movimientos\nTiempo: ${time}\n${learned} / ${total} palabras aprendidas en total`,
-    nextLevelHint: 'Comienza la siguiente ronda…',
-    soundOn: '🔈 Sonido Activado',
-    soundOff: '🔇 Sonido Desactivado',
     footer: 'Di cada palabra en voz alta — tu oído suele reconocer el sinónimo primero.',
+
+    modeMatch: 'Emparejar',
+    moves: (n) => `Movimientos: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} pares emparejados en ${moves} movimientos\nTiempo: ${time}\n${learned} / ${total} palabras aprendidas en total`,
+    nextLevelHint: 'Comienza la siguiente ronda…',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Pregunta ${i}/${total}`,
+    score: (n) => `Puntuación: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} correctas`,
+
+    modeSequence: 'Orden de Palabras',
+    mistakes: (n) => `Errores: ${n}`,
+    instruction: 'Toca las palabras de más corta a más larga',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondas perfectas`,
   },
   fr: {
     title: 'Language Arts',
-    tagline: 'Associe chaque mot\nà son synonyme.',
-    easy: 'Facile · 6 paires',
-    medium: 'Moyen · 8 paires',
-    hard: 'Difficile · 10 paires',
+    tagline: 'Associe des mots à leurs synonymes, réponds\nà un quiz ou trie du plus court au plus long.',
+    easy: 'Facile · 6',
+    medium: 'Moyen · 8',
+    hard: 'Difficile · 10',
     menu: '☰ Menu',
-    moves: (n) => `Coups : ${n}`,
+    playAgain: 'Rejouer',
     wellDone: 'Magicien des mots ! ✏️',
-    roundSummary: (pairs, moves, time, learned, total) => `${pairs} paires trouvées en ${moves} coups\nTemps : ${time}\n${learned} / ${total} mots appris au total`,
-    nextLevelHint: 'La manche suivante commence…',
-    soundOn: '🔈 Son Activé',
-    soundOff: '🔇 Son Désactivé',
     footer: "Dis chaque mot à voix haute — l'oreille reconnaît souvent le synonyme en premier.",
+
+    modeMatch: 'Associer',
+    moves: (n) => `Coups : ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} paires trouvées en ${moves} coups\nTemps : ${time}\n${learned} / ${total} mots appris au total`,
+    nextLevelHint: 'La manche suivante commence…',
+
+    modeQuiz: 'Quiz',
+    round: (i, total) => `Question ${i}/${total}`,
+    score: (n) => `Score : ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} correctes`,
+
+    modeSequence: 'Tri de Mots',
+    mistakes: (n) => `Erreurs : ${n}`,
+    instruction: 'Touche les mots du plus court au plus long',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
 };
 

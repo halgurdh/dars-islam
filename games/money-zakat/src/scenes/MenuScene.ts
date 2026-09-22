@@ -1,37 +1,51 @@
-import type { QuizRunConfig } from '@shared/quiz-kit';
-import { createDifficultyMenuScene } from '@shared/quiz-menu-kit';
 import { COLORS, FONT } from '../theme';
-import { DIFFICULTIES, generateQuestion, type Difficulty } from '../questions';
+import { DIFFICULTIES, generateQuestion, generateMatchItems, generateSequenceRound } from '../questions';
 import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { t } from '../i18n';
+import { createModeMenuScene, quizMode, sequenceMode, type GameMode } from '@shared/mode-menu-kit';
+import { getMatchSfx } from '@shared/match-kit';
 
-const LABELS: Record<string, () => string> = {
+const GAME_ID = 'money-zakat';
+
+const QUIZ_LABELS: Record<string, () => string> = {
   easy: () => t().easy,
   medium: () => t().medium,
   hard: () => t().hard,
 };
 
-function startQuiz(scene: Phaser.Scene, difficulty: Difficulty): void {
-  const cfg: QuizRunConfig = {
-    gameId: 'money-zakat',
-    totalQuestions: difficulty.totalQuestions,
-    theme: COLORS,
-    fontFamily: FONT,
-    strings: {
-      round: t().round,
-      score: t().score,
-      menu: t().menu,
-      wellDone: t().wellDone,
-      roundSummary: t().roundSummary,
-      playAgain: t().playAgain,
-      backToMenu: t().backToMenu,
-    },
-    generateQuestion: () => generateQuestion(difficulty),
-  };
-  scene.scene.start('Quiz', cfg);
-}
+const TIER_LABELS = [() => t().tierEasy, () => t().tierMedium, () => t().tierHard];
 
-export const MenuScene = createDifficultyMenuScene({
+// Match items are regenerated fresh at click-time (not baked into the menu)
+// because each tier needs its own generator — matchMode()'s static `items`
+// list can't vary per difficulty like that.
+const matchMode: GameMode = {
+  id: 'match',
+  label: () => t().modeMatch,
+  icon: '🎴',
+  difficulties: DIFFICULTIES.map((d, i) => ({
+    label: TIER_LABELS[i],
+    onSelect: (scene) => {
+      getMatchSfx(GAME_ID).flip();
+      scene.scene.start('Match', {
+        gameId: GAME_ID,
+        pairs: [6, 8, 10][i] ?? 6,
+        theme: COLORS,
+        fontFamily: FONT,
+        strings: {
+          menu: t().menu,
+          moves: t().moves,
+          wellDone: t().wellDone,
+          roundSummary: t().matchRoundSummary,
+          nextLevelHint: t().nextLevelHint,
+        },
+        items: generateMatchItems(d, [6, 8, 10][i] ?? 6),
+        menuSceneKey: 'MenuScene',
+      });
+    },
+  })),
+};
+
+export const MenuScene = createModeMenuScene({
   theme: COLORS,
   fontFamily: FONT,
   titleFontSize: '32px',
@@ -39,8 +53,50 @@ export const MenuScene = createDifficultyMenuScene({
   tagline: () => t().tagline,
   footer: () => t().footer,
   locale: { getLang, setLang, detectDefaultLang },
-  difficulties: DIFFICULTIES.map((d) => ({
-    label: LABELS[d.id],
-    onSelect: (scene) => startQuiz(scene, d),
-  })),
+  modes: [
+    quizMode({
+      label: () => t().modeQuiz,
+      icon: '❓',
+      gameId: GAME_ID,
+      theme: COLORS,
+      fontFamily: FONT,
+      strings: () => ({
+        round: t().round,
+        score: t().score,
+        menu: t().menu,
+        wellDone: t().wellDone,
+        roundSummary: t().roundSummary,
+        playAgain: t().playAgain,
+        backToMenu: t().backToMenu,
+      }),
+      difficulties: DIFFICULTIES.map((d) => ({
+        label: QUIZ_LABELS[d.id],
+        totalQuestions: d.totalQuestions,
+        generateQuestion: () => generateQuestion(d),
+      })),
+    }),
+    matchMode,
+    sequenceMode({
+      label: () => t().modeSequence,
+      icon: '📏',
+      gameId: GAME_ID,
+      theme: COLORS,
+      fontFamily: FONT,
+      strings: () => ({
+        round: t().round,
+        mistakes: t().mistakes,
+        menu: t().menu,
+        instruction: t().instruction,
+        wellDone: t().wellDone,
+        roundSummary: t().sequenceRoundSummary,
+        playAgain: t().playAgain,
+        backToMenu: t().backToMenu,
+      }),
+      difficulties: DIFFICULTIES.map((d, i) => ({
+        label: TIER_LABELS[i],
+        totalRounds: 4,
+        generateRound: () => generateSequenceRound(d, [4, 5, 6][i] ?? 4),
+      })),
+    }),
+  ],
 });

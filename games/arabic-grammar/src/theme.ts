@@ -11,6 +11,7 @@ export const COLORS = {
   choiceBg: 0x3d1b4a,
   cardBack: 0x32163d,
   cardFront: 0x481e5a,
+  placedBg: 0x481e5a,
 };
 
 export const FONT = "'Segoe UI', system-ui, sans-serif";

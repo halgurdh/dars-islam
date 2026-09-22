@@ -8,96 +8,167 @@ interface Strings {
   medium: string;
   hard: string;
   round: (i: number, total: number) => string;
-  mistakes: (n: number) => string;
   menu: string;
-  instruction: string;
   wellDone: string;
-  roundSummary: (perfectRounds: number, totalRounds: number) => string;
   playAgain: string;
   backToMenu: string;
   footer: string;
+
+  modeSequence: string;
+  mistakes: (n: number) => string;
+  instruction: string;
+  roundSummary: (perfectRounds: number, totalRounds: number) => string;
+
+  modeMatch: string;
+  moves: (n: number) => string;
+  matchRoundSummary: (pairs: number, moves: number, time: string, learned: number, total: number) => string;
+  nextLevelHint: string;
+
+  modeQuiz: string;
+  score: (n: number) => string;
+  quizRoundSummary: (score: number, total: number) => string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
   en: {
     title: 'Fiqh Essentials',
-    tagline: 'Put the steps of wudu\nin the correct order.',
-    easy: 'Easy · 4 Steps',
-    medium: 'Medium · 5 Steps',
-    hard: 'Hard · 6 Steps',
+    tagline: 'Order the steps of wudu, answer quizzes, or\nmatch each step to its Arabic name.',
+    easy: 'Easy · 4',
+    medium: 'Medium · 6',
+    hard: 'Hard · 8',
     round: (i, total) => `Round ${i} / ${total}`,
-    mistakes: (n) => `Mistakes: ${n}`,
     menu: '☰ Menu',
-    instruction: 'Tap the steps of wudu in the correct order.',
     wellDone: 'Well learned, ما شاء الله! 🤲',
-    roundSummary: (perfectRounds, totalRounds) => `${perfectRounds} / ${totalRounds} rounds with no mistakes`,
     playAgain: '↻ Play Again',
     backToMenu: '☰ Back to Menu',
     footer: 'Practicing wudu step by step helps these answers stick.',
+
+    modeSequence: 'Order',
+    mistakes: (n) => `Mistakes: ${n}`,
+    instruction: 'Tap the steps of wudu in the correct order.',
+    roundSummary: (perfectRounds, totalRounds) => `${perfectRounds} / ${totalRounds} rounds with no mistakes`,
+
+    modeMatch: 'Match',
+    moves: (n) => `Moves: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} steps matched in ${moves} moves\nTime: ${time}\n${learned} / ${total} steps learned overall`,
+    nextLevelHint: 'Next level starting…',
+
+    modeQuiz: 'Quiz',
+    score: (n) => `Score: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} correct`,
   },
   nl: {
     title: 'Fiqh Essentials',
-    tagline: 'Zet de stappen van de wudu\nin de juiste volgorde.',
-    easy: 'Makkelijk · 4 Stappen',
-    medium: 'Gemiddeld · 5 Stappen',
-    hard: 'Moeilijk · 6 Stappen',
+    tagline: 'Zet de stappen van de wudu op volgorde,\nbeantwoord quizvragen of koppel elke stap aan zijn Arabische naam.',
+    easy: 'Makkelijk · 4',
+    medium: 'Gemiddeld · 6',
+    hard: 'Moeilijk · 8',
     round: (i, total) => `Ronde ${i} / ${total}`,
-    mistakes: (n) => `Fouten: ${n}`,
     menu: '☰ Menu',
-    instruction: 'Tik de stappen van de wudu aan in de juiste volgorde.',
     wellDone: 'Goed geleerd, ما شاء الله! 🤲',
-    roundSummary: (perfectRounds, totalRounds) => `${perfectRounds} / ${totalRounds} rondes zonder fouten`,
     playAgain: '↻ Opnieuw spelen',
     backToMenu: '☰ Terug naar menu',
     footer: 'Stap voor stap wudu oefenen helpt om dit te onthouden.',
+
+    modeSequence: 'Volgorde',
+    mistakes: (n) => `Fouten: ${n}`,
+    instruction: 'Tik de stappen van de wudu aan in de juiste volgorde.',
+    roundSummary: (perfectRounds, totalRounds) => `${perfectRounds} / ${totalRounds} rondes zonder fouten`,
+
+    modeMatch: 'Koppelen',
+    moves: (n) => `Zetten: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} stappen gematcht in ${moves} zetten\nTijd: ${time}\n${learned} / ${total} stappen in totaal geleerd`,
+    nextLevelHint: 'Volgend level begint…',
+
+    modeQuiz: 'Quiz',
+    score: (n) => `Score: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} goed`,
   },
   de: {
     title: 'Fiqh Essentials',
-    tagline: 'Bring die Schritte der Wudu\nin die richtige Reihenfolge.',
-    easy: 'Leicht · 4 Schritte',
-    medium: 'Mittel · 5 Schritte',
-    hard: 'Schwer · 6 Schritte',
+    tagline: 'Bring die Schritte der Wudu in die richtige\nReihenfolge, beantworte Quizfragen oder ordne jedem Schritt seinen arabischen Namen zu.',
+    easy: 'Leicht · 4',
+    medium: 'Mittel · 6',
+    hard: 'Schwer · 8',
     round: (i, total) => `Runde ${i} / ${total}`,
-    mistakes: (n) => `Fehler: ${n}`,
     menu: '☰ Menü',
-    instruction: 'Tippe die Schritte der Wudu in der richtigen Reihenfolge an.',
     wellDone: 'Gut gelernt, ما شاء الله! 🤲',
-    roundSummary: (perfectRounds, totalRounds) => `${perfectRounds} / ${totalRounds} Runden ohne Fehler`,
     playAgain: '↻ Nochmal spielen',
     backToMenu: '☰ Zurück zum Menü',
     footer: 'Die Wudu Schritt für Schritt zu üben hilft, sich das zu merken.',
+
+    modeSequence: 'Reihenfolge',
+    mistakes: (n) => `Fehler: ${n}`,
+    instruction: 'Tippe die Schritte der Wudu in der richtigen Reihenfolge an.',
+    roundSummary: (perfectRounds, totalRounds) => `${perfectRounds} / ${totalRounds} Runden ohne Fehler`,
+
+    modeMatch: 'Zuordnen',
+    moves: (n) => `Züge: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} Schritte zugeordnet in ${moves} Zügen\nZeit: ${time}\n${learned} / ${total} Schritte insgesamt gelernt`,
+    nextLevelHint: 'Nächstes Level startet…',
+
+    modeQuiz: 'Quiz',
+    score: (n) => `Punkte: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} richtig`,
   },
   es: {
     title: 'Fiqh Essentials',
-    tagline: 'Ordena los pasos del wudu\nen la secuencia correcta.',
-    easy: 'Fácil · 4 pasos',
-    medium: 'Medio · 5 pasos',
-    hard: 'Difícil · 6 pasos',
+    tagline: 'Ordena los pasos del wudu, responde preguntas\no empareja cada paso con su nombre árabe.',
+    easy: 'Fácil · 4',
+    medium: 'Medio · 6',
+    hard: 'Difícil · 8',
     round: (i, total) => `Ronda ${i} / ${total}`,
-    mistakes: (n) => `Errores: ${n}`,
     menu: '☰ Menú',
-    instruction: 'Toca los pasos del wudu en el orden correcto.',
     wellDone: '¡Bien aprendido, ما شاء الله! 🤲',
-    roundSummary: (perfectRounds, totalRounds) => `${perfectRounds} / ${totalRounds} rondas sin errores`,
     playAgain: '↻ Jugar de nuevo',
     backToMenu: '☰ Volver al menú',
     footer: 'Practicar el wudu paso a paso ayuda a recordar estas respuestas.',
+
+    modeSequence: 'Orden',
+    mistakes: (n) => `Errores: ${n}`,
+    instruction: 'Toca los pasos del wudu en el orden correcto.',
+    roundSummary: (perfectRounds, totalRounds) => `${perfectRounds} / ${totalRounds} rondas sin errores`,
+
+    modeMatch: 'Emparejar',
+    moves: (n) => `Movimientos: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} pasos emparejados en ${moves} movimientos\nTiempo: ${time}\n${learned} / ${total} pasos aprendidos en total`,
+    nextLevelHint: 'Comienza el siguiente nivel…',
+
+    modeQuiz: 'Quiz',
+    score: (n) => `Puntuación: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} correctas`,
   },
   fr: {
     title: 'Fiqh Essentials',
-    tagline: 'Mets les étapes du wudu\ndans le bon ordre.',
-    easy: 'Facile · 4 étapes',
-    medium: 'Moyen · 5 étapes',
-    hard: 'Difficile · 6 étapes',
+    tagline: 'Mets les étapes du wudu dans le bon ordre,\nréponds à un quiz ou associe chaque étape à son nom arabe.',
+    easy: 'Facile · 4',
+    medium: 'Moyen · 6',
+    hard: 'Difficile · 8',
     round: (i, total) => `Manche ${i} / ${total}`,
-    mistakes: (n) => `Erreurs : ${n}`,
     menu: '☰ Menu',
-    instruction: 'Touche les étapes du wudu dans le bon ordre.',
     wellDone: 'Bien appris, ما شاء الله ! 🤲',
-    roundSummary: (perfectRounds, totalRounds) => `${perfectRounds} / ${totalRounds} manches sans erreur`,
     playAgain: '↻ Rejouer',
     backToMenu: '☰ Retour au menu',
     footer: 'Pratiquer le wudu étape par étape aide à retenir ces réponses.',
+
+    modeSequence: 'Ordre',
+    mistakes: (n) => `Erreurs : ${n}`,
+    instruction: 'Touche les étapes du wudu dans le bon ordre.',
+    roundSummary: (perfectRounds, totalRounds) => `${perfectRounds} / ${totalRounds} manches sans erreur`,
+
+    modeMatch: 'Associer',
+    moves: (n) => `Coups : ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} étapes associées en ${moves} coups\nTemps : ${time}\n${learned} / ${total} étapes apprises au total`,
+    nextLevelHint: 'Le niveau suivant commence…',
+
+    modeQuiz: 'Quiz',
+    score: (n) => `Score : ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} correctes`,
   },
 };
 
