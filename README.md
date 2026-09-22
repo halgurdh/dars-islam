@@ -2,9 +2,9 @@
 
 🌐 **Read this in:** [English](README.md) · [Nederlands](README.nl.md) · [Deutsch](README.de.md) · [Español](README.es.md) · [Français](README.fr.md) · [العربية](README.ar.md)
 
-A free platform of small educational browser games (Phaser/DOM, installable as PWAs), mostly focused on Islamic studies and Arabic alongside general school subjects (math, language arts, science, etc.), plus school-friendly accounts for students, teachers, and parents.
+A free platform of small educational browser games (Phaser/DOM), mostly focused on Islamic studies and Arabic alongside general school subjects (math, language arts, science, etc.), plus school-friendly accounts for students, teachers, and parents.
 
-💛 **Support this project:** [paypal.me/halgurdh](https://paypal.me/halgurdh) — this is free and ad-light by choice; donations help keep it that way.
+💛 **Support this project:** [paypal.me/halgurdh](https://paypal.me/halgurdh) — this is free and ad-free by choice; donations help keep it that way.
 
 ### ⚠️ Disclaimers
 

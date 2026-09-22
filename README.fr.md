@@ -2,9 +2,9 @@
 
 🌐 **Lire ceci en :** [English](README.md) · [Nederlands](README.nl.md) · [Deutsch](README.de.md) · [Español](README.es.md) · [Français](README.fr.md) · [العربية](README.ar.md)
 
-Une plateforme gratuite de petits jeux éducatifs dans le navigateur (Phaser/DOM, installables comme PWA), centrée principalement sur les études islamiques et l'arabe, en plus des matières scolaires générales (maths, langue, sciences, etc.), avec des comptes adaptés à l'école pour élèves, enseignants et parents.
+Une plateforme gratuite de petits jeux éducatifs dans le navigateur (Phaser/DOM), centrée principalement sur les études islamiques et l'arabe, en plus des matières scolaires générales (maths, langue, sciences, etc.), avec des comptes adaptés à l'école pour élèves, enseignants et parents.
 
-💛 **Soutenir ce projet :** [paypal.me/halgurdh](https://paypal.me/halgurdh) — cette plateforme est volontairement gratuite et peu chargée en publicité ; les dons aident à le rester.
+💛 **Soutenir ce projet :** [paypal.me/halgurdh](https://paypal.me/halgurdh) — cette plateforme est volontairement gratuite et sans publicité ; les dons aident à le rester.
 
 ### ⚠️ Avertissements
 
