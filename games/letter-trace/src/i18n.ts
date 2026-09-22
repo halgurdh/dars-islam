@@ -25,6 +25,18 @@ interface Strings {
   roundSummary: (items: number, total: number) => string;
   nextLevelHint: string;
   playAgain: string;
+
+  modeTrace: string;
+  modeMatch: string;
+  modeSequence: string;
+
+  matchMoves: (n: number) => string;
+  matchRoundSummary: (pairs: number, moves: number) => string;
+
+  sequenceRound: (i: number, total: number) => string;
+  sequenceMistakes: (n: number) => string;
+  sequenceInstruction: string;
+  sequenceRoundSummary: (perfect: number, total: number) => string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
@@ -52,6 +64,18 @@ const STRINGS: Record<LangMode, Strings> = {
     roundSummary: (items, total) => `${items} letters traced this round\n${total} learned overall`,
     nextLevelHint: 'Next letter starting…',
     playAgain: '↻ Practice Again',
+
+    modeTrace: '✍️ Trace',
+    modeMatch: '🃏 Match',
+    modeSequence: '🔢 Order',
+
+    matchMoves: (n) => `Moves: ${n}`,
+    matchRoundSummary: (pairs, moves) => `${pairs} pairs matched in ${moves} moves`,
+
+    sequenceRound: (i, total) => `Round ${i} / ${total}`,
+    sequenceMistakes: (n) => `Mistakes: ${n}`,
+    sequenceInstruction: 'Tap them in the correct order',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} placed correctly`,
   },
   nl: {
     subtitle: 'Letter Trace',
@@ -77,6 +101,18 @@ const STRINGS: Record<LangMode, Strings> = {
     roundSummary: (items, total) => `${items} letters getraced deze ronde\n${total} in totaal geleerd`,
     nextLevelHint: 'Volgende letter begint…',
     playAgain: '↻ Nog een keer',
+
+    modeTrace: '✍️ Overtrekken',
+    modeMatch: '🃏 Memory',
+    modeSequence: '🔢 Volgorde',
+
+    matchMoves: (n) => `Zetten: ${n}`,
+    matchRoundSummary: (pairs, moves) => `${pairs} paren gevonden in ${moves} zetten`,
+
+    sequenceRound: (i, total) => `Ronde ${i} / ${total}`,
+    sequenceMistakes: (n) => `Fouten: ${n}`,
+    sequenceInstruction: 'Tik ze in de juiste volgorde aan',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} goed geplaatst`,
   },
   de: {
     subtitle: 'Letter Trace',
@@ -102,6 +138,18 @@ const STRINGS: Record<LangMode, Strings> = {
     roundSummary: (items, total) => `${items} Buchstaben in dieser Runde nachgezeichnet\n${total} insgesamt gelernt`,
     nextLevelHint: 'Nächster Buchstabe startet…',
     playAgain: '↻ Nochmal üben',
+
+    modeTrace: '✍️ Nachzeichnen',
+    modeMatch: '🃏 Memory',
+    modeSequence: '🔢 Reihenfolge',
+
+    matchMoves: (n) => `Züge: ${n}`,
+    matchRoundSummary: (pairs, moves) => `${pairs} Paare in ${moves} Zügen gefunden`,
+
+    sequenceRound: (i, total) => `Runde ${i} / ${total}`,
+    sequenceMistakes: (n) => `Fehler: ${n}`,
+    sequenceInstruction: 'Tippe sie in der richtigen Reihenfolge an',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} richtig platziert`,
   },
   es: {
     subtitle: 'Letter Trace',
@@ -127,6 +175,18 @@ const STRINGS: Record<LangMode, Strings> = {
     roundSummary: (items, total) => `${items} letras trazadas esta ronda\n${total} aprendidas en total`,
     nextLevelHint: 'Comienza la siguiente letra…',
     playAgain: '↻ Practicar de nuevo',
+
+    modeTrace: '✍️ Trazar',
+    modeMatch: '🃏 Memoria',
+    modeSequence: '🔢 Orden',
+
+    matchMoves: (n) => `Movimientos: ${n}`,
+    matchRoundSummary: (pairs, moves) => `${pairs} pares encontrados en ${moves} movimientos`,
+
+    sequenceRound: (i, total) => `Ronda ${i} / ${total}`,
+    sequenceMistakes: (n) => `Errores: ${n}`,
+    sequenceInstruction: 'Tócalos en el orden correcto',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} colocados correctamente`,
   },
   fr: {
     subtitle: 'Letter Trace',
@@ -152,6 +212,18 @@ const STRINGS: Record<LangMode, Strings> = {
     roundSummary: (items, total) => `${items} lettres tracées ce tour\n${total} apprises au total`,
     nextLevelHint: 'La lettre suivante commence…',
     playAgain: '↻ Pratiquer à nouveau',
+
+    modeTrace: '✍️ Tracer',
+    modeMatch: '🃏 Memory',
+    modeSequence: '🔢 Ordre',
+
+    matchMoves: (n) => `Coups : ${n}`,
+    matchRoundSummary: (pairs, moves) => `${pairs} paires trouvées en ${moves} coups`,
+
+    sequenceRound: (i, total) => `Manche ${i} / ${total}`,
+    sequenceMistakes: (n) => `Erreurs : ${n}`,
+    sequenceInstruction: 'Touchez-les dans le bon ordre',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} bien placés`,
   },
 };
 

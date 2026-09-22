@@ -1,6 +1,12 @@
 import { bootQuizGame, QuizScene } from '@shared/quiz-kit';
 import { SequenceScene } from '@shared/sequence-kit';
+import { SPEECH_LANG } from '@shared/tts';
 import { MenuScene } from './scenes/MenuScene';
 import { GameScene } from './scenes/GameScene';
+import { sfx } from './systems/Sfx';
+
+// Start downloading the Arabic voice model in the background right away —
+// by the time a player reaches a "Hear it" button, it's usually cached.
+sfx.prewarm(SPEECH_LANG.arabic);
 
 bootQuizGame('#0d2b26', [new MenuScene(), new GameScene(), new QuizScene(), new SequenceScene()]);

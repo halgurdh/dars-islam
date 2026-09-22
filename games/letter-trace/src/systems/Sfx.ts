@@ -7,6 +7,7 @@
 import {
   hasVoice as sharedHasVoice,
   needsDownload as sharedNeedsDownload,
+  prewarm as sharedPrewarm,
   speak as sharedSpeak,
   stopSpeaking as sharedStopSpeaking,
 } from '@shared/tts';
@@ -90,6 +91,12 @@ class SfxEngine {
 
   stopSpeaking(): void {
     sharedStopSpeaking();
+  }
+
+  // Fire-and-forget model download, started early (e.g. on menu load) so
+  // the first real "Hear it" tap doesn't pay the download wait.
+  prewarm(lang: string): void {
+    if (!this.muted) sharedPrewarm(lang);
   }
 }
 

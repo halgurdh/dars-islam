@@ -3,7 +3,7 @@
 // speech here — one copy of "which voice for which language" and the
 // Arabic-script guard, instead of one per game.
 
-import { isPiperVoiceCached, speakWithPiper, stopPiper, type PiperVoiceId } from './piper-tts';
+import { isPiperVoiceCached, prewarmVoice, speakWithPiper, stopPiper, type PiperVoiceId } from './piper-tts';
 
 // Speech-synthesis language tags per UI mode.
 export const SPEECH_LANG = {
@@ -87,4 +87,14 @@ export async function speak(text: string, lang: string): Promise<boolean> {
 
 export function stopSpeaking(): void {
   stopPiper();
+}
+
+// Fire-and-forget: starts downloading this language's voice model in the
+// background (e.g. as soon as a menu screen loads) instead of waiting for
+// the visitor's first "Hear it" tap. Silently ignored if it fails — the
+// normal speak() path still works, just with the usual first-time delay.
+export function prewarm(lang: string): void {
+  const voiceId = PIPER_VOICE[lang];
+  if (!voiceId) return;
+  void prewarmVoice(voiceId).catch(() => {});
 }

@@ -100,6 +100,28 @@
         text-align: center;
       }
 
+      .mode-selector {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 18px;
+      }
+
+      .mode-btn {
+        flex: 1;
+        padding: 10px 8px;
+        border-radius: 12px;
+        border: 2px solid rgba(124, 147, 224, 0.4);
+        background: var(--lt-panel);
+        color: var(--lt-text);
+        font-size: 14px;
+      }
+
+      .mode-btn.selected {
+        border-color: var(--lt-accent);
+        border-width: 3px;
+        background: var(--lt-panel-light);
+      }
+
       .alphabet-selector {
         display: flex;
         gap: 10px;
@@ -255,8 +277,8 @@
         }
       }
 
-      /* "Not quite yet" feedback on a Confirm tap that doesn't pass. */
-      #clue-label.nudge {
+      /* "Not quite yet" feedback on a Confirm tap / wrong Sequence tap. */
+      .nudge {
         animation: shake 0.35s ease-in-out;
       }
 
@@ -264,6 +286,92 @@
         0%, 100% { transform: translateX(0); }
         25% { transform: translateX(-6px); }
         75% { transform: translateX(6px); }
+      }
+
+      /* Match view */
+      #match-view {
+        justify-content: flex-start;
+      }
+
+      .match-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        width: 100%;
+        margin-top: 6px;
+      }
+
+      .match-tile {
+        aspect-ratio: 1 / 1;
+        border-radius: 14px;
+        border: 2px solid rgba(124, 147, 224, 0.5);
+        background: var(--lt-panel);
+        color: var(--lt-text);
+        font-size: 22px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px;
+        text-align: center;
+        line-height: 1.15;
+      }
+
+      .match-tile.flipped {
+        border-color: var(--lt-accent);
+        background: var(--lt-panel-light);
+      }
+
+      .match-tile.matched {
+        opacity: 0.35;
+        pointer-events: none;
+      }
+
+      .match-tile.wrong {
+        border-color: var(--lt-miss);
+      }
+
+      /* Sequence view */
+      #sequence-view {
+        justify-content: flex-start;
+      }
+
+      #sequence-placed {
+        width: 100%;
+        color: var(--lt-accent-light);
+        font-size: 14px;
+        text-align: center;
+        white-space: pre-line;
+        margin-bottom: 14px;
+        min-height: 20px;
+      }
+
+      .sequence-pool {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+      }
+
+      .sequence-card {
+        width: 100%;
+        padding: 14px;
+        border-radius: 12px;
+        border: 2px solid rgba(124, 147, 224, 0.5);
+        background: var(--lt-panel);
+        color: var(--lt-text);
+        font-size: 17px;
+        text-align: center;
+      }
+
+      .sequence-card.placed {
+        opacity: 0.4;
+        pointer-events: none;
+        background: var(--lt-panel-light);
+      }
+
+      .sequence-card.wrong {
+        border-color: var(--lt-miss);
       }
 
       /* Complete view */
@@ -311,6 +419,11 @@
       <div id="menu-view" class="view">
         <h1 id="menu-title"></h1>
         <p id="menu-tagline" class="tagline"></p>
+        <div class="mode-selector">
+          <button id="mode-trace-btn" class="mode-btn"></button>
+          <button id="mode-match-btn" class="mode-btn"></button>
+          <button id="mode-sequence-btn" class="mode-btn"></button>
+        </div>
         <p id="menu-progress" class="progress-text"></p>
         <div class="alphabet-selector">
           <button id="alpha-arabic-btn" class="alpha-btn"></button>
@@ -342,6 +455,30 @@
         </div>
         <button id="confirm-btn" class="primary-btn"></button>
         <button id="reset-btn" class="secondary-btn"></button>
+      </div>
+
+      <div id="match-view" class="view" hidden>
+        <div class="hud">
+          <button id="match-menu-btn">☰</button>
+          <div class="hud-center">
+            <div id="match-moves-label"></div>
+          </div>
+          <button id="match-mute-btn">🔈</button>
+        </div>
+        <div id="match-grid" class="match-grid"></div>
+      </div>
+
+      <div id="sequence-view" class="view" hidden>
+        <div class="hud">
+          <button id="sequence-menu-btn">☰</button>
+          <div class="hud-center">
+            <div id="sequence-round-label"></div>
+          </div>
+          <button id="sequence-mistakes-label" style="pointer-events: none;"></button>
+        </div>
+        <p id="sequence-instruction" class="tagline"></p>
+        <p id="sequence-placed"></p>
+        <div id="sequence-pool" class="sequence-pool"></div>
       </div>
 
       <div id="complete-view" class="view" hidden>

@@ -55,14 +55,14 @@ export function stopPiper(): void {
   }
 }
 
-// Core synthesis — used both by the (now build-time-only) audio generator
-// script and, historically, by live in-browser playback. Returns a raw WAV
-// blob; does not play anything.
-export async function synthesize(
-  text: string,
+// Shared by synthesize() and prewarmVoice() — creating the session is what
+// actually triggers the model download (session.waitReady resolves once
+// the ~25-70MB model has been fetched and the ONNX InferenceSession is
+// built), so prewarming just needs to call this and stop there.
+async function getSession(
   voiceId: PiperVoiceId,
   onProgress?: (p: PiperProgress) => void
-): Promise<Blob> {
+) {
   const piper = await loadModule();
 
   if (loadedVoiceId !== voiceId) {
@@ -75,7 +75,7 @@ export async function synthesize(
   // shared/game-vite-plugins.ts for why the library's default (cdnjs) path
   // is broken.
   const base = `${import.meta.env.BASE_URL}ort/`;
-  const session = await piper.TtsSession.create({
+  return piper.TtsSession.create({
     voiceId,
     progress: (progress) => onProgress?.({ loaded: progress.loaded, total: progress.total }),
     wasmPaths: {
@@ -84,7 +84,26 @@ export async function synthesize(
       piperWasm: piper.WASM_BASE + '.wasm',
     },
   });
+}
+
+// Core synthesis — used both by the (now build-time-only) audio generator
+// script and, historically, by live in-browser playback. Returns a raw WAV
+// blob; does not play anything.
+export async function synthesize(
+  text: string,
+  voiceId: PiperVoiceId,
+  onProgress?: (p: PiperProgress) => void
+): Promise<Blob> {
+  const session = await getSession(voiceId, onProgress);
   return session.predict(text);
+}
+
+// Downloads and initializes a voice's model without speaking anything —
+// call this as soon as a game screen loads (fire-and-forget) so the first
+// real tap on "Hear it" finds the model already cached instead of paying
+// the ~25-70MB download on the critical path.
+export async function prewarmVoice(voiceId: PiperVoiceId): Promise<void> {
+  await getSession(voiceId);
 }
 
 export async function speakWithPiper(
