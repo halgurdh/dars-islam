@@ -40,9 +40,9 @@ export default defineConfig(({ mode }) => {
       VitePWA({
         registerType: 'autoUpdate',
         manifest: {
-          name: "Algebra Basics",
-          short_name: "AlgebraBasics",
-          description: "Solving equations, expressions and simplifying algebra.",
+          name: 'Algebra Basics',
+          short_name: 'AlgebraBasics',
+          description: 'Solving equations, expressions and simplifying algebra.',
           theme_color: '#1a1a0f',
           background_color: '#1a1a0f',
           display: 'standalone',

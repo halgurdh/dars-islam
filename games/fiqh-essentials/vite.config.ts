@@ -40,9 +40,9 @@ export default defineConfig(({ mode }) => {
       VitePWA({
         registerType: 'autoUpdate',
         manifest: {
-          name: "Fiqh Essentials",
-          short_name: "FiqhEssentials",
-          description: "Wudu, prayer times and the basics of Islamic practice.",
+          name: 'Fiqh Essentials',
+          short_name: 'FiqhEssentials',
+          description: 'Wudu, prayer times and the basics of Islamic practice.',
           theme_color: '#0f1a1a',
           background_color: '#0f1a1a',
           display: 'standalone',

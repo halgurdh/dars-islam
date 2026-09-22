@@ -40,9 +40,9 @@ export default defineConfig(({ mode }) => {
       VitePWA({
         registerType: 'autoUpdate',
         manifest: {
-          name: "Pre-Calc Functions",
-          short_name: "PreCalcFunctions",
-          description: "Function notation, graphs, composition and inverses.",
+          name: 'Pre-Calc Functions',
+          short_name: 'PreCalcFunctions',
+          description: 'Function notation, graphs, composition and inverses.',
           theme_color: '#0a1a17',
           background_color: '#0a1a17',
           display: 'standalone',

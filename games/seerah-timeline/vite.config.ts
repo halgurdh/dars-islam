@@ -40,9 +40,9 @@ export default defineConfig(({ mode }) => {
       VitePWA({
         registerType: 'autoUpdate',
         manifest: {
-          name: "Seerah Timeline",
-          short_name: "SeerahTimeline",
-          description: "Key events in the life of the Prophet Muhammad, peace be upon him.",
+          name: 'Seerah Timeline',
+          short_name: 'SeerahTimeline',
+          description: 'Key events in the life of the Prophet Muhammad, peace be upon him.',
           theme_color: '#1f160a',
           background_color: '#1f160a',
           display: 'standalone',

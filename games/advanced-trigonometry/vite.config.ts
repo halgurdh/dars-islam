@@ -40,9 +40,9 @@ export default defineConfig(({ mode }) => {
       VitePWA({
         registerType: 'autoUpdate',
         manifest: {
-          name: "Advanced Trigonometry",
-          short_name: "AdvancedTrigonometry",
-          description: "Sine, cosine, tangent, the unit circle and identities.",
+          name: 'Advanced Trigonometry',
+          short_name: 'AdvancedTrigonometry',
+          description: 'Sine, cosine, tangent, the unit circle and identities.',
           theme_color: '#1a0f0a',
           background_color: '#1a0f0a',
           display: 'standalone',

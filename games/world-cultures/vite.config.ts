@@ -40,9 +40,9 @@ export default defineConfig(({ mode }) => {
       VitePWA({
         registerType: 'autoUpdate',
         manifest: {
-          name: "World Cultures",
-          short_name: "WorldCultures",
-          description: "Flags, languages and traditions from around the world.",
+          name: 'World Cultures',
+          short_name: 'WorldCultures',
+          description: 'Flags, languages and traditions from around the world.',
           theme_color: '#1a0f1a',
           background_color: '#1a0f1a',
           display: 'standalone',

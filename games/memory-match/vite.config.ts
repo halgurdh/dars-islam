@@ -50,22 +50,9 @@ export default defineConfig(({ mode }) => {
           scope: GAME_BASE,
           start_url: GAME_BASE,
           icons: [
-            {
-              src: `${GAME_BASE}assets/icons/icon-512.png`,
-              sizes: '512x512',
-              type: 'image/png',
-            },
-            {
-              src: `${GAME_BASE}assets/icons/icon-192.png`,
-              sizes: '192x192',
-              type: 'image/png',
-            },
-            {
-              src: `${GAME_BASE}assets/icons/icon-512.png`,
-              sizes: '512x512',
-              type: 'image/png',
-              purpose: 'maskable',
-            },
+            { src: `${GAME_BASE}assets/icons/icon-512.png`, sizes: '512x512', type: 'image/png' },
+            { src: `${GAME_BASE}assets/icons/icon-192.png`, sizes: '192x192', type: 'image/png' },
+            { src: `${GAME_BASE}assets/icons/icon-512.png`, sizes: '512x512', type: 'image/png', purpose: 'maskable' },
           ],
         },
         workbox: {

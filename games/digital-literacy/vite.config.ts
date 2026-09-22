@@ -40,9 +40,9 @@ export default defineConfig(({ mode }) => {
       VitePWA({
         registerType: 'autoUpdate',
         manifest: {
-          name: "Digital Literacy",
-          short_name: "DigitalLiteracy",
-          description: "Online safety, how computers work and digital citizenship.",
+          name: 'Digital Literacy',
+          short_name: 'DigitalLiteracy',
+          description: 'Online safety, how computers work and digital citizenship.',
           theme_color: '#0f0f1a',
           background_color: '#0f0f1a',
           display: 'standalone',

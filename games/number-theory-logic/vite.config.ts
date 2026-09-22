@@ -40,9 +40,9 @@ export default defineConfig(({ mode }) => {
       VitePWA({
         registerType: 'autoUpdate',
         manifest: {
-          name: "Number Theory & Logic",
-          short_name: "NumberTheoryLogic",
-          description: "Primes, factors, multiples and number patterns.",
+          name: 'Number Theory & Logic',
+          short_name: 'NumberTheoryLogic',
+          description: 'Primes, factors, multiples and number patterns.',
           theme_color: '#0f171a',
           background_color: '#0f171a',
           display: 'standalone',
