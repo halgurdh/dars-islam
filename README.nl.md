@@ -2,9 +2,18 @@
 
 🌐 **Lees dit in:** [English](README.md) · [Nederlands](README.nl.md) · [Deutsch](README.de.md) · [Español](README.es.md) · [Français](README.fr.md) · [العربية](README.ar.md)
 
+### 🎮 [Nu spelen → halgurdh.github.io/dars-islam](https://halgurdh.github.io/dars-islam/)
+
 Een gratis platform met kleine educatieve browsergames (Phaser/DOM), voornamelijk gericht op islamitische studies en Arabisch naast algemene schoolvakken (rekenen, taal, wetenschap, enz.), plus schoolvriendelijke accounts voor leerlingen, leerkrachten en ouders.
 
 💛 **Steun dit project:** [paypal.me/halgurdh](https://paypal.me/halgurdh) — dit platform is bewust gratis en advertentievrij; donaties helpen dat zo te houden.
+
+Op dit moment draait alles volledig op gratis lagen, maar als dit platform groeit, zijn dit de te verwachten kosten:
+- **Supabase** — de gratis laag is voldoende voor een kleine tot middelgrote gebruikersgroep; als veel klassen zich tegelijk aanmelden, kan het Pro-abonnement nodig zijn (~$25/maand) voor meer database-opslag, accounts en bandbreedte.
+- **E-mailbezorging** — de ingebouwde e-mailverzender van Supabase heeft strikte limieten; echt gebruik vereist een betaalde SMTP-/e-maildienst.
+- **Een eigen domein** (optioneel) — ongeveer €10–15/jaar, in plaats van het gratis `github.io`-subdomein.
+
+Niets hiervan is op dit moment nodig — donaties zouden er simpelweg voor zorgen dat dit soepel kan opschalen als het platform aanslaat.
 
 ### ⚠️ Disclaimers
 
