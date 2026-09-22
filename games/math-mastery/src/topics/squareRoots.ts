@@ -1,5 +1,7 @@
 import type { QuizQuestion } from '@shared/quiz-kit';
-import { buildNumericChoices, randInt } from '../choices';
+import type { MatchItem } from '@shared/match-kit';
+import type { SequenceItem } from '@shared/sequence-kit';
+import { buildNumericChoices, randInt, shuffle } from '../choices';
 
 export const TOTAL_QUESTIONS = 10;
 
@@ -34,4 +36,19 @@ export function generateQuestion(index: number): QuizQuestion {
     choices,
     correctIndex,
   };
+}
+
+// Exact roots only (2..25) — unambiguous pairs for Match, and an ordering
+// for Sequence that still requires knowing the actual root, not a shortcut.
+const ROOT_RANGE = Array.from({ length: 24 }, (_, i) => i + 2);
+
+export function generateMatchItems(pairs: number): MatchItem[] {
+  return shuffle(ROOT_RANGE)
+    .slice(0, pairs)
+    .map((n) => ({ id: n, sideA: `√${n * n}`, sideB: String(n) }));
+}
+
+export function generateSequenceRound(count: number): SequenceItem[] {
+  const ns = shuffle(ROOT_RANGE).slice(0, count).sort((a, b) => a - b);
+  return ns.map((n, i) => ({ id: i, label: `√${n * n}` }));
 }

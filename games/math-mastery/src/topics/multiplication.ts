@@ -1,4 +1,6 @@
 import type { QuizQuestion } from '@shared/quiz-kit';
+import type { MatchItem } from '@shared/match-kit';
+import type { SequenceItem } from '@shared/sequence-kit';
 import { buildNumericChoices, randInt } from '../choices';
 
 export const TOTAL_QUESTIONS = 10;
@@ -25,4 +27,37 @@ export function generateQuestion(index: number): QuizQuestion {
     correct - 100,
   ]);
   return { prompt: `${a} × ${b} = ?`, choices, correctIndex };
+}
+
+// Match/Sequence both need problems with genuinely distinct products (so no
+// two cards/cards ever claim the same answer), generated on the fly rather
+// than baked into a static list — same "compute it to know where it goes"
+// requirement as the Quiz mode, just without the multiple-choice scaffolding.
+function distinctProblems(count: number): { a: number; b: number; correct: number }[] {
+  const used = new Set<number>();
+  const out: { a: number; b: number; correct: number }[] = [];
+  let attempts = 0;
+  while (out.length < count && attempts < count * 50) {
+    attempts++;
+    const a = randInt(12, 99);
+    const b = randInt(2, 12);
+    const correct = a * b;
+    if (used.has(correct)) continue;
+    used.add(correct);
+    out.push({ a, b, correct });
+  }
+  return out;
+}
+
+export function generateMatchItems(pairs: number): MatchItem[] {
+  return distinctProblems(pairs).map(({ a, b, correct }) => ({
+    id: correct,
+    sideA: `${a} × ${b}`,
+    sideB: String(correct),
+  }));
+}
+
+export function generateSequenceRound(count: number): SequenceItem[] {
+  const problems = distinctProblems(count).sort((x, y) => x.correct - y.correct);
+  return problems.map((p, i) => ({ id: i, label: `${p.a} × ${p.b}` }));
 }

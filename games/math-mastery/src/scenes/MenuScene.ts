@@ -4,6 +4,7 @@ import { COLORS, FONT, hex } from '../theme';
 import { TOPICS, type Topic } from '../topics';
 import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { t } from '../i18n';
+import { homeSceneKey } from './TopicHomeScenes';
 
 export class MenuScene extends Phaser.Scene {
   constructor() {
@@ -90,6 +91,6 @@ export class MenuScene extends Phaser.Scene {
     container.setInteractive({ useHandCursor: true });
     container.on('pointerover', () => bg.setAlpha(0.85));
     container.on('pointerout', () => bg.setAlpha(1));
-    container.on('pointerdown', () => this.scene.start('Learn', { topicId: topic.id }));
+    container.on('pointerdown', () => this.scene.start(homeSceneKey(topic)));
   }
 }

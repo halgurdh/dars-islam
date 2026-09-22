@@ -5,6 +5,7 @@ import { COLORS, FONT, hex } from '../theme';
 import { TOPICS, type Topic } from '../topics';
 import { drawTriangleDiagram } from '../triangleDiagram';
 import { t } from '../i18n';
+import { homeSceneKey } from './TopicHomeScenes';
 
 export class LearnScene extends Phaser.Scene {
   private topic!: Topic;
@@ -187,6 +188,7 @@ export class LearnScene extends Phaser.Scene {
         backToMenu: t().backToMenu,
       },
       generateQuestion: this.topic.generateQuestion,
+      menuSceneKey: homeSceneKey(this.topic),
     };
     this.scene.start('Quiz', cfg);
   }

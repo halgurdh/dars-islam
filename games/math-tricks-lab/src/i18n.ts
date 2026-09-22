@@ -16,6 +16,23 @@ interface Strings {
   playAgain: string;
   backToMenu: string;
   footer: string;
+
+  modeLearn: string;
+  modeQuiz: string;
+  modeMatch: string;
+  modeSequence: string;
+  startLearn: string;
+  startQuiz: string;
+  startMatch: string;
+  startSequence: string;
+
+  moves: (n: number) => string;
+  matchRoundSummary: (pairs: number, moves: number, time: string, learned: number, total: number) => string;
+  nextLevelHint: string;
+
+  mistakes: (n: number) => string;
+  instruction: string;
+  sequenceRoundSummary: (perfect: number, total: number) => string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
@@ -34,6 +51,23 @@ const STRINGS: Record<LangMode, Strings> = {
     playAgain: '↻ Play Again',
     backToMenu: '☰ Back to Tricks',
     footer: 'Pick a trick to learn it, then practice until it’s automatic.',
+
+    modeLearn: '📖 Learn',
+    modeQuiz: '❓ Quiz',
+    modeMatch: '🃏 Match',
+    modeSequence: '🔢 Order',
+    startLearn: '▶ Start Lesson',
+    startQuiz: '▶ Start Quiz',
+    startMatch: '▶ Start Match',
+    startSequence: '▶ Start Order',
+
+    moves: (n) => `Moves: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} pairs matched in ${moves} moves\nTime: ${time}`,
+    nextLevelHint: 'Next round starting…',
+
+    mistakes: (n) => `Mistakes: ${n}`,
+    instruction: 'Tap the problems from smallest to largest answer',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rounds perfect`,
   },
   nl: {
     title: 'Math Tricks Lab',
@@ -50,6 +84,23 @@ const STRINGS: Record<LangMode, Strings> = {
     playAgain: '↻ Opnieuw spelen',
     backToMenu: '☰ Terug naar trucjes',
     footer: 'Kies een trucje om te leren, oefen dan tot het automatisch gaat.',
+
+    modeLearn: '📖 Leren',
+    modeQuiz: '❓ Quiz',
+    modeMatch: '🃏 Memory',
+    modeSequence: '🔢 Volgorde',
+    startLearn: '▶ Start Les',
+    startQuiz: '▶ Start Quiz',
+    startMatch: '▶ Start Memory',
+    startSequence: '▶ Start Volgorde',
+
+    moves: (n) => `Zetten: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} paren gevonden in ${moves} zetten\nTijd: ${time}`,
+    nextLevelHint: 'Volgende ronde begint…',
+
+    mistakes: (n) => `Fouten: ${n}`,
+    instruction: 'Tik de sommen aan van kleinste naar grootste antwoord',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondes perfect`,
   },
   de: {
     title: 'Math Tricks Lab',
@@ -66,6 +117,23 @@ const STRINGS: Record<LangMode, Strings> = {
     playAgain: '↻ Nochmal spielen',
     backToMenu: '☰ Zurück zu Tricks',
     footer: 'Wähle einen Trick zum Lernen, dann üben, bis er automatisch geht.',
+
+    modeLearn: '📖 Lernen',
+    modeQuiz: '❓ Quiz',
+    modeMatch: '🃏 Memory',
+    modeSequence: '🔢 Reihenfolge',
+    startLearn: '▶ Lektion starten',
+    startQuiz: '▶ Quiz starten',
+    startMatch: '▶ Memory starten',
+    startSequence: '▶ Reihenfolge starten',
+
+    moves: (n) => `Züge: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} Paare in ${moves} Zügen gefunden\nZeit: ${time}`,
+    nextLevelHint: 'Nächste Runde startet…',
+
+    mistakes: (n) => `Fehler: ${n}`,
+    instruction: 'Tippe die Aufgaben vom kleinsten zum größten Ergebnis an',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} Runden perfekt`,
   },
   es: {
     title: 'Math Tricks Lab',
@@ -82,6 +150,23 @@ const STRINGS: Record<LangMode, Strings> = {
     playAgain: '↻ Jugar de nuevo',
     backToMenu: '☰ Volver a trucos',
     footer: 'Elige un truco para aprenderlo, luego practica hasta que sea automático.',
+
+    modeLearn: '📖 Aprender',
+    modeQuiz: '❓ Quiz',
+    modeMatch: '🃏 Memoria',
+    modeSequence: '🔢 Orden',
+    startLearn: '▶ Empezar Lección',
+    startQuiz: '▶ Empezar Quiz',
+    startMatch: '▶ Empezar Memoria',
+    startSequence: '▶ Empezar Orden',
+
+    moves: (n) => `Movimientos: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} pares encontrados en ${moves} movimientos\nTiempo: ${time}`,
+    nextLevelHint: 'La siguiente ronda comienza…',
+
+    mistakes: (n) => `Errores: ${n}`,
+    instruction: 'Toca los problemas del resultado más pequeño al más grande',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondas perfectas`,
   },
   fr: {
     title: 'Math Tricks Lab',
@@ -98,6 +183,23 @@ const STRINGS: Record<LangMode, Strings> = {
     playAgain: '↻ Rejouer',
     backToMenu: '☰ Retour aux astuces',
     footer: 'Choisis une astuce à apprendre, puis entraîne-toi jusqu’à l’automatisme.',
+
+    modeLearn: '📖 Apprendre',
+    modeQuiz: '❓ Quiz',
+    modeMatch: '🃏 Memory',
+    modeSequence: '🔢 Ordre',
+    startLearn: '▶ Démarrer la leçon',
+    startQuiz: '▶ Démarrer le quiz',
+    startMatch: '▶ Démarrer le memory',
+    startSequence: '▶ Démarrer l’ordre',
+
+    moves: (n) => `Coups : ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} paires trouvées en ${moves} coups\nTemps : ${time}`,
+    nextLevelHint: 'La manche suivante commence…',
+
+    mistakes: (n) => `Erreurs : ${n}`,
+    instruction: 'Touche les problèmes du plus petit au plus grand résultat',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
 };
 

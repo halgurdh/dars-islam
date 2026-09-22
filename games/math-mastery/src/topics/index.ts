@@ -1,4 +1,6 @@
 import type { QuizQuestion } from '@shared/quiz-kit';
+import type { MatchItem } from '@shared/match-kit';
+import type { SequenceItem } from '@shared/sequence-kit';
 import * as multiplication from './multiplication';
 import * as squareRoots from './squareRoots';
 import * as fractions from './fractions';
@@ -23,6 +25,8 @@ export interface Topic {
   pages: LearnPage[];
   totalQuestions: number;
   generateQuestion: (index: number) => QuizQuestion;
+  generateMatchItems: (pairs: number) => MatchItem[];
+  generateSequenceRound: (count: number) => SequenceItem[];
 }
 
 export const TOPICS: Topic[] = [
@@ -75,6 +79,8 @@ export const TOPICS: Topic[] = [
     ],
     totalQuestions: multiplication.TOTAL_QUESTIONS,
     generateQuestion: multiplication.generateQuestion,
+    generateMatchItems: multiplication.generateMatchItems,
+    generateSequenceRound: multiplication.generateSequenceRound,
   },
   {
     id: 'square-roots',
@@ -110,6 +116,8 @@ export const TOPICS: Topic[] = [
     ],
     totalQuestions: squareRoots.TOTAL_QUESTIONS,
     generateQuestion: squareRoots.generateQuestion,
+    generateMatchItems: squareRoots.generateMatchItems,
+    generateSequenceRound: squareRoots.generateSequenceRound,
   },
   {
     id: 'fractions',
@@ -146,6 +154,8 @@ export const TOPICS: Topic[] = [
     ],
     totalQuestions: fractions.TOTAL_QUESTIONS,
     generateQuestion: fractions.generateQuestion,
+    generateMatchItems: fractions.generateMatchItems,
+    generateSequenceRound: fractions.generateSequenceRound,
   },
   {
     id: 'trigonometry',
@@ -182,5 +192,7 @@ export const TOPICS: Topic[] = [
     ],
     totalQuestions: trigonometry.TOTAL_QUESTIONS,
     generateQuestion: trigonometry.generateQuestion,
+    generateMatchItems: trigonometry.generateMatchItems,
+    generateSequenceRound: trigonometry.generateSequenceRound,
   },
 ];

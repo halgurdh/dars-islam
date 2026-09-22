@@ -9,6 +9,9 @@ export const COLORS = {
   correct: 0x3d8f4f,
   wrong: 0xb04a4a,
   choiceBg: 0x4a2318,
+  cardBack: 0x5a2e1e,
+  cardFront: 0x3d1f16,
+  placedBg: 0x3d1f16,
 };
 
 export const FONT = "'Segoe UI', system-ui, sans-serif";

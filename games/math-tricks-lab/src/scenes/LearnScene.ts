@@ -4,6 +4,7 @@ import { COLORS, FONT, hex } from '../theme';
 import { TRICKS, type Trick } from '../tricks';
 import { drawLineDiagram } from '@shared/line-diagram';
 import { t } from '../i18n';
+import { homeSceneKey } from './TrickHomeScenes';
 
 export class LearnScene extends Phaser.Scene {
   private trick!: Trick;
@@ -127,6 +128,7 @@ export class LearnScene extends Phaser.Scene {
         backToMenu: t().backToMenu,
       },
       generateQuestion: () => this.trick.generateQuestion(),
+      menuSceneKey: homeSceneKey(this.trick),
     };
     this.scene.start('Quiz', cfg);
   }

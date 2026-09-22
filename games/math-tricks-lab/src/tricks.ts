@@ -1,4 +1,6 @@
 import type { QuizQuestion } from '@shared/quiz-kit';
+import type { MatchItem } from '@shared/match-kit';
+import type { SequenceItem } from '@shared/sequence-kit';
 import { buildNumericChoices } from './choices';
 
 export interface Trick {
@@ -10,12 +12,33 @@ export interface Trick {
   example: { problem: string; work: string[]; answer: string };
   totalQuestions: number;
   generateQuestion: () => QuizQuestion;
+  generateMatchItems: (pairs: number) => MatchItem[];
+  generateSequenceRound: (count: number) => SequenceItem[];
   /** Only the line-multiplication trick uses this, to draw its diagram on the Learn screen. */
   hasDiagram?: boolean;
 }
 
 function randInt(min: number, max: number): number {
   return min + Math.floor(Math.random() * (max - min + 1));
+}
+
+// Shared by every trick's Match/Sequence generators: keep drawing fresh
+// problems until `count` of them land on genuinely distinct answers, so a
+// Match board never has two cards claiming the same answer and a Sequence
+// round never has a tie to break arbitrarily.
+function distinctBy<T>(count: number, make: () => T, keyOf: (t: T) => number | string): T[] {
+  const used = new Set<number | string>();
+  const out: T[] = [];
+  let attempts = 0;
+  while (out.length < count && attempts < count * 40) {
+    attempts++;
+    const item = make();
+    const key = keyOf(item);
+    if (used.has(key)) continue;
+    used.add(key);
+    out.push(item);
+  }
+  return out;
 }
 
 export const TRICKS: Trick[] = [
@@ -45,6 +68,20 @@ export const TRICKS: Trick[] = [
         choices,
         correctIndex,
       };
+    },
+    generateMatchItems: (pairs) => {
+      const probs = distinctBy(pairs, () => {
+        const n = randInt(2, 10);
+        return { n, correct: n * 9 };
+      }, (p) => p.correct);
+      return probs.map((p, i) => ({ id: i, sideA: `${p.n} × 9`, sideB: String(p.correct) }));
+    },
+    generateSequenceRound: (count) => {
+      const probs = distinctBy(count, () => {
+        const n = randInt(2, 10);
+        return { n, correct: n * 9 };
+      }, (p) => p.correct).sort((a, b) => a.correct - b.correct);
+      return probs.map((p, i) => ({ id: i, label: `${p.n} × 9` }));
     },
   },
   {
@@ -78,6 +115,20 @@ export const TRICKS: Trick[] = [
         correctIndex,
       };
     },
+    generateMatchItems: (pairs) => {
+      const probs = distinctBy(pairs, () => {
+        const n = randInt(10, 99);
+        return { n, correct: n * 11 };
+      }, (p) => p.correct);
+      return probs.map((p, i) => ({ id: i, sideA: `${p.n} × 11`, sideB: String(p.correct) }));
+    },
+    generateSequenceRound: (count) => {
+      const probs = distinctBy(count, () => {
+        const n = randInt(10, 99);
+        return { n, correct: n * 11 };
+      }, (p) => p.correct).sort((a, b) => a.correct - b.correct);
+      return probs.map((p, i) => ({ id: i, label: `${p.n} × 11` }));
+    },
   },
   {
     id: 'square-five',
@@ -108,6 +159,22 @@ export const TRICKS: Trick[] = [
         correctIndex,
       };
     },
+    generateMatchItems: (pairs) => {
+      const probs = distinctBy(pairs, () => {
+        const t = randInt(1, 9);
+        const num = t * 10 + 5;
+        return { num, correct: num * num };
+      }, (p) => p.correct);
+      return probs.map((p, i) => ({ id: i, sideA: `${p.num}²`, sideB: String(p.correct) }));
+    },
+    generateSequenceRound: (count) => {
+      const probs = distinctBy(count, () => {
+        const t = randInt(1, 9);
+        const num = t * 10 + 5;
+        return { num, correct: num * num };
+      }, (p) => p.correct).sort((a, b) => a.correct - b.correct);
+      return probs.map((p, i) => ({ id: i, label: `${p.num}²` }));
+    },
   },
   {
     id: 'five-trick',
@@ -136,6 +203,20 @@ export const TRICKS: Trick[] = [
         choices,
         correctIndex,
       };
+    },
+    generateMatchItems: (pairs) => {
+      const probs = distinctBy(pairs, () => {
+        const n = randInt(2, 98);
+        return { n, correct: n * 5 };
+      }, (p) => p.correct);
+      return probs.map((p, i) => ({ id: i, sideA: `${p.n} × 5`, sideB: String(p.correct) }));
+    },
+    generateSequenceRound: (count) => {
+      const probs = distinctBy(count, () => {
+        const n = randInt(2, 98);
+        return { n, correct: n * 5 };
+      }, (p) => p.correct).sort((a, b) => a.correct - b.correct);
+      return probs.map((p, i) => ({ id: i, label: `${p.n} × 5` }));
     },
   },
   {
@@ -178,6 +259,22 @@ export const TRICKS: Trick[] = [
         choices,
         correctIndex,
       };
+    },
+    generateMatchItems: (pairs) => {
+      const probs = distinctBy(pairs, () => {
+        const a = randInt(1, 4) * 10 + randInt(1, 4);
+        const b = randInt(1, 4) * 10 + randInt(1, 4);
+        return { a, b, correct: a * b };
+      }, (p) => p.correct);
+      return probs.map((p, i) => ({ id: i, sideA: `${p.a} × ${p.b}`, sideB: String(p.correct) }));
+    },
+    generateSequenceRound: (count) => {
+      const probs = distinctBy(count, () => {
+        const a = randInt(1, 4) * 10 + randInt(1, 4);
+        const b = randInt(1, 4) * 10 + randInt(1, 4);
+        return { a, b, correct: a * b };
+      }, (p) => p.correct).sort((x, y) => x.correct - y.correct);
+      return probs.map((p, i) => ({ id: i, label: `${p.a} × ${p.b}` }));
     },
   },
 ];
