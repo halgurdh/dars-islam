@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/dars-islam/games/salah-builder/sw.js', { scope: '/dars-islam/games/salah-builder/' })})}

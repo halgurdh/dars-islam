@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/dars-islam/games/letter-trace/sw.js', { scope: '/dars-islam/games/letter-trace/' })})}

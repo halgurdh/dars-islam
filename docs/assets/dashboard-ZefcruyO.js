@@ -1,0 +1,31 @@
+import"./theme-BRE4rC8K.js";import{s as d,P as p,B as g,i as h,A as y,g as f,t as $}from"./sync-SUIhl4Uv.js";import{G as m,p as x,S as c}from"./certificates-Qf-mpwmR.js";let r=null;function w(){const e=p.getState(),n=Math.round(e.xpIntoLevel/Math.max(1,e.xpForNextLevel)*100);document.getElementById("levelText").textContent=`⭐ Level ${e.level}`,document.getElementById("streakText").textContent=`🔥 ${e.dailyStreak}-day streak`,document.getElementById("xpFill").style.width=`${n}%`,document.getElementById("xpSub").textContent=`${e.xpIntoLevel} / ${e.xpForNextLevel} XP to level ${e.level+1} · ${e.totalRounds} rounds played total`;const s=new Set(e.badges.map(t=>t.id));document.getElementById("badgesGrid").innerHTML=g.map(t=>`
+          <div class="badge ${s.has(t.id)?"":"badge--locked"}" title="${t.description}">
+            <span class="badge-icon">${t.icon}</span>
+            <span class="badge-name">${t.name}</span>
+          </div>`).join(""),document.getElementById("reportBody").innerHTML=m.map(t=>{const o=e.gameRoundCounts[t.id]??0,a=$(o),l=h(o)?`<button data-cert-game="${t.id}" data-cert-title="${i(t.title)}" style="padding:3px 8px;font-size:0.72rem;">🏅 Certificate</button>`:"";return`<tr><td>${t.icon} ${t.title}</td><td>${o}</td><td>${a.icon} ${a.label}</td><td>${l}</td></tr>`}).join(""),document.querySelectorAll("[data-cert-game]").forEach(t=>{t.addEventListener("click",()=>{x({studentName:y.getPlayerName()||"Student",achievement:`Gold-level practice in ${t.dataset.certTitle}`})})})}function i(e){return e.replace(/[&<>"']/g,n=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[n])}async function _(){const e=document.getElementById("familyCodeSection");if(!d.isStudent){e.hidden=!0;return}try{const n=f(),{data:s,error:t}=await n.from("students").select("family_code, class_id").eq("user_id",d.userId).single();if(t||!s){e.hidden=!0;return}if(r=s.class_id,!s.family_code){e.hidden=!0;return}e.hidden=!1,e.innerHTML=`
+            <h2>Family Code</h2>
+            <p class="sub">Share this code with a parent so they can see your progress:</p>
+            <p><span class="code-chip" style="font-family:'Courier New',monospace;font-weight:800;letter-spacing:0.1em;background:var(--bg-primary);border:1px dashed var(--border-color);border-radius:8px;padding:4px 10px;">${i(s.family_code)}</span></p>`}catch{e.hidden=!0}}function v(e){const n=document.getElementById("welcomeSection"),s=`darsislam:welcome-dismissed:${e.school_name}`;if(!e.welcome_message||localStorage.getItem(s)){n.hidden=!0;return}const t={mosque:"🕌",homeschool:"🏡",other:"📚"}[e.org_type]??"🏫";n.hidden=!1,n.innerHTML=`
+          <div class="row" style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+            <p style="margin:0;font-size:0.92rem;">${t} ${i(e.welcome_message)}</p>
+            <button id="dismissWelcome" style="padding:4px 10px;font-size:0.75rem;flex-shrink:0;">Got it</button>
+          </div>`,document.getElementById("dismissWelcome").addEventListener("click",()=>{localStorage.setItem(s,"1"),n.hidden=!0})}async function S(){const e=document.getElementById("assignedSection");if(!r){e.hidden=!0;return}try{const n=await c.listAssignedGames(r);if(!n.length){e.hidden=!0;return}const s=new Date().toISOString().slice(0,10);e.hidden=!1,e.innerHTML=`
+            <h2>Assigned by Your Teacher</h2>
+            ${n.map(t=>{const o=m.find(u=>u.id===t.game_id);if(!o)return"";const a=t.due_date&&t.due_date<s,l=t.due_date?`<span class="sub" style="color:${a?"#e54040":"inherit"}">${a?"was due":"due"} ${t.due_date}</span>`:"";return`<p><a href="__VITE_BASE_PATH__games/${o.id}/">${o.icon} ${i(o.title)}</a> ${l}</p>`}).join("")}
+            <p class="sub">Just a reminder — nothing is locked, play in any order.</p>`}catch{e.hidden=!0}}async function b(){const e=document.getElementById("announcementsSection");if(!r){e.hidden=!0;return}try{const n=await c.listAnnouncements(r);if(!n.length){e.hidden=!0;return}e.hidden=!1,e.innerHTML=`
+            <h2>📣 From Your Teacher</h2>
+            ${n.map(s=>`<p style="margin:0 0 8px"><strong>${new Date(s.created_at).toLocaleDateString()}:</strong> ${i(s.message)}</p>`).join("")}`}catch{e.hidden=!0}}async function C(){const e=document.getElementById("classSection");try{const n=await d.isLoggedIn?await c.myClass():{in_class:!1};if(n.in_class){e.hidden=!1,e.innerHTML=`
+              <h2>My Class</h2>
+              <p><strong>${i(n.class_name)}</strong> · ${i(n.school_name)}</p>
+              <p>Rank <strong>#${n.rank}</strong> of ${n.class_size} · ${n.my_xp} XP (class average ${n.avg_xp} XP)</p>`,v(n);return}}catch{}e.hidden=!1,e.innerHTML=`
+          <h2>Join a Class</h2>
+          <p class="sub">Got a code from your teacher? Enter it here to join their class and appear on their roster.</p>
+          <form class="join-form" id="joinForm">
+            <div class="join-form-row">
+              <input id="joinCode" type="text" maxlength="6" placeholder="Class code (e.g. AB12CD)" autocomplete="off" style="text-transform:uppercase" />
+              <input id="joinName" type="text" maxlength="24" placeholder="Your name" autocomplete="off" />
+              <button type="submit">Join</button>
+            </div>
+            <p class="form-msg" id="joinMsg"></p>
+            <p class="join-note">Joining signs you in as a student on this device — if someone else is already signed in here, joining will switch to the new student profile.</p>
+          </form>`,document.getElementById("joinForm").addEventListener("submit",async n=>{n.preventDefault();const s=document.getElementById("joinCode").value.trim(),t=document.getElementById("joinName").value.trim(),o=document.getElementById("joinMsg");if(!s||!t){o.className="form-msg form-msg--error",o.textContent="Enter both a class code and your name.";return}o.className="form-msg",o.textContent="Joining…";try{const a=await c.joinClass(s,t);o.className="form-msg form-msg--ok",o.textContent=`Joined ${a.class_name}! Reloading…`,setTimeout(()=>window.location.reload(),900)}catch{o.className="form-msg form-msg--error",o.textContent="Could not join — check the code and try again."}})}(async()=>{try{await d.init()}catch{}w(),await C(),await _(),await S(),await b()})();

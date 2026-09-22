@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0c0f0a" />
+    <title>Parent Dashboard · darsislam.Games</title>
+    <link rel="icon" type="image/png" href="/dars-islam/games/board-rush/assets/icons/icon-512.png" />
+    <style>
+      body { display: flex; flex-direction: column; align-items: center; }
+
+      .site-header {
+        width: 100%;
+        border-bottom: 1px solid var(--border-color);
+        padding: 1rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        box-sizing: border-box;
+      }
+      .site-header__brand {
+        font-size: 0.9rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        background: linear-gradient(135deg, #ff0055, #ff6b35);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-decoration: none;
+      }
+      .site-header__back {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        text-decoration: none;
+        margin-right: 3.5rem;
+      }
+      .site-header__back:hover { color: #ff0055; }
+
+      .content {
+        width: 100%;
+        max-width: 900px;
+        padding: 2.5rem 1.5rem 5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.75rem;
+        box-sizing: border-box;
+      }
+
+      .content > header h1 { font-size: 1.9rem; font-weight: 900; color: var(--text-primary); margin-bottom: 0.3rem; }
+      .content > header p { font-size: 0.88rem; color: var(--text-muted); }
+
+      .card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        padding: 1.25rem 1.4rem;
+      }
+      .card h2 {
+        font-size: 0.72rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+        color: #ff0055; margin-bottom: 0.9rem;
+      }
+
+      .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+      .row input, .row select {
+        background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border-color);
+        border-radius: 8px; padding: 9px 12px; font-size: 0.9rem; box-sizing: border-box;
+      }
+      .row input { flex: 1; min-width: 160px; }
+      button {
+        background: var(--accent); color: #fff; border: none; border-radius: 8px;
+        padding: 9px 16px; font-size: 0.88rem; font-weight: 700; cursor: pointer;
+      }
+      button:hover { filter: brightness(1.1); }
+      button.ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border-color); }
+      .sub { font-size: 0.82rem; color: var(--text-muted); }
+      .form-msg { font-size: 0.82rem; min-height: 1.2em; }
+      .form-msg--error { color: #e54040; }
+      .form-msg--ok { color: #33c37d; }
+
+      .child-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; margin-top: 12px; }
+      .child-tile {
+        background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 10px;
+        padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; cursor: pointer;
+      }
+      .child-tile:hover { border-color: var(--accent); }
+      .child-tile.active { border-color: var(--accent); border-width: 2px; }
+      .child-tile strong { color: var(--text-primary); font-size: 0.95rem; }
+      .child-tile span { font-size: 0.78rem; color: var(--text-muted); }
+
+      .badges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; }
+      .badge { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center;
+        background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 10px; padding: 8px 4px; }
+      .badge-icon { font-size: 20px; }
+      .badge-name { font-size: 9px; font-weight: 700; color: var(--text-primary); }
+
+      .games-checklist { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 6px; margin-top: 10px; max-height: 260px; overflow-y: auto; }
+      .games-checklist label { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--text-secondary); }
+
+      .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+      @media (max-width: 500px) {
+        .content { padding: 1.75rem 1rem 4rem; }
+        .site-header { padding: 0.9rem 1.25rem; }
+        .site-header__back { margin-right: 2rem; }
+      }
+    </style>
+    <script type="module" crossorigin src="/dars-islam/assets/parent-DnllOfN0.js"></script>
+    <link rel="modulepreload" crossorigin href="/dars-islam/assets/theme-BRE4rC8K.js">
+    <link rel="modulepreload" crossorigin href="/dars-islam/assets/sync-SUIhl4Uv.js">
+    <link rel="modulepreload" crossorigin href="/dars-islam/assets/certificates-Qf-mpwmR.js">
+    <link rel="modulepreload" crossorigin href="/dars-islam/assets/progress-bar-DJY7ZKPz.js">
+    <link rel="modulepreload" crossorigin href="/dars-islam/assets/report-card-K-076QiF.js">
+    <link rel="stylesheet" crossorigin href="/dars-islam/assets/theme-cUHdOL2G.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <a href="/dars-islam/" class="site-header__brand">darsislam.Games</a>
+      <a href="/dars-islam/" class="site-header__back">← Back to games</a>
+    </header>
+
+    <main class="content">
+      <header>
+        <h1>👪 Parent Dashboard</h1>
+        <p>Link your child's account to see their progress and set limits.</p>
+      </header>
+
+      <div id="app"></div>
+    </main>
+
+  </body>
+</html>

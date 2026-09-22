@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Counting Fun" />
+    <meta name="theme-color" content="#170f08" />
+    <meta name="description" content="Counting and number recognition for early learners." />
+    <link rel="apple-touch-icon" href="assets/icons/icon-512.png" />
+    <link rel="icon" type="image/svg+xml" href="assets/icons/icon.svg" />
+    <title>Counting Fun</title>
+    <style>
+      html {
+        width: 100%;
+        height: 100%;
+      }
+      html, body {
+        background: #170f08;
+        overflow: hidden;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+      }
+      #game {
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+      canvas {
+        display: block;
+        max-width: 100%;
+        max-height: 100%;
+        margin: auto;
+      }
+    </style>
+    <script type="module" crossorigin src="/dars-islam/games/counting-fun/assets/index-BskpQxsV.js"></script>
+    <link rel="stylesheet" crossorigin href="/dars-islam/games/counting-fun/assets/index-cUHdOL2G.css">
+  <link rel="manifest" href="/dars-islam/games/counting-fun/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/dars-islam/games/counting-fun/registerSW.js"></script></head>
+  <body>
+    <a href="/dars-islam/" class="game-exit">← Exit Game</a>
+    <button id="fullscreen-toggle" class="fullscreen-toggle" aria-label="Enter fullscreen" hidden>⛶</button>
+    <div id="game"></div>
+  </body>
+</html>

@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/dars-islam/games/digital-literacy/sw.js', { scope: '/dars-islam/games/digital-literacy/' })})}
