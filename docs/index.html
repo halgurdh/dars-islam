@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="darsislam.Games" />
+    <meta name="theme-color" content="#0c0f0a" />
+    <link rel="apple-touch-icon" href="/dars-islam/assets/splash-wfwC1dXs.png" />
+    <link rel="icon" type="image/png" href="/dars-islam/assets/splash-wfwC1dXs.png" />
+    <title>darsislam.Games</title>
+    <!-- Wrapper-specific CSS -->
+    <script async custom-element="amp-auto-ads"
+        src="https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js">
+    </script>
+ 
+    <script type="module" crossorigin src="/dars-islam/assets/main-BXYPU4by.js"></script>
+    <link rel="modulepreload" crossorigin href="/dars-islam/assets/theme-BRE4rC8K.js">
+    <link rel="modulepreload" crossorigin href="/dars-islam/assets/sync-SUIhl4Uv.js">
+    <link rel="modulepreload" crossorigin href="/dars-islam/assets/progress-bar-DJY7ZKPz.js">
+    <link rel="stylesheet" crossorigin href="/dars-islam/assets/theme-cUHdOL2G.css">
+    <link rel="stylesheet" crossorigin href="/dars-islam/assets/main-BDKkTTFe.css">
+  </head>
+  <body>
+    <amp-auto-ads type="adsense"
+        data-ad-client="ca-pub-4284817009631043">
+</amp-auto-ads>
+    <!-- Account / dashboards nav -->
+    <nav class="site-nav">
+      <div class="site-nav__links">
+        <a href="/dars-islam/dashboard/" class="site-nav__link">📊 My Dashboard</a>
+        <a href="/dars-islam/teacher/" class="site-nav__link" id="navTeacherLink" hidden>🏫 Teacher Dashboard</a>
+        <a href="/dars-islam/parent/" class="site-nav__link" id="navParentLink" hidden>👪 Parent Dashboard</a>
+      </div>
+      <div id="authChip" class="site-nav__auth">
+        <button id="authSignIn" class="site-nav__btn">☁ Sign in</button>
+      </div>
+    </nav>
+
+      <div class="hero-features">
+        <div class="hero-feature">
+          <span class="hero-feature__icon">🎮</span>
+          <div>
+            <strong>CASUAL FUN</strong>
+            <span>Easy to play, hard to put down.</span>
+          </div>
+          <span class="hero-feature__icon">👨‍👩‍👧‍👦</span>
+          <div>
+            <strong>FOR EVERYONE</strong>
+            <span>Games that players of all ages enjoy.</span>
+          </div>
+        </div>
+        <div class="hero-feature">
+          <span class="hero-feature__icon">📱</span>
+          <div>
+            <strong>MOBILE FIRST</strong>
+            <span>Designed for the best mobile gaming experience.</span>
+          </div>
+          <span class="hero-feature__icon">🌍</span>
+          <div>
+            <strong>Multiple Device Sync</strong>
+            <span>Play your games on any device around the world and pick up right where you left off.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Premium / Battle Pass Banner -->
+    <section id="premiumBanner" class="premium-banner">
+      <div class="premium-banner__inner">
+        <div class="premium-banner__left">
+          <span class="premium-crown">👑</span>
+          <div class="premium-banner__copy">
+            <strong>darsislam Premium</strong>
+          </div>
+        </div>
+        <div class="premium-banner__ctas">
+          <a href="mailto:info@darsislam.games?subject=darsislam%20Premium" class="premium-cta">For Publisers: Email Us</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Game Grid -->
+    <header id="all_games" class="hub-header">
+      <h2 class="hub-title">Choose a Game</h2>
+      <p class="hub-subtitle">Each game can be installed as its own app!</p>
+      <div class="category-filter" id="categoryFilter" role="tablist" aria-label="Filter games by category">
+        <button class="category-filter__btn is-active" data-category-filter="all">All Games</button>
+        <button class="category-filter__btn" data-category-filter="islamic">🕌 Islamic Studies</button>
+        <button class="category-filter__btn" data-category-filter="math">🔢 Math</button>
+        <button class="category-filter__btn" data-category-filter="learning">🧸 Early Learning</button>
+      </div>
+    </header>
+
+    <main class="game-grid" id="gameGrid">
+
+      <a href="/dars-islam/games/asma-match/" class="game-card" data-game="asma-match" data-category="islamic">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #0d2b26, #16413a);">
+          <img
+            src="/dars-islam/games/asma-match/assets/icons/icon-512.png"
+            alt="Asma Match icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Asma Match</h2>
+          <p class="game-card__desc">A calm memory-match game for learning the 99 Beautiful Names of Allah</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/huruf-builder/" class="game-card" data-game="huruf-builder" data-category="islamic">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #0e1730, #16223d);">
+          <img
+            src="/dars-islam/games/huruf-builder/assets/icons/icon.svg"
+            alt="Huruf Builder icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Huruf Builder</h2>
+          <p class="game-card__desc">Learn the Arabic alphabet by spelling each letter's name</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/pillars-builder/" class="game-card" data-game="pillars-builder" data-category="islamic">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #1c1108, #3d2a16);">
+          <img
+            src="/dars-islam/games/pillars-builder/assets/icons/icon.svg"
+            alt="Pillars Builder icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Pillars Builder</h2>
+          <p class="game-card__desc">Learn the 5 Pillars of Islam by spelling each one</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/prophets-builder/" class="game-card" data-game="prophets-builder" data-category="islamic">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #140d1c, #2a163d);">
+          <img
+            src="/dars-islam/games/prophets-builder/assets/icons/icon.svg"
+            alt="Prophets Builder icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Prophets Builder</h2>
+          <p class="game-card__desc">Learn the Prophets by spelling each name</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/phrases-builder/" class="game-card" data-game="phrases-builder" data-category="islamic">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #0d1f18, #163d2e);">
+          <img
+            src="/dars-islam/games/phrases-builder/assets/icons/icon.svg"
+            alt="Phrases Builder icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Phrases Builder</h2>
+          <p class="game-card__desc">Learn everyday Islamic phrases, word by word</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/salah-builder/" class="game-card" data-game="salah-builder" data-category="islamic">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #1c0e13, #3d1620);">
+          <img
+            src="/dars-islam/games/salah-builder/assets/icons/icon.svg"
+            alt="Salah Builder icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Salah Builder</h2>
+          <p class="game-card__desc">Learn the steps of the daily prayer by spelling each one</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/months-builder/" class="game-card" data-game="months-builder" data-category="islamic">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #0d1c21, #16333d);">
+          <img
+            src="/dars-islam/games/months-builder/assets/icons/icon.svg"
+            alt="Months Builder icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Months Builder</h2>
+          <p class="game-card__desc">Learn the 12 Islamic months by spelling each one</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/letter-trace/" class="game-card" data-game="letter-trace" data-category="islamic">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #0a0e1a, #1c2440);">
+          <img
+            src="/dars-islam/games/letter-trace/assets/icons/icon.svg"
+            alt="Letter Trace icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Letter Trace</h2>
+          <p class="game-card__desc">Practice handwriting by tracing the Arabic and English alphabets</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/number-basics/" class="game-card" data-game="number-basics" data-category="math">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #08170e, #163d20);">
+          <img
+            src="/dars-islam/games/number-basics/assets/icons/icon.svg"
+            alt="Number Basics icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Number Basics</h2>
+          <p class="game-card__desc">Addition and subtraction practice, from counting to two-digit sums</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/times-table-dojo/" class="game-card" data-game="times-table-dojo" data-category="math">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #171208, #3d3016);">
+          <img
+            src="/dars-islam/games/times-table-dojo/assets/icons/icon.svg"
+            alt="Times Table Dojo icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Times Table Dojo</h2>
+          <p class="game-card__desc">Master the multiplication tables from 1 to 12</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/math-tricks-lab/" class="game-card" data-game="math-tricks-lab" data-category="math">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #170817, #3d163d);">
+          <img
+            src="/dars-islam/games/math-tricks-lab/assets/icons/icon.svg"
+            alt="Math Tricks Lab icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Math Tricks Lab</h2>
+          <p class="game-card__desc">Learn classic mental-math shortcuts (×11, ×9 fingers, squares ending in 5, Chinese line multiplication) and drill them</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/mental-math-sprint/" class="game-card" data-game="mental-math-sprint" data-category="math">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #081715, #163d3a);">
+          <img
+            src="/dars-islam/games/mental-math-sprint/assets/icons/icon.svg"
+            alt="Mental Math Sprint icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Mental Math Sprint</h2>
+          <p class="game-card__desc">Timed mixed-operation speed drills that ramp up in difficulty</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/math-mastery/" class="game-card" data-game="math-mastery" data-category="math">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #170b08, #3d1f16);">
+          <img
+            src="/dars-islam/games/math-mastery/assets/icons/icon.svg"
+            alt="Math Mastery icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Math Mastery</h2>
+          <p class="game-card__desc">Multi-digit multiplication, square roots, fractions and trigonometry</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/shapes-colors/" class="game-card" data-game="shapes-colors" data-category="learning">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #081619, #163540);">
+          <img
+            src="/dars-islam/games/shapes-colors/assets/icons/icon.svg"
+            alt="Shapes & Colors icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Shapes & Colors</h2>
+          <p class="game-card__desc">Learn shapes and colors through simple matching games</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/counting-fun/" class="game-card" data-game="counting-fun" data-category="learning">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #170f08, #3d2a16);">
+          <img
+            src="/dars-islam/games/counting-fun/assets/icons/icon.svg"
+            alt="Counting Fun icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Counting Fun</h2>
+          <p class="game-card__desc">Counting and number recognition for early learners</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/pattern-play/" class="game-card" data-game="pattern-play" data-category="learning">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #170a11, #3d1628);">
+          <img
+            src="/dars-islam/games/pattern-play/assets/icons/icon.svg"
+            alt="Pattern Play icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Pattern Play</h2>
+          <p class="game-card__desc">Spot the pattern and figure out what comes next</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/wonder-why/" class="game-card" data-game="wonder-why" data-category="learning">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #0b1708, #1c3d16);">
+          <img
+            src="/dars-islam/games/wonder-why/assets/icons/icon.svg"
+            alt="Wonder Why icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Wonder Why</h2>
+          <p class="game-card__desc">Fun science facts about animals, weather and the world</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/kind-hearts/" class="game-card" data-game="kind-hearts" data-category="learning">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #170b0f, #3d1c26);">
+          <img
+            src="/dars-islam/games/kind-hearts/assets/icons/icon.svg"
+            alt="Kind Hearts icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Kind Hearts</h2>
+          <p class="game-card__desc">Simple lessons in kindness, sharing and feelings</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/duas-builder/" class="game-card" data-game="duas-builder" data-category="islamic">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #081416, #163538);">
+          <img
+            src="/dars-islam/games/duas-builder/assets/icons/icon.svg"
+            alt="Duas Builder icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Duas Builder</h2>
+          <p class="game-card__desc">Learn short daily duas by building each one word by word</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/juz-amma-match/" class="game-card" data-game="juz-amma-match" data-category="islamic">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #141208, #3d3816);">
+          <img
+            src="/dars-islam/games/juz-amma-match/assets/icons/icon.svg"
+            alt="Quran Juz Amma Match icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Quran Juz Amma Match</h2>
+          <p class="game-card__desc">Learn short surahs from Juz' Amma by matching each name to its meaning</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/memory-match/" class="game-card" data-game="memory-match" data-category="learning">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #170d08, #3d2416);">
+          <img
+            src="/dars-islam/games/memory-match/assets/icons/icon.svg"
+            alt="Memory Match icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Memory Match</h2>
+          <p class="game-card__desc">Flip the cards and match each picture to its name</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/geometry-essentials/" class="game-card" data-game="geometry-essentials" data-category="math">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #08131a, #16324a);">
+          <img
+            src="/dars-islam/games/geometry-essentials/assets/icons/icon.svg"
+            alt="Geometry Essentials icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Geometry Essentials</h2>
+          <p class="game-card__desc">Area, perimeter, angles and the Pythagorean theorem</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/stats-probability/" class="game-card" data-game="stats-probability" data-category="math">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #081716, #163d38);">
+          <img
+            src="/dars-islam/games/stats-probability/assets/icons/icon.svg"
+            alt="Statistics Essentials icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Statistics Essentials</h2>
+          <p class="game-card__desc">Mean, median, mode, charts and reading data</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/arabic-grammar/" class="game-card" data-game="arabic-grammar" data-category="islamic">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #120817, #32163d);">
+          <img
+            src="/dars-islam/games/arabic-grammar/assets/icons/icon.svg"
+            alt="Arabic Grammar Basics icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Arabic Grammar Basics</h2>
+          <p class="game-card__desc">Root letters, sentence structure and verb patterns in Arabic</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/money-zakat/" class="game-card" data-game="money-zakat" data-category="islamic">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #0e1708, #2a3d16);">
+          <img
+            src="/dars-islam/games/money-zakat/assets/icons/icon.svg"
+            alt="Money & Zakat Math icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Money & Zakat Math</h2>
+          <p class="game-card__desc">Percentages, budgeting and calculating zakat</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/geography/" class="game-card" data-game="geography" data-category="learning">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #081a1f, #163540);">
+          <img
+            src="/dars-islam/games/geography/assets/icons/icon.svg"
+            alt="World Geography icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">World Geography</h2>
+          <p class="game-card__desc">Continents, oceans, landmarks and map skills</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/language-arts/" class="game-card" data-game="language-arts" data-category="learning">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #120817, #2e1638);">
+          <img
+            src="/dars-islam/games/language-arts/assets/icons/icon.svg"
+            alt="Language Arts icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Language Arts</h2>
+          <p class="game-card__desc">Synonyms, parts of speech and grammar rules</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/civics-community/" class="game-card" data-game="civics-community" data-category="learning">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #0a170f, #1a3524);">
+          <img
+            src="/dars-islam/games/civics-community/assets/icons/icon.svg"
+            alt="Civics & Community icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Civics & Community</h2>
+          <p class="game-card__desc">Community helpers, rules, voting and government</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/health-body/" class="game-card" data-game="health-body" data-category="learning">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #17090a, #3d1f1a);">
+          <img
+            src="/dars-islam/games/health-body/assets/icons/icon.svg"
+            alt="Health & The Body icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Health & The Body</h2>
+          <p class="game-card__desc">Nutrition, hygiene and how your body works</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/earth-space-science/" class="game-card" data-game="earth-space-science" data-category="learning">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #080a1f, #161f3d);">
+          <img
+            src="/dars-islam/games/earth-space-science/assets/icons/icon.svg"
+            alt="Earth & Space Science icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Earth & Space Science</h2>
+          <p class="game-card__desc">Weather, the solar system and Earth's cycles</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/algebra-basics/" class="game-card" data-game="algebra-basics" data-category="math">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #1a1a0f, #35331a);">
+          <img
+            src="/dars-islam/games/algebra-basics/assets/icons/icon.svg"
+            alt="Algebra Basics icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Algebra Basics</h2>
+          <p class="game-card__desc">Solving equations, expressions and simplifying algebra</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/number-theory-logic/" class="game-card" data-game="number-theory-logic" data-category="math">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #0a1216, #1a3038);">
+          <img
+            src="/dars-islam/games/number-theory-logic/assets/icons/icon.svg"
+            alt="Number Theory & Logic icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Number Theory & Logic</h2>
+          <p class="game-card__desc">Primes, factors, multiples and number patterns</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/seerah-timeline/" class="game-card" data-game="seerah-timeline" data-category="islamic">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #1a1006, #3d2e16);">
+          <img
+            src="/dars-islam/games/seerah-timeline/assets/icons/icon.svg"
+            alt="Seerah Timeline icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Seerah Timeline</h2>
+          <p class="game-card__desc">Key events in the life of Prophet Muhammad ﷺ</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/fiqh-essentials/" class="game-card" data-game="fiqh-essentials" data-category="islamic">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #0a1616, #1a3535);">
+          <img
+            src="/dars-islam/games/fiqh-essentials/assets/icons/icon.svg"
+            alt="Fiqh Essentials icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Fiqh Essentials</h2>
+          <p class="game-card__desc">Wudu, prayer times and the basics of Islamic practice</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/world-cultures/" class="game-card" data-game="world-cultures" data-category="learning">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #160a16, #351a35);">
+          <img
+            src="/dars-islam/games/world-cultures/assets/icons/icon.svg"
+            alt="World Cultures icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">World Cultures</h2>
+          <p class="game-card__desc">Flags, languages and traditions from around the world</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/advanced-trigonometry/" class="game-card" data-game="advanced-trigonometry" data-category="math">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #1a0f0a, #352010);">
+          <img
+            src="/dars-islam/games/advanced-trigonometry/assets/icons/icon.svg"
+            alt="Advanced Trigonometry icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Advanced Trigonometry</h2>
+          <p class="game-card__desc">Sine, cosine, tangent, the unit circle and identities</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/precalc-functions/" class="game-card" data-game="precalc-functions" data-category="math">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #0a1a17, #10352c);">
+          <img
+            src="/dars-islam/games/precalc-functions/assets/icons/icon.svg"
+            alt="Pre-Calc Functions icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Pre-Calc Functions</h2>
+          <p class="game-card__desc">Function notation, graphs, composition and inverses</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/digital-literacy/" class="game-card" data-game="digital-literacy" data-category="learning">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #0f0f1a, #1a1a35);">
+          <img
+            src="/dars-islam/games/digital-literacy/assets/icons/icon.svg"
+            alt="Digital Literacy icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Digital Literacy</h2>
+          <p class="game-card__desc">Online safety, how computers work and digital citizenship</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <a href="/dars-islam/games/world-history/" class="game-card" data-game="world-history" data-category="learning">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #14100a, #3d3220);">
+          <img
+            src="/dars-islam/games/world-history/assets/icons/icon.svg"
+            alt="World History icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">World History</h2>
+          <p class="game-card__desc">Timelines and highlights from world history and ancient civilizations</p>
+          <span class="game-card__install-badge">📲 Open game to install (optional)</span>
+        </div>
+      </a>
+
+      <!-- Placeholder for future games -->
+      <div class="game-card game-card--coming-soon">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #2d2d2d, #1a1a1a); opacity: 0.5;">
+          <span class="game-card__emoji">🆕</span>
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">More Games Coming Soon</h2>
+          <p class="game-card__desc">New titles will appear here as they're added</p>
+        </div>
+      </div>
+    </main>
+
+    <!-- Sponsor Ad Banner (hidden for premium users) -->
+    <div id="adBanner" class="ad-banner" style="display:none">
+      <button id="adBannerClose" class="ad-banner__close" aria-label="Close ad">✕</button>
+      <div id="adBannerContent" class="ad-banner__content"></div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="hub-footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <div class="footer-logo">
+            <img src="/dars-islam/assets/splash-wfwC1dXs.png" alt="darsislam.Games logo" class="footer-logo__img" />
+            <span>darsislam<br>GAMES</span>
+          </div>
+          <p>A casual game development studio creating fun and addictive games for players around the world.</p>
+        </div>
+        <div class="footer-column">
+          <h4>Games</h4>
+          <a href="/dars-islam/games/net-strike/">Net Strike</a>
+          <a href="#all_games">More</a>
+        </div>
+        <div class="footer-column">
+          <h4>Studio</h4>
+          <a href="https://instagram.com/darsislam.games" target="_blank" rel="noopener">Instagram</a>
+          <a href="mailto:info@darsislam.games">Contact</a>
+        </div>
+        <div class="footer-column">
+          <h4>Legal</h4>
+          <a href="/dars-islam/terms">Terms of Service</a>
+          <a href="/dars-islam/privacy">Privacy Policy</a>
+        </div>
+        <div class="footer-column">
+          <h4>Support this project</h4>
+          <a href="https://paypal.me/halgurdh" target="_blank" rel="noopener">💛 Donate via PayPal</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>PLAY MORE. SMILE MORE.</p>
+        <p>All rights reserved © 2018–<span id="year"></span> darsislam Games.</p>
+        <script>document.getElementById("year").innerHTML = new Date().getFullYear();</script>
+      </div>
+    </footer>
+
+  </body>
+</html>

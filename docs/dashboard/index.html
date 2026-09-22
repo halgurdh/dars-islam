@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0c0f0a" />
+    <title>My Dashboard · darsislam.Games</title>
+    <link rel="icon" type="image/png" href="/dars-islam/games/board-rush/assets/icons/icon-512.png" />
+    <style>
+      body { display: flex; flex-direction: column; align-items: center; }
+
+      .site-header {
+        width: 100%;
+        border-bottom: 1px solid var(--border-color);
+        padding: 1rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        box-sizing: border-box;
+      }
+      .site-header__brand {
+        font-size: 0.9rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        background: linear-gradient(135deg, #ff0055, #ff6b35);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-decoration: none;
+      }
+      .site-header__back {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        text-decoration: none;
+        margin-right: 3.5rem;
+      }
+      .site-header__back:hover { color: #ff0055; }
+
+      .content {
+        width: 100%;
+        max-width: 760px;
+        padding: 2.5rem 1.5rem 5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.75rem;
+        box-sizing: border-box;
+      }
+
+      .content > header h1 { font-size: 1.9rem; font-weight: 900; color: var(--text-primary); margin-bottom: 0.3rem; }
+      .content > header p { font-size: 0.88rem; color: var(--text-muted); }
+
+      .card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        padding: 1.25rem 1.4rem;
+      }
+
+      .card h2 {
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #ff0055;
+        margin-bottom: 0.9rem;
+      }
+
+      .level-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+      .level-big { font-size: 1.4rem; font-weight: 900; color: #ffb020; }
+      .streak-big { font-size: 1rem; font-weight: 700; color: #ff8a3d; }
+      .xp-bar { width: 100%; height: 12px; background: var(--border-color); border-radius: 6px; overflow: hidden; margin-top: 12px; }
+      .xp-fill { height: 100%; background: linear-gradient(90deg, #ffb347, #ffd700); border-radius: 6px; }
+      .sub { font-size: 0.82rem; color: var(--text-muted); margin-top: 6px; }
+
+      .class-card p { font-size: 0.92rem; color: var(--text-secondary); margin: 0.2rem 0; }
+      .class-card strong { color: var(--text-primary); }
+
+      .join-form { display: flex; flex-direction: column; gap: 8px; }
+      .join-form-row { display: flex; gap: 8px; flex-wrap: wrap; }
+      .join-form input {
+        flex: 1; min-width: 140px; background: var(--bg-primary); color: var(--text-primary);
+        border: 1px solid var(--border-color); border-radius: 8px; padding: 9px 12px; font-size: 0.9rem; box-sizing: border-box;
+      }
+      .join-form button, .card button {
+        background: var(--accent); color: #fff; border: none; border-radius: 8px;
+        padding: 9px 16px; font-size: 0.88rem; font-weight: 700; cursor: pointer;
+      }
+      .join-form button:hover, .card button:hover { filter: brightness(1.1); }
+      .join-note { font-size: 0.76rem; color: var(--text-muted); }
+      .form-msg { font-size: 0.82rem; min-height: 1.2em; }
+      .form-msg--error { color: #e54040; }
+      .form-msg--ok { color: #33c37d; }
+
+      .badges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
+      .badge { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center;
+        background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px 6px; }
+      .badge--locked { opacity: 0.35; filter: grayscale(1); }
+      .badge-icon { font-size: 24px; }
+      .badge-name { font-size: 10px; font-weight: 700; color: var(--text-primary); }
+
+      .report-table { width: 100%; border-collapse: collapse; }
+      .report-table th { text-align: left; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); padding: 6px 8px; border-bottom: 1px solid var(--border-color); }
+      .report-table td { padding: 8px; font-size: 0.88rem; color: var(--text-secondary); border-bottom: 1px solid var(--border-color); }
+      .report-table tr:last-child td { border-bottom: none; }
+
+      @media (max-width: 500px) {
+        .content { padding: 1.75rem 1rem 4rem; }
+        .site-header { padding: 0.9rem 1.25rem; }
+        .site-header__back { margin-right: 2rem; }
+      }
+    </style>
+    <script type="module" crossorigin src="/dars-islam/assets/dashboard-ZefcruyO.js"></script>
+    <link rel="modulepreload" crossorigin href="/dars-islam/assets/theme-BRE4rC8K.js">
+    <link rel="modulepreload" crossorigin href="/dars-islam/assets/sync-SUIhl4Uv.js">
+    <link rel="modulepreload" crossorigin href="/dars-islam/assets/certificates-Qf-mpwmR.js">
+    <link rel="stylesheet" crossorigin href="/dars-islam/assets/theme-cUHdOL2G.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <a href="/dars-islam/" class="site-header__brand">darsislam.Games</a>
+      <a href="/dars-islam/" class="site-header__back">← Back to games</a>
+    </header>
+
+    <main class="content">
+      <header>
+        <h1>📊 My Dashboard</h1>
+        <p>Your progress across every game — just for you.</p>
+      </header>
+
+      <section id="welcomeSection" class="card class-card" hidden></section>
+
+      <section id="classSection" class="card class-card" hidden></section>
+
+      <section id="familyCodeSection" class="card class-card" hidden></section>
+
+      <section id="assignedSection" class="card class-card" hidden></section>
+
+      <section id="announcementsSection" class="card class-card" hidden></section>
+
+      <section class="card">
+        <h2>Level &amp; Streak</h2>
+        <div class="level-row">
+          <span class="level-big" id="levelText">⭐ Level 1</span>
+          <span class="streak-big" id="streakText">🔥 0-day streak</span>
+        </div>
+        <div class="xp-bar"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
+        <p class="sub" id="xpSub"></p>
+      </section>
+
+      <section class="card">
+        <h2>Badges</h2>
+        <div class="badges-grid" id="badgesGrid"></div>
+      </section>
+
+      <section class="card">
+        <h2>Report Card</h2>
+        <p class="sub" style="margin-top:0">A friendly read on how much you've practiced each game — there's no failing grade, just keep going!</p>
+        <table class="report-table">
+          <thead><tr><th>Game</th><th>Rounds</th><th>Grade</th><th></th></tr></thead>
+          <tbody id="reportBody"></tbody>
+        </table>
+      </section>
+    </main>
+
+  </body>
+</html>

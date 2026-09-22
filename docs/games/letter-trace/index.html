@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Letter Trace" />
+    <meta name="theme-color" content="#0a0e1a" />
+    <meta name="description" content="Practice handwriting by tracing the Arabic and English alphabets." />
+    <link rel="apple-touch-icon" href="assets/icons/icon-512.png" />
+    <link rel="icon" type="image/svg+xml" href="assets/icons/icon.svg" />
+    <title>Letter Trace</title>
+    <style>
+      :root {
+        --lt-bg: #0a0e1a;
+        --lt-panel: #161d33;
+        --lt-panel-light: #1c2440;
+        --lt-accent: #7c93e0;
+        --lt-accent-light: #d6def7;
+        --lt-text: #eef0fa;
+        --lt-text-muted: #9aa3c4;
+        --lt-success: #4fd98a;
+        --lt-miss: #e0757c;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        /* !important: this game (unlike the Phaser games, whose canvas
+           paints over the whole viewport regardless) exposes real DOM
+           directly, so the site-wide light/dark toggle's shared body{}
+           rule would otherwise show through underneath — this game keeps
+           its own fixed dark palette like the rest of the family. */
+        background: var(--lt-bg) !important;
+        color: var(--lt-text) !important;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        overflow: hidden;
+        overscroll-behavior: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+
+      #app {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .view {
+        width: 100%;
+        max-width: 480px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0 20px;
+        /* Clears the fixed Exit/Theme/Install buttons overlaid in the top
+           corners by the shared site chrome. */
+        /* 150px (not just the ~50px corner buttons) also clears the
+           ProgressBar's floating level/streak pill in its expanded state. */
+        padding-top: calc(150px + env(safe-area-inset-top, 0px));
+        padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+        overflow-y: auto;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      h1 {
+        font-size: 30px;
+        margin: 0 0 6px;
+        text-align: center;
+      }
+
+      .tagline {
+        color: var(--lt-text-muted);
+        font-size: 15px;
+        text-align: center;
+        white-space: pre-line;
+        margin: 0 0 14px;
+      }
+
+      .progress-text {
+        color: var(--lt-accent);
+        font-size: 14px;
+        margin: 0 0 22px;
+        text-align: center;
+      }
+
+      .mode-selector {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 18px;
+      }
+
+      .mode-btn {
+        flex: 1;
+        padding: 10px 8px;
+        border-radius: 12px;
+        border: 2px solid rgba(124, 147, 224, 0.4);
+        background: var(--lt-panel);
+        color: var(--lt-text);
+        font-size: 14px;
+      }
+
+      .mode-btn.selected {
+        border-color: var(--lt-accent);
+        border-width: 3px;
+        background: var(--lt-panel-light);
+      }
+
+      .alphabet-selector {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 24px;
+      }
+
+      button {
+        font-family: inherit;
+        cursor: pointer;
+      }
+
+      .alpha-btn {
+        flex: 1;
+        padding: 14px 10px;
+        border-radius: 14px;
+        border: 2px solid rgba(124, 147, 224, 0.4);
+        background: var(--lt-panel);
+        color: var(--lt-text);
+        font-size: 16px;
+        transition: border-color 0.15s, background 0.15s;
+      }
+
+      .alpha-btn.selected {
+        border-color: var(--lt-accent);
+        border-width: 3px;
+        background: var(--lt-panel-light);
+      }
+
+      .primary-btn {
+        width: 100%;
+        max-width: 300px;
+        padding: 16px;
+        border-radius: 14px;
+        border: 2px solid var(--lt-accent);
+        background: var(--lt-panel);
+        color: var(--lt-text);
+        font-size: 19px;
+        font-weight: 600;
+        margin-bottom: 28px;
+      }
+
+      .secondary-btn {
+        width: 100%;
+        max-width: 280px;
+        padding: 12px;
+        border-radius: 12px;
+        border: 2px solid rgba(124, 147, 224, 0.6);
+        background: var(--lt-panel);
+        color: var(--lt-text);
+        font-size: 15px;
+        margin-bottom: 12px;
+      }
+
+      .footer-text {
+        color: var(--lt-text-muted);
+        font-size: 12px;
+        text-align: center;
+        margin-top: auto;
+        padding-top: 16px;
+      }
+
+      /* Trace view */
+      #trace-view {
+        justify-content: flex-start;
+      }
+
+      .hud {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        width: 100%;
+        margin-bottom: 10px;
+      }
+
+      .hud button {
+        background: none;
+        border: none;
+        color: var(--lt-text-muted);
+        font-size: 15px;
+        padding: 6px;
+      }
+
+      .hud-center {
+        text-align: center;
+        flex: 1;
+      }
+
+      #clue-label {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--lt-text);
+      }
+
+      .hud-stats {
+        display: flex;
+        gap: 14px;
+        justify-content: center;
+        font-size: 13px;
+        color: var(--lt-text-muted);
+        margin-top: 4px;
+      }
+
+      #hear-btn {
+        border: 2px solid var(--lt-accent);
+        background: var(--lt-panel);
+        color: var(--lt-accent-light);
+        font-weight: 700;
+        font-size: 17px;
+        padding: 12px 24px;
+        border-radius: 14px;
+        margin-bottom: 16px;
+      }
+
+      .canvas-wrap {
+        position: relative;
+        width: 100%;
+        max-width: 420px;
+        aspect-ratio: 1 / 1;
+        margin-bottom: 18px;
+      }
+
+      #trace-canvas {
+        width: 100%;
+        height: 100%;
+        border-radius: 20px;
+        background: var(--lt-panel);
+        border: 2px solid rgba(124, 147, 224, 0.35);
+        touch-action: none;
+        display: block;
+      }
+
+      .completion-badge {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 72px;
+        color: var(--lt-success);
+        pointer-events: none;
+        text-shadow: 0 0 24px rgba(79, 217, 138, 0.6);
+        animation: pop 0.35s ease-out;
+      }
+
+      @keyframes pop {
+        from {
+          transform: scale(0.4);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      /* "Not quite yet" feedback on a Confirm tap / wrong Sequence tap. */
+      .nudge {
+        animation: shake 0.35s ease-in-out;
+      }
+
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-6px); }
+        75% { transform: translateX(6px); }
+      }
+
+      /* Match view */
+      #match-view {
+        justify-content: flex-start;
+      }
+
+      .match-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        width: 100%;
+        margin-top: 6px;
+      }
+
+      .match-tile {
+        aspect-ratio: 1 / 1;
+        border-radius: 14px;
+        border: 2px solid rgba(124, 147, 224, 0.5);
+        background: var(--lt-panel);
+        color: var(--lt-text);
+        font-size: 22px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px;
+        text-align: center;
+        line-height: 1.15;
+      }
+
+      .match-tile.flipped {
+        border-color: var(--lt-accent);
+        background: var(--lt-panel-light);
+      }
+
+      .match-tile.matched {
+        opacity: 0.35;
+        pointer-events: none;
+      }
+
+      .match-tile.wrong {
+        border-color: var(--lt-miss);
+      }
+
+      /* Sequence view */
+      #sequence-view {
+        justify-content: flex-start;
+      }
+
+      #sequence-placed {
+        width: 100%;
+        color: var(--lt-accent-light);
+        font-size: 14px;
+        text-align: center;
+        white-space: pre-line;
+        margin-bottom: 14px;
+        min-height: 20px;
+      }
+
+      .sequence-pool {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+      }
+
+      .sequence-card {
+        width: 100%;
+        padding: 14px;
+        border-radius: 12px;
+        border: 2px solid rgba(124, 147, 224, 0.5);
+        background: var(--lt-panel);
+        color: var(--lt-text);
+        font-size: 17px;
+        text-align: center;
+      }
+
+      .sequence-card.placed {
+        opacity: 0.4;
+        pointer-events: none;
+        background: var(--lt-panel-light);
+      }
+
+      .sequence-card.wrong {
+        border-color: var(--lt-miss);
+      }
+
+      /* Complete view */
+      #complete-view {
+        justify-content: center;
+      }
+
+      .complete-panel {
+        width: 100%;
+        max-width: 340px;
+        background: var(--lt-panel);
+        border: 2px solid var(--lt-accent);
+        border-radius: 18px;
+        padding: 28px 22px;
+        text-align: center;
+      }
+
+      .complete-panel h2 {
+        margin: 0 0 14px;
+        font-size: 24px;
+      }
+
+      .complete-panel p {
+        white-space: pre-line;
+        color: var(--lt-text-muted);
+        font-size: 14px;
+        margin: 0 0 10px;
+      }
+
+      #complete-menu-btn {
+        margin-top: 12px;
+        border: none;
+        background: none;
+        color: var(--lt-accent-light);
+        font-size: 15px;
+        padding: 8px;
+      }
+    </style>
+    <script type="module" crossorigin src="/dars-islam/games/letter-trace/assets/index-DB9LbTjO.js"></script>
+    <link rel="stylesheet" crossorigin href="/dars-islam/games/letter-trace/assets/index-cUHdOL2G.css">
+  <link rel="manifest" href="/dars-islam/games/letter-trace/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/dars-islam/games/letter-trace/registerSW.js"></script></head>
+  <body>
+    <a href="/dars-islam/" class="game-exit">← Exit Game</a>
+    <button id="fullscreen-toggle" class="fullscreen-toggle" aria-label="Enter fullscreen" hidden>⛶</button>
+
+    <div id="app">
+      <div id="menu-view" class="view">
+        <h1 id="menu-title"></h1>
+        <p id="menu-tagline" class="tagline"></p>
+        <div class="mode-selector">
+          <button id="mode-trace-btn" class="mode-btn"></button>
+          <button id="mode-match-btn" class="mode-btn"></button>
+          <button id="mode-sequence-btn" class="mode-btn"></button>
+        </div>
+        <p id="menu-progress" class="progress-text"></p>
+        <div class="alphabet-selector">
+          <button id="alpha-arabic-btn" class="alpha-btn"></button>
+          <button id="alpha-english-btn" class="alpha-btn"></button>
+          <button id="alpha-numbers-btn" class="alpha-btn"></button>
+        </div>
+        <button id="start-btn" class="primary-btn"></button>
+        <button id="lang-toggle-btn" class="secondary-btn"></button>
+        <button id="mute-toggle-btn" class="secondary-btn"></button>
+        <p id="menu-footer" class="footer-text"></p>
+      </div>
+
+      <div id="trace-view" class="view" hidden>
+        <div class="hud">
+          <button id="trace-menu-btn">☰</button>
+          <div class="hud-center">
+            <div id="clue-label"></div>
+            <div class="hud-stats">
+              <span id="accuracy-label"></span>
+              <span id="coverage-label"></span>
+            </div>
+          </div>
+          <button id="trace-mute-btn">🔈</button>
+        </div>
+        <button id="hear-btn"></button>
+        <div class="canvas-wrap">
+          <canvas id="trace-canvas"></canvas>
+          <div id="completion-badge" class="completion-badge" hidden>✓</div>
+        </div>
+        <button id="confirm-btn" class="primary-btn"></button>
+        <button id="reset-btn" class="secondary-btn"></button>
+      </div>
+
+      <div id="match-view" class="view" hidden>
+        <div class="hud">
+          <button id="match-menu-btn">☰</button>
+          <div class="hud-center">
+            <div id="match-moves-label"></div>
+          </div>
+          <button id="match-mute-btn">🔈</button>
+        </div>
+        <div id="match-grid" class="match-grid"></div>
+      </div>
+
+      <div id="sequence-view" class="view" hidden>
+        <div class="hud">
+          <button id="sequence-menu-btn">☰</button>
+          <div class="hud-center">
+            <div id="sequence-round-label"></div>
+          </div>
+          <button id="sequence-mistakes-label" style="pointer-events: none;"></button>
+        </div>
+        <p id="sequence-instruction" class="tagline"></p>
+        <p id="sequence-placed"></p>
+        <div id="sequence-pool" class="sequence-pool"></div>
+      </div>
+
+      <div id="complete-view" class="view" hidden>
+        <div class="complete-panel">
+          <h2 id="complete-title"></h2>
+          <p id="complete-summary"></p>
+          <p id="complete-hint"></p>
+          <button id="complete-menu-btn"></button>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>
