@@ -11,8 +11,12 @@ export interface ChildSummary {
   daily_streak: number;
   best_daily_streak: number;
   badges: string[];
+  class_id: string;
   class_name: string;
   school_name: string;
+  game_round_counts: Record<string, number>;
+  last_played_date: string | null;
+  attendance_pct: number | null;
 }
 
 export interface ParentalControls {

@@ -34,11 +34,17 @@ in production.
 1. Create a project at [supabase.com](https://supabase.com) (or self-host
    Supabase's own open-source stack via Docker if you'd rather not use
    their managed service — see [supabase/docker](https://github.com/supabase/supabase/tree/master/docker)).
-2. Open the SQL Editor and run the contents of
-   [`database/supabase/0001_init.sql`](database/supabase/0001_init.sql) —
-   this creates every table, RLS policy, and RPC function the app needs
-   (profiles, schools/classes/students, parent links, parental controls,
-   etc.). It's safe to re-run against a fresh project.
+2. Open the SQL Editor and run, **in order**:
+   - [`database/supabase/0001_init.sql`](database/supabase/0001_init.sql) —
+     every table, RLS policy, and RPC function the core app needs
+     (profiles, schools/classes/students, parent links, parental controls,
+     etc.).
+   - [`database/supabase/0002_features.sql`](database/supabase/0002_features.sql) —
+     additive: the lenient per-game report card, class announcements,
+     homework due dates, attendance tracking, a private teacher note per
+     student, and organization type/welcome message (so "School" can read
+     as "Mosque", "Homeschool", etc.). Both files are safe to re-run against
+     a fresh project.
 3. In **Authentication → Providers**, confirm **Email** (magic link) is
    enabled, and enable **Anonymous sign-ins** (used for the no-email
    student join-a-class flow).

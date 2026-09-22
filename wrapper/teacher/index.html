@@ -134,6 +134,25 @@
       import { SchoolApi } from '@shared/school-api';
       import { ProgressBar } from '@shared/progress-bar';
       import { GAME_CATALOG } from '@shared/game-catalog';
+      import { summarizeReportCard } from '@shared/report-card';
+      import { printClassCertificates } from '@shared/certificates';
+
+      const ORG_TYPE_LABELS = { school: '🏫 School', mosque: '🕌 Mosque', homeschool: '🏡 Homeschool', other: '📚 Other' };
+
+      function daysSince(dateStr) {
+        if (!dateStr) return Infinity;
+        return Math.floor((Date.now() - new Date(dateStr + 'T00:00:00').getTime()) / 86400000);
+      }
+
+      function downloadCsv(filename, rows) {
+        const csv = rows.map((row) => row.map((cell) => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(',')).join('\r\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = filename;
+        document.body.appendChild(a); a.click(); a.remove();
+        URL.revokeObjectURL(url);
+      }
 
       const progressBar = new ProgressBar();
       const app = document.getElementById('app');
@@ -232,9 +251,35 @@
             <p class="form-msg" id="createClassMsg"></p>
             <div class="class-grid" id="classGrid"></div>
           </div>
+          <div class="card" id="orgSettingsCard"><p class="sub">Loading settings…</p></div>
           <div class="two-col" id="schoolStats"></div>`;
 
         document.getElementById('schoolSwitch')?.addEventListener('change', (e) => setParams({ school: e.target.value, class: null }));
+
+        SchoolApi.getSchoolProfile(school.id).then((profile) => {
+          const options = Object.entries(ORG_TYPE_LABELS)
+            .map(([v, label]) => `<option value="${v}" ${profile.org_type === v ? 'selected' : ''}>${label}</option>`).join('');
+          document.getElementById('orgSettingsCard').innerHTML = `
+            <h2>⚙️ Organization Settings</h2>
+            <p class="sub">Label your organization and greet students who join — a mosque, homeschool co-op, or club works exactly like a school here.</p>
+            <div class="row" style="margin-top:10px">
+              <select id="orgType">${options}</select>
+            </div>
+            <textarea id="welcomeMessage" maxlength="300" placeholder="Optional welcome message shown to students when they join (e.g. 'Welcome to Al-Noor Mosque weekend classes!')"
+              style="width:100%;box-sizing:border-box;margin-top:10px;min-height:64px;background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border-color);border-radius:8px;padding:9px 12px;font-size:0.88rem;font-family:inherit;">${escapeHtml(profile.welcome_message ?? '')}</textarea>
+            <button id="saveOrgSettings" style="margin-top:10px">Save</button>
+            <p class="form-msg" id="orgSettingsMsg"></p>`;
+          document.getElementById('saveOrgSettings').addEventListener('click', async () => {
+            const msg = document.getElementById('orgSettingsMsg');
+            msg.className = 'form-msg'; msg.textContent = 'Saving…';
+            try {
+              await SchoolApi.updateSchoolProfile(school.id, document.getElementById('orgType').value, document.getElementById('welcomeMessage').value);
+              msg.className = 'form-msg form-msg--ok'; msg.textContent = 'Saved.';
+            } catch {
+              msg.className = 'form-msg form-msg--error'; msg.textContent = 'Could not save — try again.';
+            }
+          });
+        }).catch(() => { document.getElementById('orgSettingsCard').innerHTML = ''; });
 
         document.getElementById('classGrid').innerHTML = school.classes.length
           ? school.classes.map((c) => `
@@ -285,12 +330,18 @@
       }
 
       async function renderAssignGamesCard(classId) {
-        const assigned = new Set(await SchoolApi.listAssignedGames(classId).catch(() => []));
+        const assignments = await SchoolApi.listAssignedGames(classId).catch(() => []);
+        const dueById = Object.fromEntries(assignments.map((a) => [a.game_id, a.due_date]));
+        const assigned = new Set(assignments.map((a) => a.game_id));
         const assignedList = GAME_CATALOG.filter((g) => assigned.has(g.id));
         const unassigned = GAME_CATALOG.filter((g) => !assigned.has(g.id));
 
         const assignedHtml = assignedList.length
-          ? assignedList.map((g) => `<span class="code-chip" style="margin:0 6px 6px 0;display:inline-block;">${g.icon} ${escapeHtml(g.title)}</span>`).join('')
+          ? assignedList.map((g) => `
+              <div class="code-chip" data-game-id="${g.id}" style="margin:0 6px 6px 0;display:inline-flex;align-items:center;gap:6px;">
+                <span>${g.icon} ${escapeHtml(g.title)}</span>
+                <input type="date" class="due-date-input" value="${dueById[g.id] ?? ''}" title="Due date (optional — a reminder, not a penalty)" style="font-size:11px;padding:2px 4px;" />
+              </div>`).join('')
           : '<p class="sub">No games assigned yet.</p>';
 
         const optionsHtml = unassigned.map((g) => `
@@ -302,6 +353,7 @@
           <div class="card">
             <h2>📌 Assigned Games</h2>
             <div>${assignedHtml}</div>
+            ${assignedList.length ? '<p class="sub" style="margin-top:4px">Optional due date shown as a reminder chip to students — nothing is locked or penalized.</p>' : ''}
             ${unassigned.length ? `
               <p class="sub" style="margin-top:14px">Assign more:</p>
               <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px;max-height:220px;overflow-y:auto;margin-top:6px;">
@@ -314,6 +366,13 @@
       }
 
       function bindAssignGamesCard(classId) {
+        document.querySelectorAll('.code-chip[data-game-id] .due-date-input').forEach((input) => {
+          input.addEventListener('change', async () => {
+            const gameId = input.closest('[data-game-id]').getAttribute('data-game-id');
+            try { await SchoolApi.setAssignmentDueDate(classId, gameId, input.value || null); }
+            catch { /* not critical — teacher can retry */ }
+          });
+        });
         document.getElementById('assignGamesBtn')?.addEventListener('click', async () => {
           const msg = document.getElementById('assignGamesMsg');
           const ids = [...document.querySelectorAll('#app input[type=checkbox]:checked')].map((el) => el.value);
@@ -329,14 +388,107 @@
         });
       }
 
+      function renderAnnouncementsCard(items) {
+        const list = items.length
+          ? items.map((a) => `
+              <div class="row" style="justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border-color);">
+                <div><p style="margin:0;font-size:0.88rem;">${escapeHtml(a.message)}</p><p class="sub" style="margin:2px 0 0">${new Date(a.created_at).toLocaleDateString()}</p></div>
+                <button class="ghost" data-delete-announcement="${a.id}" style="padding:4px 8px;font-size:0.75rem;">✕</button>
+              </div>`).join('')
+          : '<p class="sub">No announcements yet.</p>';
+        return `
+          <div class="card">
+            <h2>📣 Class Announcements</h2>
+            <div>${list}</div>
+            <form id="postAnnouncementForm" class="row" style="margin-top:12px">
+              <input id="announcementText" type="text" maxlength="500" placeholder="Homework, reminders, anything for the class…" />
+              <button type="submit">Post</button>
+            </form>
+            <p class="form-msg" id="announcementMsg"></p>
+          </div>`;
+      }
+
+      function bindAnnouncementsCard(classId) {
+        document.getElementById('postAnnouncementForm')?.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const input = document.getElementById('announcementText');
+          const msg = document.getElementById('announcementMsg');
+          if (!input.value.trim()) return;
+          msg.className = 'form-msg'; msg.textContent = 'Posting…';
+          try {
+            await SchoolApi.postAnnouncement(classId, input.value);
+            input.value = '';
+            renderClassRosterById(classId);
+          } catch {
+            msg.className = 'form-msg form-msg--error'; msg.textContent = 'Could not post — try again.';
+          }
+        });
+        document.querySelectorAll('[data-delete-announcement]').forEach((btn) => {
+          btn.addEventListener('click', async () => {
+            try { await SchoolApi.deleteAnnouncement(btn.dataset.deleteAnnouncement); renderClassRosterById(classId); } catch { /* ignore */ }
+          });
+        });
+      }
+
+      async function renderAttendanceCard(classId, roster) {
+        const today = new Date().toISOString().slice(0, 10);
+        const present = await SchoolApi.classAttendance(classId, today).catch(() => ({}));
+        const rows = roster.students.map((s) => `
+          <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;padding:4px 0;">
+            <input type="checkbox" value="${s.student_id}" ${present[s.student_id] !== false ? 'checked' : ''} />
+            ${escapeHtml(s.display_name)}
+          </label>`).join('') || '<p class="sub">No students yet.</p>';
+        return `
+          <div class="card">
+            <h2>🗓️ Attendance — Today</h2>
+            <p class="sub">Check who's present for today's session. Unchecked = absent for this date only.</p>
+            <div style="margin-top:8px">${rows}</div>
+            ${roster.students.length ? '<button id="saveAttendanceBtn" style="margin-top:10px">Save Attendance</button><p class="form-msg" id="attendanceMsg"></p>' : ''}
+          </div>`;
+      }
+
+      function bindAttendanceCard(classId) {
+        document.getElementById('saveAttendanceBtn')?.addEventListener('click', async (e) => {
+          const card = e.target.closest('.card');
+          const ids = [...card.querySelectorAll('input[type=checkbox]:checked')].map((el) => el.value);
+          const msg = document.getElementById('attendanceMsg');
+          msg.className = 'form-msg'; msg.textContent = 'Saving…';
+          try {
+            await SchoolApi.markAttendance(classId, new Date().toISOString().slice(0, 10), ids);
+            msg.className = 'form-msg form-msg--ok'; msg.textContent = 'Saved.';
+          } catch {
+            msg.className = 'form-msg form-msg--error'; msg.textContent = 'Could not save — try again.';
+          }
+        });
+      }
+
+      let currentSchool = null, currentSchools = null;
+
+      async function renderClassRosterById(classId) {
+        const classSummary = currentSchool.classes.find((c) => c.id === classId);
+        if (classSummary) await renderClassRoster(currentSchools, currentSchool, classSummary);
+      }
+
       async function renderClassRoster(schools, school, classSummary) {
+        currentSchool = school; currentSchools = schools;
         app.innerHTML = `<div class="card"><p class="sub">Loading roster…</p></div>`;
         try {
           const roster = await SchoolApi.classRoster(classSummary.id);
           const rows = roster.students.map((s, i) => {
             const cls = i < 3 ? 'top-row' : (i >= roster.students.length - 3 && roster.students.length > 3 ? 'bottom-row' : '');
-            return `<tr class="${cls}"><td>#${i + 1}</td><td>${escapeHtml(s.display_name)}</td><td>Lvl ${s.level}</td><td>🔥 ${s.daily_streak}</td><td>${s.badge_count} 🏅</td><td>${s.xp} XP</td></tr>`;
-          }).join('') || '<tr><td colspan="6" class="sub">No students have joined yet.</td></tr>';
+            const inactive = daysSince(s.last_played_date) >= 3;
+            return `<tr class="${cls}">
+              <td>#${i + 1}</td>
+              <td>${inactive ? '<span title="Hasn\'t played in a few days — might be worth a friendly nudge">👋</span> ' : ''}${escapeHtml(s.display_name)}</td>
+              <td>Lvl ${s.level}</td>
+              <td>🔥 ${s.daily_streak}</td>
+              <td>${s.badge_count} 🏅</td>
+              <td>${s.xp} XP</td>
+              <td style="white-space:nowrap;font-size:0.78rem;">${escapeHtml(summarizeReportCard(s.game_round_counts))}</td>
+              <td>${s.attendance_pct === null ? '—' : s.attendance_pct + '%'}</td>
+              <td><input type="text" class="teacher-note-input" data-student="${s.student_id}" value="${escapeHtml(s.teacher_note ?? '')}" maxlength="500" placeholder="Private note…" style="width:120px;font-size:0.78rem;background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border-color);border-radius:6px;padding:4px 6px;" /></td>
+            </tr>`;
+          }).join('') || '<tr><td colspan="9" class="sub">No students have joined yet.</td></tr>';
 
           app.innerHTML = `
             <div class="card">
@@ -346,13 +498,58 @@
                 <span class="sub">Share code <span class="code-chip">${roster.class.join_code}</span></span>
               </div>
               <p class="sub">${roster.students.length} students · class average ${roster.avg_xp} XP</p>
-              <table>
-                <thead><tr><th>#</th><th>Name</th><th>Level</th><th>Streak</th><th>Badges</th><th>XP</th></tr></thead>
-                <tbody>${rows}</tbody>
-              </table>
+              <div style="overflow-x:auto">
+                <table>
+                  <thead><tr><th>#</th><th>Name</th><th>Level</th><th>Streak</th><th>Badges</th><th>XP</th><th>Report card</th><th>Attend.</th><th>Note</th></tr></thead>
+                  <tbody>${rows}</tbody>
+                </table>
+              </div>
+              <div class="row" style="margin-top:12px">
+                <button class="ghost" id="exportCsvBtn">⬇ Export CSV</button>
+                <button class="ghost" id="printReportBtn">🖨 Print Class Report</button>
+                <button class="ghost" id="printCertsBtn">🏅 Print Term Certificates</button>
+              </div>
             </div>
+            <div id="announcementsHost"></div>
+            <div id="attendanceHost"></div>
             <div id="assignGamesHost"></div>`;
           document.getElementById('backToSchool').addEventListener('click', () => setParams({ school: school.id, class: null }));
+
+          document.querySelectorAll('.teacher-note-input').forEach((input) => {
+            input.addEventListener('change', async () => {
+              try { await SchoolApi.setTeacherNote(input.dataset.student, input.value); } catch { /* not critical — teacher can retry */ }
+            });
+          });
+
+          document.getElementById('exportCsvBtn').addEventListener('click', () => {
+            const header = ['#', 'Name', 'Level', 'Streak', 'Badges', 'XP', 'Report card', 'Attendance %'];
+            const csvRows = [header, ...roster.students.map((s, i) => [
+              i + 1, s.display_name, s.level, s.daily_streak, s.badge_count, s.xp,
+              summarizeReportCard(s.game_round_counts), s.attendance_pct === null ? '' : s.attendance_pct,
+            ])];
+            downloadCsv(`${roster.class.name.replace(/[^a-z0-9]+/gi, '-')}-roster.csv`, csvRows);
+          });
+          document.getElementById('printReportBtn').addEventListener('click', () => {
+            const win = window.open('', '_blank', 'width=900,height=700');
+            if (!win) return;
+            const body = `<h1>${escapeHtml(roster.class.name)}</h1><p>${roster.students.length} students · class average ${roster.avg_xp} XP · ${new Date().toLocaleDateString()}</p>
+              <table border="1" cellpadding="6" style="border-collapse:collapse;width:100%;font-family:sans-serif">
+                <tr><th>Name</th><th>Level</th><th>XP</th><th>Report card</th><th>Attendance</th></tr>
+                ${roster.students.map((s) => `<tr><td>${escapeHtml(s.display_name)}</td><td>${s.level}</td><td>${s.xp}</td><td>${escapeHtml(summarizeReportCard(s.game_round_counts))}</td><td>${s.attendance_pct === null ? '—' : s.attendance_pct + '%'}</td></tr>`).join('')}
+              </table>`;
+            win.document.write(`<!doctype html><html><head><title>${escapeHtml(roster.class.name)} report</title></head><body>${body}</body></html>`);
+            win.document.close(); win.focus();
+            setTimeout(() => win.print(), 300);
+          });
+          document.getElementById('printCertsBtn').addEventListener('click', () => {
+            printClassCertificates(roster.students, 'Successful Completion of Term', roster.class.name);
+          });
+
+          document.getElementById('announcementsHost').innerHTML = renderAnnouncementsCard(await SchoolApi.listAnnouncements(classSummary.id).catch(() => []));
+          bindAnnouncementsCard(classSummary.id);
+
+          document.getElementById('attendanceHost').innerHTML = await renderAttendanceCard(classSummary.id, roster);
+          bindAttendanceCard(classSummary.id);
 
           document.getElementById('assignGamesHost').innerHTML = await renderAssignGamesCard(classSummary.id);
           bindAssignGamesCard(classSummary.id);

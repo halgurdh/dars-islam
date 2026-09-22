@@ -36,6 +36,7 @@ interface ProfileRow {
   best_daily_streak: number;
   last_played_date: string | null;
   badges: string[];
+  game_round_counts: Record<string, number>;
 }
 
 class SyncManager {
@@ -177,6 +178,7 @@ class SyncManager {
       best_daily_streak: profile.best_daily_streak,
       last_played_date: profile.last_played_date,
       badges: profile.badges,
+      game_round_counts: profile.game_round_counts,
     });
 
     this._notify(true, this._email);
@@ -220,6 +222,7 @@ class SyncManager {
       best_daily_streak: progress.best_daily_streak,
       last_played_date: progress.last_played_date,
       badges: progress.badges,
+      game_round_counts: progress.game_round_counts,
     }).eq('id', this._userId).then(() => {}, () => { /* network error — will retry next write */ });
   }
 

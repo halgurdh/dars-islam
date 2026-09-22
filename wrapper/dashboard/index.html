@@ -127,9 +127,15 @@
         <p>Your progress across every game — just for you.</p>
       </header>
 
+      <section id="welcomeSection" class="card class-card" hidden></section>
+
       <section id="classSection" class="card class-card" hidden></section>
 
       <section id="familyCodeSection" class="card class-card" hidden></section>
+
+      <section id="assignedSection" class="card class-card" hidden></section>
+
+      <section id="announcementsSection" class="card class-card" hidden></section>
 
       <section class="card">
         <h2>Level &amp; Streak</h2>
@@ -148,20 +154,25 @@
 
       <section class="card">
         <h2>Report Card</h2>
+        <p class="sub" style="margin-top:0">A friendly read on how much you've practiced each game — there's no failing grade, just keep going!</p>
         <table class="report-table">
-          <thead><tr><th>Game</th><th>Rounds</th><th>Grade</th></tr></thead>
+          <thead><tr><th>Game</th><th>Rounds</th><th>Grade</th><th></th></tr></thead>
           <tbody id="reportBody"></tbody>
         </table>
       </section>
     </main>
 
     <script type="module">
-      import { PlayerProgress, tierForRounds } from '@shared/player-progress';
+      import { PlayerProgress, tierForRounds, isCertificateEligible } from '@shared/player-progress';
       import { BADGES } from '@shared/badges';
       import { GAME_CATALOG } from '@shared/game-catalog';
       import { SchoolApi } from '@shared/school-api';
       import { sync } from '@shared/sync';
       import { getSupabase } from '@shared/supabase-client';
+      import { printCertificate } from '@shared/certificates';
+      import { ArcadeStore } from '@shared/arcade-store';
+
+      let myClassId = null;
 
       function renderProgress() {
         const state = PlayerProgress.getState();
@@ -182,8 +193,19 @@
         document.getElementById('reportBody').innerHTML = GAME_CATALOG.map((g) => {
           const count = state.gameRoundCounts[g.id] ?? 0;
           const tier = tierForRounds(count);
-          return `<tr><td>${g.icon} ${g.title}</td><td>${count}</td><td>${tier.icon} ${tier.label}</td></tr>`;
+          const certBtn = isCertificateEligible(count)
+            ? `<button data-cert-game="${g.id}" data-cert-title="${escapeHtml(g.title)}" style="padding:3px 8px;font-size:0.72rem;">🏅 Certificate</button>` : '';
+          return `<tr><td>${g.icon} ${g.title}</td><td>${count}</td><td>${tier.icon} ${tier.label}</td><td>${certBtn}</td></tr>`;
         }).join('');
+
+        document.querySelectorAll('[data-cert-game]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            printCertificate({
+              studentName: ArcadeStore.getPlayerName() || 'Student',
+              achievement: `Gold-level practice in ${btn.dataset.certTitle}`,
+            });
+          });
+        });
       }
 
       function escapeHtml(s) {
@@ -195,13 +217,66 @@
         if (!sync.isStudent) { section.hidden = true; return; }
         try {
           const supabase = getSupabase();
-          const { data, error } = await supabase.from('students').select('family_code').eq('user_id', sync.userId).single();
-          if (error || !data?.family_code) { section.hidden = true; return; }
+          const { data, error } = await supabase.from('students').select('family_code, class_id').eq('user_id', sync.userId).single();
+          if (error || !data) { section.hidden = true; return; }
+          myClassId = data.class_id;
+          if (!data.family_code) { section.hidden = true; return; }
           section.hidden = false;
           section.innerHTML = `
             <h2>Family Code</h2>
             <p class="sub">Share this code with a parent so they can see your progress:</p>
             <p><span class="code-chip" style="font-family:'Courier New',monospace;font-weight:800;letter-spacing:0.1em;background:var(--bg-primary);border:1px dashed var(--border-color);border-radius:8px;padding:4px 10px;">${escapeHtml(data.family_code)}</span></p>`;
+        } catch { section.hidden = true; }
+      }
+
+      function renderWelcomeSection(standing) {
+        const section = document.getElementById('welcomeSection');
+        const dismissKey = `darsislam:welcome-dismissed:${standing.school_name}`;
+        if (!standing.welcome_message || localStorage.getItem(dismissKey)) { section.hidden = true; return; }
+        const orgIcon = { mosque: '🕌', homeschool: '🏡', other: '📚' }[standing.org_type] ?? '🏫';
+        section.hidden = false;
+        section.innerHTML = `
+          <div class="row" style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+            <p style="margin:0;font-size:0.92rem;">${orgIcon} ${escapeHtml(standing.welcome_message)}</p>
+            <button id="dismissWelcome" style="padding:4px 10px;font-size:0.75rem;flex-shrink:0;">Got it</button>
+          </div>`;
+        document.getElementById('dismissWelcome').addEventListener('click', () => {
+          localStorage.setItem(dismissKey, '1');
+          section.hidden = true;
+        });
+      }
+
+      async function renderAssignedSection() {
+        const section = document.getElementById('assignedSection');
+        if (!myClassId) { section.hidden = true; return; }
+        try {
+          const assignments = await SchoolApi.listAssignedGames(myClassId);
+          if (!assignments.length) { section.hidden = true; return; }
+          const todayStr = new Date().toISOString().slice(0, 10);
+          section.hidden = false;
+          section.innerHTML = `
+            <h2>Assigned by Your Teacher</h2>
+            ${assignments.map((a) => {
+              const g = GAME_CATALOG.find((x) => x.id === a.game_id);
+              if (!g) return '';
+              const overdue = a.due_date && a.due_date < todayStr;
+              const dueLabel = a.due_date ? `<span class="sub" style="color:${overdue ? '#e54040' : 'inherit'}">${overdue ? 'was due' : 'due'} ${a.due_date}</span>` : '';
+              return `<p><a href="__VITE_BASE_PATH__games/${g.id}/">${g.icon} ${escapeHtml(g.title)}</a> ${dueLabel}</p>`;
+            }).join('')}
+            <p class="sub">Just a reminder — nothing is locked, play in any order.</p>`;
+        } catch { section.hidden = true; }
+      }
+
+      async function renderAnnouncementsSection() {
+        const section = document.getElementById('announcementsSection');
+        if (!myClassId) { section.hidden = true; return; }
+        try {
+          const items = await SchoolApi.listAnnouncements(myClassId);
+          if (!items.length) { section.hidden = true; return; }
+          section.hidden = false;
+          section.innerHTML = `
+            <h2>📣 From Your Teacher</h2>
+            ${items.map((a) => `<p style="margin:0 0 8px"><strong>${new Date(a.created_at).toLocaleDateString()}:</strong> ${escapeHtml(a.message)}</p>`).join('')}`;
         } catch { section.hidden = true; }
       }
 
@@ -215,6 +290,7 @@
               <h2>My Class</h2>
               <p><strong>${escapeHtml(standing.class_name)}</strong> · ${escapeHtml(standing.school_name)}</p>
               <p>Rank <strong>#${standing.rank}</strong> of ${standing.class_size} · ${standing.my_xp} XP (class average ${standing.avg_xp} XP)</p>`;
+            renderWelcomeSection(standing);
             return;
           }
         } catch { /* not signed in or no membership — fall through to the join form */ }
@@ -257,6 +333,8 @@
         renderProgress();
         await renderClassSection();
         await renderFamilyCodeCard();
+        await renderAssignedSection();
+        await renderAnnouncementsSection();
       })();
     </script>
   </body>

@@ -103,13 +103,21 @@ export interface ProgressState {
 export interface RoundTier { label: string; icon: string; }
 
 // A "grading style" read on a single game's round count, for the student
-// dashboard's per-game breakdown — not a real curriculum assessment, just
-// enough to answer "how am I doing at this one" at a glance.
+// dashboard's per-game breakdown and the teacher/parent report card — not a
+// real curriculum assessment, just enough to answer "how am I doing at this
+// one" at a glance. Deliberately lenient: there is no failing tier, and the
+// zero-state reads as an invitation ("not started yet"), never a grade.
 export function tierForRounds(count: number): RoundTier {
-  if (count === 0) return { label: 'Not started', icon: '⚪' };
+  if (count === 0) return { label: 'Not started yet', icon: '🌱' };
   if (count < 5) return { label: 'Bronze', icon: '🥉' };
   if (count < 15) return { label: 'Silver', icon: '🥈' };
-  return { label: 'Gold', icon: '🥇' };
+  if (count < 30) return { label: 'Gold', icon: '🥇' };
+  return { label: 'Platinum', icon: '💎' };
+}
+
+/** Gold tier or better — the "milestone reached" threshold certificates key off. */
+export function isCertificateEligible(count: number): boolean {
+  return count >= 15;
 }
 
 export const PlayerProgress = {
@@ -189,6 +197,7 @@ export const PlayerProgress = {
       best_daily_streak: data.bestDailyStreak,
       last_played_date: data.lastPlayedDate,
       badges: data.badges,
+      game_round_counts: data.gameRoundCounts,
     };
   },
 
@@ -198,6 +207,7 @@ export const PlayerProgress = {
     best_daily_streak?: number;
     last_played_date?: string | null;
     badges?: string[];
+    game_round_counts?: Record<string, number>;
   }): void {
     const data = load();
     // Server never decreases progress made elsewhere — take the max/union,
@@ -210,6 +220,10 @@ export const PlayerProgress = {
     }
     const remoteBadges = (snapshot.badges ?? []) as BadgeId[];
     data.badges = [...new Set([...data.badges, ...remoteBadges])];
+    const remoteCounts = snapshot.game_round_counts ?? {};
+    for (const gameId of Object.keys(remoteCounts)) {
+      data.gameRoundCounts[gameId] = Math.max(data.gameRoundCounts[gameId] ?? 0, remoteCounts[gameId]);
+    }
     localStorage.setItem(STORE_KEY, JSON.stringify(data)); // no _syncCallback: avoid pull->push loop
   },
 };

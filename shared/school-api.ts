@@ -35,12 +35,17 @@ export interface SchoolDashboard {
 }
 
 export interface ClassRosterStudent {
+  student_id: string;
   display_name: string;
   xp: number;
   level: number;
   daily_streak: number;
   badge_count: number;
   joined_at: string;
+  game_round_counts: Record<string, number>;
+  last_played_date: string | null;
+  teacher_note: string | null;
+  attendance_pct: number | null;
 }
 
 export interface ClassRoster {
@@ -51,6 +56,12 @@ export interface ClassRoster {
   bottom_students: ClassRosterStudent[];
 }
 
+export interface ClassAssignment { game_id: string; due_date: string | null; }
+
+export interface ClassAnnouncement { id: string; class_id: string; teacher_id: string; message: string; created_at: string; }
+
+export interface SchoolProfile { id: string; name: string; invite_code: string; org_type: 'school' | 'mosque' | 'homeschool' | 'other'; welcome_message: string | null; }
+
 export interface MyClassStanding {
   in_class: boolean;
   class_name?: string;
@@ -59,6 +70,8 @@ export interface MyClassStanding {
   class_size?: number;
   avg_xp?: number;
   my_xp?: number;
+  org_type?: 'school' | 'mosque' | 'homeschool' | 'other';
+  welcome_message?: string | null;
 }
 
 interface ListSchoolsRow {
@@ -89,6 +102,8 @@ export const SchoolApi = {
       class_size: row.class_size,
       avg_xp: row.avg_xp,
       my_xp: row.my_xp,
+      org_type: row.org_type,
+      welcome_message: row.welcome_message,
     };
   },
 
@@ -175,16 +190,88 @@ export const SchoolApi = {
     return sync.joinClassAsStudent(joinCode, displayName);
   },
 
-  async listAssignedGames(classId: string): Promise<string[]> {
+  async listAssignedGames(classId: string): Promise<ClassAssignment[]> {
     const supabase = getSupabase();
     const { data, error } = await supabase.rpc('list_class_assignments', { p_class_id: classId });
     if (error) throw error;
-    return (data ?? []) as string[];
+    return (data ?? []) as ClassAssignment[];
   },
 
   async assignGame(classId: string, gameId: string): Promise<void> {
     const supabase = getSupabase();
     const { error } = await supabase.rpc('assign_game', { p_class_id: classId, p_game_id: gameId });
+    if (error) throw error;
+  },
+
+  async setAssignmentDueDate(classId: string, gameId: string, dueDate: string | null): Promise<void> {
+    const supabase = getSupabase();
+    const { error } = await supabase.from('class_assignments')
+      .update({ due_date: dueDate }).eq('class_id', classId).eq('game_id', gameId);
+    if (error) throw error;
+  },
+
+  /** Teacher-only remark on a student, never surfaced to the student/parent. */
+  async setTeacherNote(studentId: string, note: string): Promise<void> {
+    const supabase = getSupabase();
+    const { error } = await supabase.from('students')
+      .update({ teacher_note: note.slice(0, 500) }).eq('user_id', studentId);
+    if (error) throw error;
+  },
+
+  async listAnnouncements(classId: string): Promise<ClassAnnouncement[]> {
+    const supabase = getSupabase();
+    const { data, error } = await supabase.from('class_announcements')
+      .select('*').eq('class_id', classId).order('created_at', { ascending: false });
+    if (error) throw error;
+    return (data ?? []) as ClassAnnouncement[];
+  },
+
+  async postAnnouncement(classId: string, message: string): Promise<void> {
+    const supabase = getSupabase();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not signed in');
+    const { error } = await supabase.from('class_announcements')
+      .insert({ class_id: classId, teacher_id: user.id, message: message.trim().slice(0, 500) });
+    if (error) throw error;
+  },
+
+  async deleteAnnouncement(id: string): Promise<void> {
+    const supabase = getSupabase();
+    const { error } = await supabase.from('class_announcements').delete().eq('id', id);
+    if (error) throw error;
+  },
+
+  /** Upserts present=true for `presentStudentIds` and false for the rest of the class's roster on that date. */
+  async markAttendance(classId: string, sessionDate: string, presentStudentIds: string[]): Promise<void> {
+    const supabase = getSupabase();
+    const { error } = await supabase.rpc('mark_attendance', {
+      p_class_id: classId, p_session_date: sessionDate, p_present_user_ids: presentStudentIds,
+    });
+    if (error) throw error;
+  },
+
+  async classAttendance(classId: string, sessionDate: string): Promise<Record<string, boolean>> {
+    const supabase = getSupabase();
+    const { data, error } = await supabase.from('class_attendance')
+      .select('student_id, present').eq('class_id', classId).eq('session_date', sessionDate);
+    if (error) throw error;
+    const byStudent: Record<string, boolean> = {};
+    for (const row of (data ?? []) as { student_id: string; present: boolean }[]) byStudent[row.student_id] = row.present;
+    return byStudent;
+  },
+
+  async getSchoolProfile(schoolId: string): Promise<SchoolProfile> {
+    const supabase = getSupabase();
+    const { data, error } = await supabase.from('schools')
+      .select('id, name, invite_code, org_type, welcome_message').eq('id', schoolId).single();
+    if (error) throw error;
+    return data as SchoolProfile;
+  },
+
+  async updateSchoolProfile(schoolId: string, orgType: SchoolProfile['org_type'], welcomeMessage: string): Promise<void> {
+    const supabase = getSupabase();
+    const { error } = await supabase.from('schools')
+      .update({ org_type: orgType, welcome_message: welcomeMessage.trim().slice(0, 300) || null }).eq('id', schoolId);
     if (error) throw error;
   },
 };

@@ -858,14 +858,18 @@
             const supabase = getSupabase();
             const { data: student } = await supabase.from('students').select('class_id').eq('user_id', sync.userId).single();
             if (!student?.class_id) return;
-            const { data: assignedIds } = await supabase.rpc('list_class_assignments', { p_class_id: student.class_id });
-            (assignedIds ?? []).forEach((gameId) => {
+            const { data: assignments } = await supabase.rpc('list_class_assignments', { p_class_id: student.class_id });
+            const todayStr = new Date().toISOString().slice(0, 10);
+            (assignments ?? []).forEach(({ game_id: gameId, due_date: dueDate }) => {
               const card = document.querySelector(`.game-card[data-game="${gameId}"]`);
               if (!card || card.querySelector('.assigned-badge')) return;
+              const overdue = dueDate && dueDate < todayStr;
+              const dueSoon = dueDate && !overdue && dueDate <= new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10);
               const badge = document.createElement('span');
               badge.className = 'assigned-badge';
-              badge.textContent = '📌 Assigned';
-              badge.style.cssText = 'position:absolute;top:8px;right:8px;background:#ff0055;color:#fff;font-size:10px;font-weight:800;padding:3px 7px;border-radius:6px;';
+              badge.textContent = overdue ? '⏰ Overdue' : dueSoon ? '⏰ Due soon' : '📌 Assigned';
+              const bg = overdue ? '#c62828' : '#ff0055';
+              badge.style.cssText = `position:absolute;top:8px;right:8px;background:${bg};color:#fff;font-size:10px;font-weight:800;padding:3px 7px;border-radius:6px;`;
               card.style.position = 'relative';
               card.appendChild(badge);
             });

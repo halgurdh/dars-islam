@@ -129,9 +129,18 @@
     <script type="module">
       import { sync } from '@shared/sync';
       import { ParentApi } from '@shared/parent-api';
+      import { SchoolApi } from '@shared/school-api';
       import { GAME_CATALOG } from '@shared/game-catalog';
       import { BADGES } from '@shared/badges';
       import { ProgressBar } from '@shared/progress-bar';
+      import { renderReportCard } from '@shared/report-card';
+      import { printCertificate } from '@shared/certificates';
+      import { isCertificateEligible } from '@shared/player-progress';
+
+      function daysSince(dateStr) {
+        if (!dateStr) return Infinity;
+        return Math.floor((Date.now() - new Date(dateStr + 'T00:00:00').getTime()) / 86400000);
+      }
 
       const progressBar = new ProgressBar();
       const app = document.getElementById('app');
@@ -236,13 +245,41 @@
             <span class="badge-name">${escapeHtml(b.name)}</span>
           </div>`).join('') || '<p class="sub">No badges yet.</p>';
 
+        const inactive = daysSince(child.last_played_date) >= 3;
+        const attendance = child.attendance_pct === null || child.attendance_pct === undefined ? null : child.attendance_pct;
+
+        const eligibleGames = GAME_CATALOG.filter((g) => isCertificateEligible(child.game_round_counts?.[g.id] ?? 0));
+
         return `
           <div class="card">
             <h2>${escapeHtml(child.display_name || 'Your child')}'s Progress</h2>
             <p class="sub">${escapeHtml(child.class_name)} · ${escapeHtml(child.school_name)}</p>
             <p>⭐ Level ${child.level} · 🔥 ${child.daily_streak}-day streak (best ${child.best_daily_streak}) · ${child.xp} XP</p>
+            ${attendance !== null ? `<p class="sub">🗓️ Attendance: ${attendance}%</p>` : ''}
+            ${inactive ? `<p class="sub">👋 Hasn't played in a few days — might enjoy a nudge to jump back in.</p>` : ''}
             <div class="badges-grid" style="margin-top:10px">${badgesHtml}</div>
-          </div>`;
+            <h2 style="margin-top:16px">Report Card</h2>
+            <p class="sub" style="margin-top:0">A lenient, per-game read on practice — there's no failing grade.</p>
+            ${renderReportCard(child.game_round_counts ?? {})}
+            ${eligibleGames.length ? `
+              <div class="row" style="margin-top:12px">
+                ${eligibleGames.map((g) => `<button class="ghost" data-cert-game="${g.id}" data-cert-title="${escapeHtml(g.title)}" data-cert-name="${escapeHtml(child.display_name || 'Student')}">🏅 ${escapeHtml(g.title)} certificate</button>`).join('')}
+              </div>` : ''}
+          </div>
+          <div class="card" id="announcementsCard" hidden></div>`;
+      }
+
+      async function renderAnnouncements(child) {
+        const card = document.getElementById('announcementsCard');
+        if (!card) return;
+        try {
+          const items = await SchoolApi.listAnnouncements(child.class_id);
+          if (!items.length) { card.hidden = true; return; }
+          card.hidden = false;
+          card.innerHTML = `
+            <h2>📣 From ${escapeHtml(child.class_name)}'s Teacher</h2>
+            ${items.map((a) => `<p style="margin:0 0 8px"><strong>${new Date(a.created_at).toLocaleDateString()}:</strong> ${escapeHtml(a.message)}</p>`).join('')}`;
+        } catch { card.hidden = true; }
       }
 
       async function renderChildDetail(children) {
@@ -253,6 +290,14 @@
         detail.innerHTML = `<div class="two-col"><div>${reportCard(child)}</div><div id="controlsHost"></div></div>`;
         document.getElementById('controlsHost').innerHTML = await renderControlsForm(child);
         bindControlsForm(child.student_id);
+
+        document.querySelectorAll('[data-cert-game]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            printCertificate({ studentName: btn.dataset.certName, achievement: `Gold-level practice in ${btn.dataset.certTitle}` });
+          });
+        });
+
+        renderAnnouncements(child);
       }
 
       async function render() {
