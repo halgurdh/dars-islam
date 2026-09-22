@@ -4,6 +4,8 @@
 
 Eine kostenlose Plattform mit kleinen pädagogischen Browserspielen (Phaser/DOM, als PWAs installierbar), die sich vor allem auf islamische Studien und Arabisch konzentriert, daneben aber auch allgemeine Schulfächer (Mathe, Sprache, Naturwissenschaften usw.) abdeckt, plus schulfreundliche Konten für Schüler, Lehrer und Eltern.
 
+💛 **Dieses Projekt unterstützen:** [paypal.me/halgurdh](https://paypal.me/halgurdh) — diese Plattform ist bewusst kostenlos und werbearm; Spenden helfen, das so zu halten.
+
 ### ⚠️ Haftungsausschlüsse
 
 - **Mit KI erstelltes Projekt.** 100 % des Codes in diesem Repository wurde mit KI-Unterstützung (Claude Code) geschrieben. Es wurde nicht professionell geprüft — es kann Fehler enthalten, und manche Spiele oder Funktionen funktionieren möglicherweise nicht korrekt. Bitte melde alles Defekte über ein Issue oder einen Pull Request.

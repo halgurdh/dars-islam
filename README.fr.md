@@ -4,6 +4,8 @@
 
 Une plateforme gratuite de petits jeux éducatifs dans le navigateur (Phaser/DOM, installables comme PWA), centrée principalement sur les études islamiques et l'arabe, en plus des matières scolaires générales (maths, langue, sciences, etc.), avec des comptes adaptés à l'école pour élèves, enseignants et parents.
 
+💛 **Soutenir ce projet :** [paypal.me/halgurdh](https://paypal.me/halgurdh) — cette plateforme est volontairement gratuite et peu chargée en publicité ; les dons aident à le rester.
+
 ### ⚠️ Avertissements
 
 - **Projet construit avec l'IA.** 100 % du code de ce dépôt a été écrit avec l'aide de l'IA (Claude Code). Il n'a pas été audité professionnellement — il peut contenir des bugs, et certains jeux ou fonctionnalités peuvent ne pas fonctionner correctement. Merci de signaler tout problème via une issue ou une pull request.
