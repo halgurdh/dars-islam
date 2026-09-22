@@ -6,8 +6,17 @@ PWA) backed by [Supabase](https://supabase.com) (Postgres + Auth) for
 accounts, progress sync, and the student/teacher/parent school system.
 Nothing here requires a server you have to run yourself for the app logic —
 Supabase is called directly from the browser — but you do need *somewhere*
-to serve the built static files, and a Supabase project (free tier is
-fine) to back accounts/progress. This doc covers both.
+to serve the built static files.
+
+**Supabase is optional.** Every game is fully playable as a guest with no
+account at all — progress (XP, levels, streaks, badges) is saved to
+`localStorage` on that device regardless of Supabase. If you don't set
+`VITE_SUPABASE_URL`/`VITE_SUPABASE_PUBLISHABLE_KEY`, the site still builds
+and runs fine; you only lose account sign-in, cross-device progress sync,
+and the student/teacher/parent school features (sign-in/dashboard links
+degrade to a "not configured" state instead of erroring). Skip straight to
+[section 3](#3-local-development) if you just want guest-mode games running
+quickly, and come back to section 1 later if you decide you want accounts.
 
 ## Architecture in one paragraph
 

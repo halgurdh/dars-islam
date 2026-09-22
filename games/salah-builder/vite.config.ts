@@ -43,7 +43,7 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'Salah Builder',
           short_name: 'SalahBuilder',
-          description: 'Learn the steps of the daily prayer by spelling each one',
+          description: 'Learn the steps of the daily prayer by spelling each one.',
           theme_color: '#17080b',
           background_color: '#17080b',
           display: 'standalone',

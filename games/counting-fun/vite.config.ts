@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'Counting Fun',
           short_name: 'CountingFun',
-          description: 'Counting and number recognition for early learners',
+          description: 'Counting and number recognition for early learners.',
           theme_color: '#170f08',
           background_color: '#170f08',
           display: 'standalone',

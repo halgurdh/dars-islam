@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'Mental Math Sprint',
           short_name: 'MentalMathSprint',
-          description: 'Timed mixed-operation speed drills for sharp mental math',
+          description: 'Timed mixed-operation speed drills for sharp mental math.',
           theme_color: '#081715',
           background_color: '#081715',
           display: 'standalone',

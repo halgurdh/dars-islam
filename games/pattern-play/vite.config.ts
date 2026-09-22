@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'Pattern Play',
           short_name: 'PatternPlay',
-          description: 'Spot the pattern and figure out what comes next',
+          description: 'Spot the pattern and figure out what comes next.',
           theme_color: '#170a11',
           background_color: '#170a11',
           display: 'standalone',

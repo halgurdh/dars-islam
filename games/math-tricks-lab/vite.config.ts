@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'Math Tricks Lab',
           short_name: 'MathTricksLab',
-          description: 'Learn classic mental-math shortcuts, then drill them for speed',
+          description: 'Learn classic mental-math shortcuts, then drill them for speed.',
           theme_color: '#170817',
           background_color: '#170817',
           display: 'standalone',

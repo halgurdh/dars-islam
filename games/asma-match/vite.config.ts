@@ -43,7 +43,7 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'Asma Match',
           short_name: 'AsmaMatch',
-          description: 'A calm memory-match game for learning the 99 Names of Allah',
+          description: 'A calm memory-match game for learning the 99 Names of Allah.',
           theme_color: '#0d2b26',
           background_color: '#0d2b26',
           display: 'standalone',

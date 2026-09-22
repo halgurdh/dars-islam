@@ -43,7 +43,7 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'Duas Builder',
           short_name: 'DuasBuilder',
-          description: 'Learn short daily duas by building each one word by word',
+          description: 'Learn short daily duas by building each one word by word.',
           theme_color: '#081416',
           background_color: '#081416',
           display: 'standalone',

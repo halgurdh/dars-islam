@@ -43,7 +43,7 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'Quran Juz Amma Match',
           short_name: 'JuzAmmaMatch',
-          description: 'A calm memory-match game for learning short surahs from Juz’ Amma',
+          description: 'A calm memory-match game for learning short surahs from Juz’ Amma.',
           theme_color: '#141208',
           background_color: '#141208',
           display: 'standalone',

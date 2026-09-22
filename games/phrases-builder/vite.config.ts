@@ -43,7 +43,7 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'Phrases Builder',
           short_name: 'PhrasesBuilder',
-          description: 'Learn everyday Islamic phrases by building each one word by word',
+          description: 'Learn everyday Islamic phrases by building each one word by word.',
           theme_color: '#081712',
           background_color: '#081712',
           display: 'standalone',

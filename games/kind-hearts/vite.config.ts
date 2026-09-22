@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'Kind Hearts',
           short_name: 'KindHearts',
-          description: 'Simple lessons in kindness, sharing and feelings',
+          description: 'Simple lessons in kindness, sharing and feelings.',
           theme_color: '#170b0f',
           background_color: '#170b0f',
           display: 'standalone',

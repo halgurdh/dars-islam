@@ -43,8 +43,8 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'Letter Trace',
           short_name: 'LetterTrace',
-          description: 'Handwriting practice for the Arabic and English alphabets',
-          theme_color: '#0f1420',
+          description: 'Practice handwriting by tracing the Arabic and English alphabets.',
+          theme_color: '#0a0e1a',
           background_color: '#0f1420',
           display: 'standalone',
           orientation: 'portrait',

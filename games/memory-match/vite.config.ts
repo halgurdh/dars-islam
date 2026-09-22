@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'Memory Match',
           short_name: 'MemoryMatch',
-          description: 'Flip the cards and match each picture to its name',
+          description: 'Flip the cards and match each picture to its name.',
           theme_color: '#170d08',
           background_color: '#170d08',
           display: 'standalone',

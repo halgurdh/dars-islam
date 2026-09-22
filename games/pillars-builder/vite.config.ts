@@ -43,7 +43,7 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'Pillars Builder',
           short_name: 'PillarsBuilder',
-          description: 'Learn the 5 Pillars of Islam by spelling each one',
+          description: 'Learn the 5 Pillars of Islam by spelling each one.',
           theme_color: '#170e08',
           background_color: '#170e08',
           display: 'standalone',

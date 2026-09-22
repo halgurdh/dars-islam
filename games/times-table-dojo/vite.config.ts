@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'Times Table Dojo',
           short_name: 'TimesTableDojo',
-          description: 'Master the multiplication tables from 1 to 12',
+          description: 'Master the multiplication tables from 1 to 12.',
           theme_color: '#171208',
           background_color: '#171208',
           display: 'standalone',

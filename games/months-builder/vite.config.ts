@@ -43,7 +43,7 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'Months Builder',
           short_name: 'MonthsBuilder',
-          description: 'Learn the 12 Islamic (Hijri) months by spelling each one',
+          description: 'Learn the 12 Islamic (Hijri) months by spelling each one.',
           theme_color: '#081417',
           background_color: '#081417',
           display: 'standalone',

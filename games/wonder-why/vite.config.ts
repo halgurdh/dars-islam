@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'Wonder Why',
           short_name: 'WonderWhy',
-          description: 'Fun science facts about animals, weather and the world',
+          description: 'Fun science facts about animals, weather and the world.',
           theme_color: '#0b1708',
           background_color: '#0b1708',
           display: 'standalone',

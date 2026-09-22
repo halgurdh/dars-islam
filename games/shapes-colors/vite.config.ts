@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'Shapes & Colors',
           short_name: 'ShapesColors',
-          description: 'Learn shapes and colors through simple matching games',
+          description: 'Learn shapes and colors through simple matching games.',
           theme_color: '#081619',
           background_color: '#081619',
           display: 'standalone',

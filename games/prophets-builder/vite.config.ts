@@ -43,7 +43,7 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'Prophets Builder',
           short_name: 'ProphetsBuilder',
-          description: 'Learn the names of the Prophets by spelling each one',
+          description: 'Learn the names of the Prophets by spelling each one.',
           theme_color: '#0e0817',
           background_color: '#0e0817',
           display: 'standalone',

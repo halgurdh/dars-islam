@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'Arabic Grammar Basics',
           short_name: 'ArabicGrammarBasics',
-          description: 'Root letters, sentence structure and verb patterns in Arabic',
+          description: 'Root letters, sentence structure and verb patterns in Arabic.',
           theme_color: '#120817',
           background_color: '#120817',
           display: 'standalone',

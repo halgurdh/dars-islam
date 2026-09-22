@@ -47,7 +47,7 @@ export class ArcadeBar {
 
     ArcadeStore.registerSyncCallback(() => sync.scheduleSync());
     this.authUnsub = sync.onAuthChange(() => { if (!this.modal) this.renderBar(); });
-    sync.init().then(() => this.renderBar());
+    sync.init().then(() => this.renderBar()).catch(() => {});
     this.renderBar();
   }
 

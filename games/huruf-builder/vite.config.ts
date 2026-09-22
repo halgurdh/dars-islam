@@ -43,7 +43,7 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'Huruf Builder',
           short_name: 'HurufBuilder',
-          description: "Learn the Arabic alphabet by spelling each letter's name",
+          description: "Learn the Arabic alphabet by spelling each letter's name.",
           theme_color: '#080c17',
           background_color: '#080c17',
           display: 'standalone',

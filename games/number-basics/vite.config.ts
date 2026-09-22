@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'Number Basics',
           short_name: 'NumberBasics',
-          description: 'Addition and subtraction practice, from counting to two-digit sums',
+          description: 'Addition and subtraction practice, from counting to two-digit sums.',
           theme_color: '#08170e',
           background_color: '#08170e',
           display: 'standalone',

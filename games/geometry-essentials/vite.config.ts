@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'Geometry Essentials',
           short_name: 'GeometryEssentials',
-          description: 'Area, perimeter, angles and the Pythagorean theorem',
+          description: 'Area, perimeter, angles and the Pythagorean theorem.',
           theme_color: '#08131a',
           background_color: '#08131a',
           display: 'standalone',

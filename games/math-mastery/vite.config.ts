@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'Math Mastery',
           short_name: 'MathMastery',
-          description: 'Double and triple-digit multiplication, square roots, fractions and trigonometry',
+          description: 'Double and triple-digit multiplication, square roots, fractions and trigonometry.',
           theme_color: '#170b08',
           background_color: '#170b08',
           display: 'standalone',

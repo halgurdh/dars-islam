@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'Statistics Essentials',
           short_name: 'StatisticsEssentials',
-          description: 'Mean, median, mode, charts and reading data',
+          description: 'Mean, median, mode, charts and reading data.',
           theme_color: '#081716',
           background_color: '#081716',
           display: 'standalone',

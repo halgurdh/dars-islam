@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'World History',
           short_name: 'WorldHistory',
-          description: 'Timelines and highlights from world history and ancient civilizations',
+          description: 'Timelines and highlights from world history and ancient civilizations.',
           theme_color: '#14100a',
           background_color: '#14100a',
           display: 'standalone',

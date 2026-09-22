@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'Money & Zakat Math',
           short_name: 'MoneyZakatMath',
-          description: 'Percentages, budgeting and calculating zakat',
+          description: 'Percentages, budgeting and calculating zakat.',
           theme_color: '#0e1708',
           background_color: '#0e1708',
           display: 'standalone',
