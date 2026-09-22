@@ -1,21 +1,27 @@
 name: Deploy to GitHub Pages
 
+# Builds the static site and commits the output straight into `docs/` on
+# `main`, so GitHub Pages can serve it via the "Deploy from a branch" source
+# (branch: main, folder: /docs) — no separate gh-pages branch, no Actions
+# Pages source needed. `paths-ignore: docs/**` on the trigger is required:
+# without it, this workflow's own commit back into `docs/` would re-trigger
+# itself in an infinite loop.
+
 on:
   push:
     branches: [main]
+    paths-ignore: [docs/**]
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: pages
   cancel-in-progress: false
 
 jobs:
-  build:
+  build-and-commit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -30,23 +36,22 @@ jobs:
 
       - name: Build (static frontend only — the site talks to Supabase directly)
         env:
-          VITE_BASE_PATH: /minitoon.games/
+          VITE_BASE_PATH: /dars-islam/
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
         run: npm run build
 
-      - uses: actions/configure-pages@v5
+      - name: Move build output into docs/
+        run: |
+          rm -rf docs
+          mv dist docs
+          touch docs/.nojekyll
 
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Commit docs/ back to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs
+          git diff --staged --quiet && echo "No changes to deploy" && exit 0
+          git commit -m "deploy: rebuild docs/ [skip ci]"
+          git push

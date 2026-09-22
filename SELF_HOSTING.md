@@ -120,10 +120,19 @@ the image itself just serves plain HTTP on port 80.
 ## 5. Other deployment options
 
 - **GitHub Pages**: push to `main` and the included
-  `.github/workflows/deploy-gh-pages.yml` builds and deploys automatically,
-  once you've added `VITE_SUPABASE_URL`/`VITE_SUPABASE_PUBLISHABLE_KEY` as
-  repo Actions secrets and set **Settings → Pages → Source** to
-  "GitHub Actions". Free, no Docker needed.
+  `.github/workflows/deploy-gh-pages.yml` builds the site and commits the
+  output into `docs/` on `main` (a `[skip ci]` commit so it doesn't
+  re-trigger itself). One-time setup:
+  1. Add `VITE_SUPABASE_URL`/`VITE_SUPABASE_PUBLISHABLE_KEY` as repo Actions secrets.
+  2. **Settings → Actions → General → Workflow permissions** → select
+     "Read and write permissions" — without this the workflow's commit-back
+     step is blocked (403), since repos default to read-only for the
+     built-in token regardless of what the workflow file itself requests.
+  3. **Settings → Pages → Source** → "Deploy from a branch" → branch `main`,
+     folder `/docs`.
+
+  Free, no Docker needed. If your repo isn't named `dars-islam`, also update
+  `VITE_BASE_PATH` in the workflow file to match (`/your-repo-name/`).
 - **Any static host** (Netlify, Vercel, S3+CloudFront, a plain VPS with
   nginx you manage yourself): run `npm run build`, upload/serve `dist/`.
   `scripts/deploy-sftp.mjs` is included if you want to push `dist/` over
