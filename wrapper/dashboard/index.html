@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0c0f0a" />
     <title>My Dashboard · darsislam.Games</title>
-    <link rel="icon" type="image/png" href="/games/board-rush/assets/icons/icon-512.png" />
+    <link rel="icon" type="image/png" href="__VITE_BASE_PATH__games/board-rush/assets/icons/icon-512.png" />
     <style>
       body { display: flex; flex-direction: column; align-items: center; }
 
@@ -117,8 +117,8 @@
   </head>
   <body>
     <header class="site-header">
-      <a href="/" class="site-header__brand">darsislam.Games</a>
-      <a href="/" class="site-header__back">← Back to games</a>
+      <a href="__VITE_BASE_PATH__" class="site-header__brand">darsislam.Games</a>
+      <a href="__VITE_BASE_PATH__" class="site-header__back">← Back to games</a>
     </header>
 
     <main class="content">
@@ -128,6 +128,8 @@
       </header>
 
       <section id="classSection" class="card class-card" hidden></section>
+
+      <section id="familyCodeSection" class="card class-card" hidden></section>
 
       <section class="card">
         <h2>Level &amp; Streak</h2>
@@ -159,6 +161,7 @@
       import { GAME_CATALOG } from '@shared/game-catalog';
       import { SchoolApi } from '@shared/school-api';
       import { sync } from '@shared/sync';
+      import { getSupabase } from '@shared/supabase-client';
 
       function renderProgress() {
         const state = PlayerProgress.getState();
@@ -185,6 +188,21 @@
 
       function escapeHtml(s) {
         return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      }
+
+      async function renderFamilyCodeCard() {
+        const section = document.getElementById('familyCodeSection');
+        if (!sync.isStudent) { section.hidden = true; return; }
+        try {
+          const supabase = getSupabase();
+          const { data, error } = await supabase.from('students').select('family_code').eq('user_id', sync.userId).single();
+          if (error || !data?.family_code) { section.hidden = true; return; }
+          section.hidden = false;
+          section.innerHTML = `
+            <h2>Family Code</h2>
+            <p class="sub">Share this code with a parent so they can see your progress:</p>
+            <p><span class="code-chip" style="font-family:'Courier New',monospace;font-weight:800;letter-spacing:0.1em;background:var(--bg-primary);border:1px dashed var(--border-color);border-radius:8px;padding:4px 10px;">${escapeHtml(data.family_code)}</span></p>`;
+        } catch { section.hidden = true; }
       }
 
       async function renderClassSection() {
@@ -224,8 +242,6 @@
           msg.className = 'form-msg'; msg.textContent = 'Joining…';
           try {
             const result = await SchoolApi.joinClass(code, name);
-            const { setSessionToken } = await import('@shared/api');
-            setSessionToken(result.session_token);
             msg.className = 'form-msg form-msg--ok';
             msg.textContent = `Joined ${result.class_name}! Reloading…`;
             setTimeout(() => window.location.reload(), 900);
@@ -240,6 +256,7 @@
         try { await sync.init(); } catch { /* guest is fine here */ }
         renderProgress();
         await renderClassSection();
+        await renderFamilyCodeCard();
       })();
     </script>
   </body>

@@ -76,23 +76,10 @@ const games = readdirSync(GAMES_DIR, { withFileTypes: true })
     }
   }
 
-// 4. Copy PHP API files into dist/api/ (exclude _config.php — set manually on server)
-const apiSrc = join(ROOT, 'api');
-const apiDest = join(DIST, 'api');
-if (existsSync(apiSrc)) {
-  log('Copying api/ PHP files...');
-  cpSync(apiSrc, apiDest, {
-    recursive: true,
-    filter: (src) => !src.endsWith('_config.php'),
-  });
-}
-
-// 4b. Copy SQL schema for reference (not served, but handy for db setup)
-const dbSrc = join(ROOT, 'database');
-if (existsSync(dbSrc)) {
-  mkdirSync(join(DIST, 'database'), { recursive: true });
-  cpSync(dbSrc, join(DIST, 'database'), { recursive: true });
-}
+// 4. (formerly copied api/ PHP files + database/ SQL schema into dist/ —
+// removed now that the app talks to Supabase directly from the client;
+// nothing serves or needs those files in the deployed bundle anymore.
+// They still live at api/ and database/ in the repo for reference.)
 
 // 6. Copy shared assets from root public/ into dist if they exist
 const rootPublic = join(ROOT, 'public');

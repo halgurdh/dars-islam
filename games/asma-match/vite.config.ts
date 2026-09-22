@@ -1,9 +1,9 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
-import { mergeGamePublicAssets, mergeSharedAssets, serveOnnxWasm } from '../../shared/game-vite-plugins';
+import { mergeGamePublicAssets, mergeSharedAssets, serveOnnxWasm, injectBasePath } from '../../shared/game-vite-plugins';
 
-const GAME_BASE = '/games/asma-match/';
+const GAME_BASE = `${process.env.VITE_BASE_PATH ?? '/'}games/asma-match/`;
 
 export default defineConfig(({ mode }) => {
   const isPWA = mode === 'pwa';
@@ -34,6 +34,7 @@ export default defineConfig(({ mode }) => {
     },
 
     plugins: [
+      injectBasePath(),
       mergeGamePublicAssets(__dirname),
       mergeSharedAssets(__dirname),
       serveOnnxWasm(__dirname),
@@ -51,17 +52,17 @@ export default defineConfig(({ mode }) => {
           start_url: GAME_BASE,
           icons: [
             {
-              src: '/games/asma-match/assets/icons/icon-512.png',
+              src: `${GAME_BASE}assets/icons/icon-512.png`,
               sizes: '512x512',
               type: 'image/png',
             },
             {
-              src: '/games/asma-match/assets/icons/icon-192.png',
+              src: `${GAME_BASE}assets/icons/icon-192.png`,
               sizes: '192x192',
               type: 'image/png',
             },
             {
-              src: '/games/asma-match/assets/icons/icon-512.png',
+              src: `${GAME_BASE}assets/icons/icon-512.png`,
               sizes: '512x512',
               type: 'image/png',
               purpose: 'maskable',

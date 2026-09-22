@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0c0f0a" />
+    <title>Parent Dashboard · darsislam.Games</title>
+    <link rel="icon" type="image/png" href="__VITE_BASE_PATH__games/board-rush/assets/icons/icon-512.png" />
+    <style>
+      body { display: flex; flex-direction: column; align-items: center; }
+
+      .site-header {
+        width: 100%;
+        border-bottom: 1px solid var(--border-color);
+        padding: 1rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        box-sizing: border-box;
+      }
+      .site-header__brand {
+        font-size: 0.9rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        background: linear-gradient(135deg, #ff0055, #ff6b35);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-decoration: none;
+      }
+      .site-header__back {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        text-decoration: none;
+        margin-right: 3.5rem;
+      }
+      .site-header__back:hover { color: #ff0055; }
+
+      .content {
+        width: 100%;
+        max-width: 900px;
+        padding: 2.5rem 1.5rem 5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.75rem;
+        box-sizing: border-box;
+      }
+
+      .content > header h1 { font-size: 1.9rem; font-weight: 900; color: var(--text-primary); margin-bottom: 0.3rem; }
+      .content > header p { font-size: 0.88rem; color: var(--text-muted); }
+
+      .card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        padding: 1.25rem 1.4rem;
+      }
+      .card h2 {
+        font-size: 0.72rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+        color: #ff0055; margin-bottom: 0.9rem;
+      }
+
+      .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+      .row input, .row select {
+        background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border-color);
+        border-radius: 8px; padding: 9px 12px; font-size: 0.9rem; box-sizing: border-box;
+      }
+      .row input { flex: 1; min-width: 160px; }
+      button {
+        background: var(--accent); color: #fff; border: none; border-radius: 8px;
+        padding: 9px 16px; font-size: 0.88rem; font-weight: 700; cursor: pointer;
+      }
+      button:hover { filter: brightness(1.1); }
+      button.ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border-color); }
+      .sub { font-size: 0.82rem; color: var(--text-muted); }
+      .form-msg { font-size: 0.82rem; min-height: 1.2em; }
+      .form-msg--error { color: #e54040; }
+      .form-msg--ok { color: #33c37d; }
+
+      .child-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; margin-top: 12px; }
+      .child-tile {
+        background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 10px;
+        padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; cursor: pointer;
+      }
+      .child-tile:hover { border-color: var(--accent); }
+      .child-tile.active { border-color: var(--accent); border-width: 2px; }
+      .child-tile strong { color: var(--text-primary); font-size: 0.95rem; }
+      .child-tile span { font-size: 0.78rem; color: var(--text-muted); }
+
+      .badges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; }
+      .badge { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center;
+        background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 10px; padding: 8px 4px; }
+      .badge-icon { font-size: 20px; }
+      .badge-name { font-size: 9px; font-weight: 700; color: var(--text-primary); }
+
+      .games-checklist { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 6px; margin-top: 10px; max-height: 260px; overflow-y: auto; }
+      .games-checklist label { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--text-secondary); }
+
+      .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+      @media (max-width: 500px) {
+        .content { padding: 1.75rem 1rem 4rem; }
+        .site-header { padding: 0.9rem 1.25rem; }
+        .site-header__back { margin-right: 2rem; }
+      }
+    </style>
+    <script type="module">
+      import '@shared/theme.css';
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a href="__VITE_BASE_PATH__" class="site-header__brand">darsislam.Games</a>
+      <a href="__VITE_BASE_PATH__" class="site-header__back">← Back to games</a>
+    </header>
+
+    <main class="content">
+      <header>
+        <h1>👪 Parent Dashboard</h1>
+        <p>Link your child's account to see their progress and set limits.</p>
+      </header>
+
+      <div id="app"></div>
+    </main>
+
+    <script type="module">
+      import { sync } from '@shared/sync';
+      import { ParentApi } from '@shared/parent-api';
+      import { GAME_CATALOG } from '@shared/game-catalog';
+      import { BADGES } from '@shared/badges';
+      import { ProgressBar } from '@shared/progress-bar';
+
+      const progressBar = new ProgressBar();
+      const app = document.getElementById('app');
+      let selectedChildId = null;
+
+      function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      }
+
+      function renderSignedOut() {
+        app.innerHTML = `
+          <div class="card">
+            <h2>Sign In Required</h2>
+            <p class="sub">Sign in with the same email you'll use for darsislam.Games to link your child's account.</p>
+            <button id="parentSignIn" style="margin-top:10px">☁ Sign in</button>
+          </div>`;
+        document.getElementById('parentSignIn').addEventListener('click', () => progressBar.openSignIn());
+      }
+
+      function linkForm() {
+        return `
+          <div class="card">
+            <h2>Link a Child</h2>
+            <p class="sub">Ask your child to open "My Dashboard" and share their Family Code.</p>
+            <form id="linkForm" class="row" style="margin-top:10px">
+              <input id="familyCode" type="text" maxlength="6" placeholder="Family code (e.g. AB12CD)" style="text-transform:uppercase" />
+              <button type="submit">Link</button>
+            </form>
+            <p class="form-msg" id="linkMsg"></p>
+          </div>`;
+      }
+
+      function bindLinkForm() {
+        document.getElementById('linkForm').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const code = document.getElementById('familyCode').value.trim();
+          const msg = document.getElementById('linkMsg');
+          if (!code) return;
+          msg.className = 'form-msg'; msg.textContent = 'Linking…';
+          try {
+            await ParentApi.linkChild(code);
+            msg.className = 'form-msg form-msg--ok';
+            msg.textContent = 'Linked! Loading…';
+            setTimeout(render, 600);
+          } catch {
+            msg.className = 'form-msg form-msg--error';
+            msg.textContent = 'Could not link — check the code and try again.';
+          }
+        });
+      }
+
+      async function renderControlsForm(child) {
+        const controls = await ParentApi.getControls(child.student_id).catch(() => ({ daily_time_limit_minutes: null, blocked_game_ids: [] }));
+        const blocked = new Set(controls.blocked_game_ids ?? []);
+
+        const gamesHtml = GAME_CATALOG.map((g) => `
+          <label>
+            <input type="checkbox" value="${g.id}" ${blocked.has(g.id) ? 'checked' : ''} />
+            ${g.icon} ${escapeHtml(g.title)}
+          </label>`).join('');
+
+        return `
+          <div class="card">
+            <h2>Screen Time &amp; Content Limits</h2>
+            <form id="controlsForm">
+              <label class="sub">Daily time limit (minutes, blank = no limit)</label>
+              <div class="row" style="margin-top:6px">
+                <input id="timeLimit" type="number" min="1" placeholder="e.g. 60" value="${controls.daily_time_limit_minutes ?? ''}" style="max-width:140px" />
+              </div>
+              <p class="sub" style="margin-top:14px">Blocked games:</p>
+              <div class="games-checklist" id="gamesChecklist">${gamesHtml}</div>
+              <button type="submit" style="margin-top:12px">Save Controls</button>
+              <p class="form-msg" id="controlsMsg"></p>
+            </form>
+          </div>`;
+      }
+
+      function bindControlsForm(studentId) {
+        document.getElementById('controlsForm').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const msg = document.getElementById('controlsMsg');
+          const raw = document.getElementById('timeLimit').value.trim();
+          const limit = raw ? Math.max(1, parseInt(raw, 10)) : null;
+          const blocked = [...document.querySelectorAll('#gamesChecklist input:checked')].map((el) => el.value);
+          msg.className = 'form-msg'; msg.textContent = 'Saving…';
+          try {
+            await ParentApi.setControls(studentId, { daily_time_limit_minutes: limit, blocked_game_ids: blocked });
+            msg.className = 'form-msg form-msg--ok';
+            msg.textContent = 'Saved!';
+          } catch {
+            msg.className = 'form-msg form-msg--error';
+            msg.textContent = 'Could not save — try again.';
+          }
+        });
+      }
+
+      function reportCard(child) {
+        const owned = new Set(child.badges ?? []);
+        const badgesHtml = BADGES.filter((b) => owned.has(b.id)).map((b) => `
+          <div class="badge" title="${escapeHtml(b.description)}">
+            <span class="badge-icon">${b.icon}</span>
+            <span class="badge-name">${escapeHtml(b.name)}</span>
+          </div>`).join('') || '<p class="sub">No badges yet.</p>';
+
+        return `
+          <div class="card">
+            <h2>${escapeHtml(child.display_name || 'Your child')}'s Progress</h2>
+            <p class="sub">${escapeHtml(child.class_name)} · ${escapeHtml(child.school_name)}</p>
+            <p>⭐ Level ${child.level} · 🔥 ${child.daily_streak}-day streak (best ${child.best_daily_streak}) · ${child.xp} XP</p>
+            <div class="badges-grid" style="margin-top:10px">${badgesHtml}</div>
+          </div>`;
+      }
+
+      async function renderChildDetail(children) {
+        const child = children.find((c) => c.student_id === selectedChildId) ?? children[0];
+        selectedChildId = child.student_id;
+
+        const detail = document.getElementById('childDetail');
+        detail.innerHTML = `<div class="two-col"><div>${reportCard(child)}</div><div id="controlsHost"></div></div>`;
+        document.getElementById('controlsHost').innerHTML = await renderControlsForm(child);
+        bindControlsForm(child.student_id);
+      }
+
+      async function render() {
+        if (!sync.isLoggedIn) { renderSignedOut(); return; }
+
+        let children;
+        try {
+          children = await ParentApi.myChildren();
+        } catch {
+          app.innerHTML = '<div class="card"><p class="form-msg form-msg--error">Could not load your linked children.</p></div>';
+          return;
+        }
+
+        app.innerHTML = linkForm();
+        bindLinkForm();
+
+        if (children.length === 0) return;
+
+        const tilesHtml = children.map((c) => `
+          <div class="child-tile ${c.student_id === selectedChildId ? 'active' : ''}" data-id="${c.student_id}">
+            <strong>${escapeHtml(c.display_name || 'Student')}</strong>
+            <span>${escapeHtml(c.class_name)} · Level ${c.level}</span>
+          </div>`).join('');
+
+        app.innerHTML += `
+          <div class="card">
+            <h2>Your Children</h2>
+            <div class="child-grid" id="childGrid">${tilesHtml}</div>
+          </div>
+          <div id="childDetail"></div>`;
+
+        document.querySelectorAll('.child-tile').forEach((el) => el.addEventListener('click', () => {
+          selectedChildId = el.dataset.id;
+          renderChildDetail(children);
+        }));
+
+        await renderChildDetail(children);
+      }
+
+      (async () => {
+        try { await sync.init(); } catch { /* not signed in — render() handles that state */ }
+        render();
+      })();
+    </script>
+  </body>
+</html>

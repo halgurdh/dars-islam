@@ -1,0 +1,20 @@
+# Quick start:
+#   cp example.env .env   # fill in VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY
+#   docker compose up --build
+# Then open http://localhost:8080
+#
+# docker-compose reads a file literally named `.env` in this directory for
+# the ${VAR} substitutions below — that's separate from Vite's own
+# .env.local convention used for `npm run dev`, so if you already have a
+# .env.local with real values, just copy it to .env too (or symlink it).
+services:
+  web:
+    build:
+      context: .
+      args:
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
+        VITE_BASE_PATH: ${VITE_BASE_PATH:-/}
+    ports:
+      - "8080:80"
+    restart: unless-stopped

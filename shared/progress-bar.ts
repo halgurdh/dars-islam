@@ -2,7 +2,7 @@ import { ArcadeStore } from './arcade-store';
 import { PlayerProgress } from './player-progress';
 import { BADGES } from './badges';
 import { sync } from './sync';
-import { api } from './api';
+import { getSupabase } from './supabase-client';
 
 interface LeaderboardEntry { display_name: string; xp: number; level: number; }
 
@@ -157,6 +157,7 @@ export class ProgressBar {
             <div class="pb-links">
               <a href="/dashboard/">📊 My Dashboard</a>
               ${sync.isTeacher ? '<a href="/teacher/">🏫 Teacher Dashboard</a>' : ''}
+              ${sync.isParent ? '<a href="/parent/">👪 Parent Dashboard</a>' : ''}
             </div>
           ` : `<div id="pbBoardList" class="pb-board-list"><p class="pb-sub">Loading…</p></div>`}
         </div>
@@ -179,12 +180,14 @@ export class ProgressBar {
     const list = panel.querySelector('#pbBoardList');
     if (!list) return;
     try {
-      const data = await api.get<{ entries: LeaderboardEntry[] }>('/profile/leaderboard.php');
-      if (!data.entries.length) {
+      const supabase = getSupabase();
+      const { data: entries, error } = await supabase.rpc('public_leaderboard');
+      if (error) throw error;
+      if (!entries?.length) {
         list.innerHTML = '<p class="pb-sub">No entries yet — sign in and play to be the first!</p>';
         return;
       }
-      list.innerHTML = data.entries.map((e, i) => `
+      list.innerHTML = (entries as LeaderboardEntry[]).map((e, i) => `
         <div class="pb-board-row">
           <span class="pb-board-rank">#${i + 1}</span>
           <span class="pb-board-name">${escapeHtml(e.display_name)}</span>

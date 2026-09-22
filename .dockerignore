@@ -1,0 +1,14 @@
+node_modules
+**/node_modules
+dist
+**/dist
+dist-pwa
+**/dist-pwa
+.git
+.github
+*.log
+.DS_Store
+electron
+release
+.env
+.env.local

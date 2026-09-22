@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import path from 'path';
 import { getGamePortMap, WRAPPER_PORT } from '../scripts/dev-ports.mjs';
+import { injectBasePath } from '../shared/game-vite-plugins';
 
 const gamePorts = getGamePortMap();
 const gameProxyEntries = Object.fromEntries(
@@ -15,7 +16,8 @@ const gameProxyEntries = Object.fromEntries(
 );
 
 export default defineConfig({
-  base: '/',
+  base: process.env.VITE_BASE_PATH ?? '/',
+  plugins: [injectBasePath()],
   resolve: {
     alias: {
       '@shared': path.resolve(__dirname, '../shared'),
@@ -33,6 +35,7 @@ export default defineConfig({
         privacy: 'privacy/index.html',
         dashboard: 'dashboard/index.html',
         teacher: 'teacher/index.html',
+        parent: 'parent/index.html',
       },
     },
   },

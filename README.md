@@ -13,6 +13,7 @@ deploy the assembled `dist/` site which serves all games under
 
 Quick links
 - **Project root:** this README
+- **Self-hosting / Docker / forking this project:** [SELF_HOSTING.md](SELF_HOSTING.md) — start here if you're standing up your own copy
 - **Games:** [games](games) (each game is a subfolder; see the game's README)
 - **Wrapper (hub):** [wrapper](wrapper)
 

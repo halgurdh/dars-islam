@@ -1,9 +1,9 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
-import { mergeGamePublicAssets, mergeSharedAssets, serveOnnxWasm } from '../../shared/game-vite-plugins';
+import { mergeGamePublicAssets, mergeSharedAssets, serveOnnxWasm, injectBasePath } from '../../shared/game-vite-plugins';
 
-const GAME_BASE = '/games/salah-builder/';
+const GAME_BASE = `${process.env.VITE_BASE_PATH ?? '/'}games/salah-builder/`;
 
 export default defineConfig(({ mode }) => {
   const isPWA = mode === 'pwa';
@@ -34,6 +34,7 @@ export default defineConfig(({ mode }) => {
     },
 
     plugins: [
+      injectBasePath(),
       mergeGamePublicAssets(__dirname),
       mergeSharedAssets(__dirname),
       serveOnnxWasm(__dirname),
@@ -50,9 +51,9 @@ export default defineConfig(({ mode }) => {
           scope: GAME_BASE,
           start_url: GAME_BASE,
           icons: [
-            { src: '/games/salah-builder/assets/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
-            { src: '/games/salah-builder/assets/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-            { src: '/games/salah-builder/assets/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+            { src: `${GAME_BASE}assets/icons/icon-512.png`, sizes: '512x512', type: 'image/png' },
+            { src: `${GAME_BASE}assets/icons/icon-192.png`, sizes: '192x192', type: 'image/png' },
+            { src: `${GAME_BASE}assets/icons/icon-512.png`, sizes: '512x512', type: 'image/png', purpose: 'maskable' },
           ],
         },
         workbox: {

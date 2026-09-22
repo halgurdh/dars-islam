@@ -8,6 +8,7 @@
 import Phaser from 'phaser';
 import { PlayerProgress } from './player-progress';
 import { ProgressBar } from './progress-bar';
+import { startScreenTimeEnforcement } from './parental-controls';
 
 const progressBar = new ProgressBar();
 
@@ -450,6 +451,7 @@ export function createButton(
  * `[new MenuScene(), new QuizScene()]`).
  */
 export function bootQuizGame(backgroundColor: string, scenes: Phaser.Scene[]): Phaser.Game {
+  startScreenTimeEnforcement();
   return new Phaser.Game({
     type: Phaser.AUTO,
     parent: 'game',

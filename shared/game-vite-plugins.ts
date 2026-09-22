@@ -18,6 +18,26 @@ type ServerLike = {
 };
 type ResolvedConfigLike = { build: { outDir: string } };
 
+// Explicit __VITE_BASE_PATH__ substitution with a guaranteed fallback to
+// '/'. NOT using Vite's own built-in %ENV_VAR% HTML-token syntax here —
+// confirmed by testing a real build that Vite's core HTML pipeline scans
+// for and tries to process ANY %WORD% pattern itself (as a candidate env
+// token) before plugins run, and throws "URI malformed" when it can't
+// cleanly resolve one — %VITE_BASE_PATH% crashed `vite build` outright,
+// it didn't just silently pass through. Double-underscore avoids that
+// reserved syntax entirely. This plugin guarantees a value is always
+// substituted, preserving today's behavior unless a build explicitly
+// opts into a GitHub-Pages-style subpath.
+export function injectBasePath() {
+  const basePath = process.env.VITE_BASE_PATH || '/';
+  return {
+    name: 'inject-base-path',
+    transformIndexHtml(html: string) {
+      return html.split('__VITE_BASE_PATH__').join(basePath);
+    },
+  };
+}
+
 export function mergeSharedAssets(gameDir: string) {
   let outDir = path.resolve(gameDir, 'dist');
   const sharedDir = path.resolve(gameDir, '../../shared');

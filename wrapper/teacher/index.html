@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0c0f0a" />
     <title>Teacher Dashboard · darsislam.Games</title>
-    <link rel="icon" type="image/png" href="/games/board-rush/assets/icons/icon-512.png" />
+    <link rel="icon" type="image/png" href="__VITE_BASE_PATH__games/board-rush/assets/icons/icon-512.png" />
     <style>
       body { display: flex; flex-direction: column; align-items: center; }
 
@@ -116,8 +116,8 @@
   </head>
   <body>
     <header class="site-header">
-      <a href="/" class="site-header__brand">darsislam.Games</a>
-      <a href="/" class="site-header__back">← Back to games</a>
+      <a href="__VITE_BASE_PATH__" class="site-header__brand">darsislam.Games</a>
+      <a href="__VITE_BASE_PATH__" class="site-header__back">← Back to games</a>
     </header>
 
     <main class="content">
@@ -133,6 +133,7 @@
       import { sync } from '@shared/sync';
       import { SchoolApi } from '@shared/school-api';
       import { ProgressBar } from '@shared/progress-bar';
+      import { GAME_CATALOG } from '@shared/game-catalog';
 
       const progressBar = new ProgressBar();
       const app = document.getElementById('app');
@@ -283,6 +284,51 @@
         } catch { /* dashboard stats are a nice-to-have — overview still works without them */ }
       }
 
+      async function renderAssignGamesCard(classId) {
+        const assigned = new Set(await SchoolApi.listAssignedGames(classId).catch(() => []));
+        const assignedList = GAME_CATALOG.filter((g) => assigned.has(g.id));
+        const unassigned = GAME_CATALOG.filter((g) => !assigned.has(g.id));
+
+        const assignedHtml = assignedList.length
+          ? assignedList.map((g) => `<span class="code-chip" style="margin:0 6px 6px 0;display:inline-block;">${g.icon} ${escapeHtml(g.title)}</span>`).join('')
+          : '<p class="sub">No games assigned yet.</p>';
+
+        const optionsHtml = unassigned.map((g) => `
+          <label style="display:flex;align-items:center;gap:6px;font-size:0.85rem;color:var(--text-secondary);">
+            <input type="checkbox" value="${g.id}" /> ${g.icon} ${escapeHtml(g.title)}
+          </label>`).join('');
+
+        return `
+          <div class="card">
+            <h2>📌 Assigned Games</h2>
+            <div>${assignedHtml}</div>
+            ${unassigned.length ? `
+              <p class="sub" style="margin-top:14px">Assign more:</p>
+              <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px;max-height:220px;overflow-y:auto;margin-top:6px;">
+                ${optionsHtml}
+              </div>
+              <button id="assignGamesBtn" style="margin-top:12px">Assign Selected</button>
+              <p class="form-msg" id="assignGamesMsg"></p>
+            ` : '<p class="sub" style="margin-top:10px">All games are assigned.</p>'}
+          </div>`;
+      }
+
+      function bindAssignGamesCard(classId) {
+        document.getElementById('assignGamesBtn')?.addEventListener('click', async () => {
+          const msg = document.getElementById('assignGamesMsg');
+          const ids = [...document.querySelectorAll('#app input[type=checkbox]:checked')].map((el) => el.value);
+          if (ids.length === 0) return;
+          msg.className = 'form-msg'; msg.textContent = 'Assigning…';
+          try {
+            await Promise.all(ids.map((id) => SchoolApi.assignGame(classId, id)));
+            render();
+          } catch {
+            msg.className = 'form-msg form-msg--error';
+            msg.textContent = 'Could not assign — try again.';
+          }
+        });
+      }
+
       async function renderClassRoster(schools, school, classSummary) {
         app.innerHTML = `<div class="card"><p class="sub">Loading roster…</p></div>`;
         try {
@@ -304,8 +350,12 @@
                 <thead><tr><th>#</th><th>Name</th><th>Level</th><th>Streak</th><th>Badges</th><th>XP</th></tr></thead>
                 <tbody>${rows}</tbody>
               </table>
-            </div>`;
+            </div>
+            <div id="assignGamesHost"></div>`;
           document.getElementById('backToSchool').addEventListener('click', () => setParams({ school: school.id, class: null }));
+
+          document.getElementById('assignGamesHost').innerHTML = await renderAssignGamesCard(classSummary.id);
+          bindAssignGamesCard(classSummary.id);
         } catch {
           app.innerHTML = `<div class="card"><p class="form-msg form-msg--error">Could not load this class's roster.</p></div>`;
         }
