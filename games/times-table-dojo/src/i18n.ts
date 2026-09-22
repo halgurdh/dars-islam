@@ -165,6 +165,33 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Touche les calculs du plus petit au plus grand résultat',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
+  ar: {
+    title: 'Times Table Dojo',
+    tagline: 'أتقن جداول الضرب\nمن 1 إلى 12.',
+    easy: 'سهل · جداول 1–5',
+    medium: 'متوسط · جداول 1–9',
+    hard: 'صعب · جداول 1–12',
+    round: (i, total) => `الجولة ${i} / ${total}`,
+    menu: '☰ القائمة',
+    wellDone: 'أتممت الدوجو! 🥋',
+    playAgain: '↻ العب مرة أخرى',
+    backToMenu: '☰ العودة إلى القائمة',
+    footer: '💡 نصيحة: ×2 يعني المضاعفة فقط، و×10 يضيف صفرًا.\nلحيل ×9 و×11، شاهد Math Tricks Lab!',
+
+    modeQuiz: 'اختبار',
+    score: (n) => `النتيجة: ${n}`,
+    roundSummary: (score, total) => `${score} / ${total} إجابات صحيحة`,
+
+    modeMatch: 'مطابقة',
+    moves: (n) => `الحركات: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} أزواج تمت مطابقتها في ${moves} حركة\nالوقت: ${time}`,
+    nextLevelHint: 'الجولة التالية تبدأ…',
+
+    modeSequence: 'ترتيب',
+    mistakes: (n) => `الأخطاء: ${n}`,
+    instruction: 'اضغط على المسائل من الأصغر إلى الأكبر إجابةً',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولات مثالية`,
+  },
 };
 
 export const t = createI18n(STRINGS, getLang);

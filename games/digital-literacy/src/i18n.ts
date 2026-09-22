@@ -164,6 +164,33 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Touche-les du matériel au comportement en ligne',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
+  ar: {
+    title: 'Digital Literacy',
+    tagline: 'طابق المصطلحات التقنية، أجب عن الأسئلة، أو رتب\nمن الأجهزة إلى السلوك على الإنترنت.',
+    easy: 'سهل · 6',
+    medium: 'متوسط · 8',
+    hard: 'صعب · 10',
+    menu: '☰ القائمة',
+    playAgain: 'العب مرة أخرى',
+    wellDone: 'ذكي وآمن! 💻',
+    footer: 'إذا شككت في شيء على الإنترنت، اسأل شخصًا بالغًا تثق به قبل أن تضغط.',
+
+    modeMatch: 'مطابقة',
+    moves: (n) => `الحركات: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} أزواج تمت مطابقتها في ${moves} حركة\nالوقت: ${time}\n${learned} / ${total} مصطلح تم تعلمه إجمالًا`,
+    nextLevelHint: 'الجولة التالية تبدأ…',
+
+    modeQuiz: 'اختبار',
+    round: (i, total) => `السؤال ${i}/${total}`,
+    score: (n) => `النتيجة: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} إجابة صحيحة`,
+
+    modeSequence: 'ترتيب الطبقات',
+    mistakes: (n) => `الأخطاء: ${n}`,
+    instruction: 'اضغط عليها من أجهزة الإنترنت إلى السلوك على الإنترنت',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولة مثالية`,
+  },
 };
 
 export const t = createI18n(STRINGS, getLang);

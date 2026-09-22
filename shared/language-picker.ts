@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import type { LangMode } from './locale';
 
-const ORDER: LangMode[] = ['en', 'nl', 'de', 'es', 'fr'];
+const ORDER: LangMode[] = ['en', 'nl', 'de', 'es', 'fr', 'ar'];
 
 // Windows doesn't ship flag-emoji glyphs (🇳🇱 etc. render as bare two-letter
 // codes there, unlike macOS/iOS/Android) — so flags are drawn as plain
@@ -32,6 +32,12 @@ function drawFlag(g: Phaser.GameObjects.Graphics, lang: LangMode, cx: number, cy
       g.fillStyle(0x0055a4, 1); g.fillRect(x0, y0, third, h);
       g.fillStyle(0xffffff, 1); g.fillRect(x0 + third, y0, third, h);
       g.fillStyle(0xef4135, 1); g.fillRect(x0 + 2 * third, y0, third, h);
+      break;
+    case 'ar': // no single national flag for "Arabic" the language (spoken
+      // across 20+ countries) — a plain badge like English's "EN", rather
+      // than picking one country to stand in for the whole language.
+      g.fillStyle(0x0f7a5c, 1);
+      g.fillRoundedRect(x0, y0, w, h, 4);
       break;
     default: // en
       g.fillStyle(0x1b3a6b, 1);
@@ -67,8 +73,8 @@ export function createLanguagePicker(
     g.lineStyle(active ? 3 : 1, active ? activeColor : 0xffffff, active ? 1 : 0.25);
     g.strokeRect(bx - flagW / 2, y - flagH / 2, flagW, flagH);
 
-    if (lang === 'en') {
-      scene.add.text(bx, y, 'EN', {
+    if (lang === 'en' || lang === 'ar') {
+      scene.add.text(bx, y, lang === 'en' ? 'EN' : 'AR', {
         fontFamily: "'Segoe UI', system-ui, sans-serif",
         fontSize: '13px',
         fontStyle: 'bold',

@@ -5,7 +5,10 @@
 
 import { isPiperVoiceCached, prewarmVoice, speakWithPiper, stopPiper, type PiperVoiceId } from './piper-tts';
 
-// Speech-synthesis language tags per UI mode.
+// Speech-synthesis language tags per UI mode. `arabic` and `ar` are the same
+// tag under two keys: call sites that always want Arabic-script pronunciation
+// regardless of UI language use `.arabic`; call sites that index by the
+// current LangMode (which now includes 'ar' as a UI language) use `[lang]`.
 export const SPEECH_LANG = {
   arabic: 'ar-SA',
   en: 'en-US',
@@ -13,6 +16,7 @@ export const SPEECH_LANG = {
   de: 'de-DE',
   es: 'es-ES',
   fr: 'fr-FR',
+  ar: 'ar-SA',
 } as const;
 
 // Pronunciation always uses this free, modern neural voice per language —

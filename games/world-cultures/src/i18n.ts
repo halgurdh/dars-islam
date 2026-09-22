@@ -164,6 +164,33 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Touche les langues du moins au plus parlées',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
+  ar: {
+    title: 'World Cultures',
+    tagline: 'طابق التحيات مع اللغات، أجب عن أسئلة الاختبار،\nأو رتب حسب عدد المتحدثين — ثلاث طرق للتعلم.',
+    easy: 'سهل · 6',
+    medium: 'متوسط · 8',
+    hard: 'صعب · 10',
+    menu: '☰ القائمة',
+    playAgain: 'العب مرة أخرى',
+    wellDone: 'مواطن عالمي! 🌐',
+    footer: 'جرب أن تقول كل تحية بصوت عالٍ — كل ثقافة لديها ما يستحق التعلم.',
+
+    modeMatch: 'المطابقة',
+    moves: (n) => `الحركات: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} أزواج تمت مطابقتها في ${moves} حركة\nالوقت: ${time}\n${learned} / ${total} تحية تم تعلمها إجمالاً`,
+    nextLevelHint: 'الجولة التالية تبدأ…',
+
+    modeQuiz: 'اختبار',
+    round: (i, total) => `السؤال ${i}/${total}`,
+    score: (n) => `النقاط: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} إجابة صحيحة`,
+
+    modeSequence: 'ترتيب المتحدثين',
+    mistakes: (n) => `الأخطاء: ${n}`,
+    instruction: 'اضغط على اللغات من الأقل إلى الأكثر عدد متحدثين',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولات مثالية`,
+  },
 };
 
 export const t = createI18n(STRINGS, getLang);

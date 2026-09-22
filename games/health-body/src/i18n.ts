@@ -164,6 +164,33 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Touche les parties du corps de la plus légère à la plus lourde',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
+  ar: {
+    title: 'Health & The Body',
+    tagline: 'طابق أجزاء الجسم، أجب عن الأسئلة، أو رتبها\nحسب الوزن — ثلاث طرق لتتعلم كيف يعمل جسمك.',
+    easy: 'سهل · 6',
+    medium: 'متوسط · 8',
+    hard: 'صعب · 10',
+    menu: '☰ القائمة',
+    playAgain: 'العب مجددًا',
+    wellDone: 'عادات صحية! 💪',
+    footer: 'أشر إلى كل جزء على جسمك أثناء اللعب — هذا يساعدك على تذكره.',
+
+    modeMatch: 'مطابقة',
+    moves: (n) => `الحركات: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `تمت مطابقة ${pairs} من الأزواج في ${moves} حركة\nالوقت: ${time}\n${learned} / ${total} من أجزاء الجسم تم تعلمها إجمالًا`,
+    nextLevelHint: 'الجولة التالية تبدأ…',
+
+    modeQuiz: 'اختبار',
+    round: (i, total) => `السؤال ${i}/${total}`,
+    score: (n) => `النتيجة: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} إجابة صحيحة`,
+
+    modeSequence: 'ترتيب حسب الوزن',
+    mistakes: (n) => `الأخطاء: ${n}`,
+    instruction: 'اضغط على أجزاء الجسم من الأخف إلى الأثقل',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولة مثالية`,
+  },
 };
 
 export const t = createI18n(STRINGS, getLang);

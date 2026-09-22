@@ -164,6 +164,33 @@ const STRINGS: Record<LangMode, Strings> = {
     sequenceInstruction: 'Touche-les du plus petit au plus grand',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
+  ar: {
+    subtitle: 'Memory Match',
+    tagline: 'اقلب البطاقات، أجب عن الأسئلة، أو رتّب حسب الحجم —\nثلاث طرق لتعلّم كل اسم.',
+    easy: 'سهل · 6',
+    medium: 'متوسط · 8',
+    hard: 'صعب · 10',
+    footer: 'بدون موسيقى. المؤثرات الصوتية قليلة واختيارية.',
+    menu: '☰ القائمة',
+    playAgain: 'العب مرة أخرى',
+    wellDone: 'أحسنت! 🎉',
+
+    modeMatch: 'طابق',
+    moves: (n) => `الحركات: ${n}`,
+    roundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} أزواج تمت مطابقتها في ${moves} حركة\nالوقت: ${time}\n${learned} / ${total} عنصرًا تم تعلمها إجمالًا`,
+    nextLevelHint: 'المستوى التالي يبدأ…',
+
+    modeQuiz: 'اختبار',
+    quizRound: (i, total) => `السؤال ${i}/${total}`,
+    quizScore: (n) => `النتيجة: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} صحيحة`,
+
+    modeSequence: 'ترتيب الحجم',
+    sequenceMistakes: (n) => `الأخطاء: ${n}`,
+    sequenceInstruction: 'اضغط عليها من الأصغر إلى الأكبر',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولات مثالية`,
+  },
 };
 
 export const t = createI18n(STRINGS, getLang);

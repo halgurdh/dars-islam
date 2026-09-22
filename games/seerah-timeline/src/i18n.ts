@@ -170,6 +170,34 @@ const STRINGS: Record<LangMode, Strings> = {
     score: (n) => `Score : ${n}`,
     quizRoundSummary: (score, total) => `${score} / ${total} correctes`,
   },
+  ar: {
+    title: 'Seerah Timeline',
+    tagline: 'رتّب الأحداث، أجب عن أسئلة الاختبار، أو طابقها\nمع حقبتها الزمنية — ثلاث طرق لتعلّم السيرة.',
+    easy: 'سهل · 6',
+    medium: 'متوسط · 8',
+    hard: 'صعب · 10',
+    round: (i, total) => `الجولة ${i} / ${total}`,
+    menu: '☰ القائمة',
+    wellDone: 'ممتاز، ما شاء الله! 📖',
+    playAgain: '↻ العب مرة أخرى',
+    backToMenu: '☰ العودة إلى القائمة',
+    footer: 'فكّر فيما كان يجب أن يحدث أولًا — عادةً يصبح الترتيب منطقيًا بعد ذلك.',
+
+    modeSequence: 'ترتيب',
+    mistakes: (n) => `الأخطاء: ${n}`,
+    instruction: 'اضغط على الأحداث بالترتيب الذي وقعت فيه.',
+    roundSummary: (perfectRounds, totalRounds) => `${perfectRounds} / ${totalRounds} جولات بدون أخطاء`,
+
+    modeMatch: 'مطابقة',
+    moves: (n) => `الحركات: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} أحداث تمت مطابقتها في ${moves} حركة\nالوقت: ${time}\n${learned} / ${total} أحداث تم تعلّمها إجمالًا`,
+    nextLevelHint: 'المستوى التالي يبدأ…',
+
+    modeQuiz: 'اختبار',
+    score: (n) => `النتيجة: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} إجابات صحيحة`,
+  },
 };
 
 export const t = createI18n(STRINGS, getLang);

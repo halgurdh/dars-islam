@@ -183,6 +183,36 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Touche les couleurs du plus foncé au plus clair',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
+  ar: {
+    title: 'Shapes & Colors',
+    tagline: 'تعلّم الأشكال والألوان\nمن خلال ألعاب مطابقة بسيطة.',
+    shapes: 'الأشكال',
+    colors: 'الألوان',
+    mixed: 'مختلط',
+    menu: '☰ القائمة',
+    wellDone: 'أحسنت! 🎨',
+    playAgain: '↻ العب مرة أخرى',
+    backToMenu: '☰ العودة إلى القائمة',
+    footer: 'اضغط على الصورة التي تطابق السؤال.',
+    tierEasy: 'سهل',
+    tierMedium: 'متوسط',
+    tierHard: 'صعب',
+
+    modeQuiz: 'اختبار',
+    round: (i, total) => `الجولة ${i} / ${total}`,
+    score: (n) => `النتيجة: ${n}`,
+    roundSummary: (score, total) => `${score} / ${total} إجابات صحيحة`,
+
+    modeMatch: 'مطابقة',
+    moves: (n) => `الحركات: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} أزواج تمت مطابقتها في ${moves} حركة\nالوقت: ${time}`,
+    nextLevelHint: 'الجولة التالية تبدأ…',
+
+    modeSequence: 'ترتيب السطوع',
+    mistakes: (n) => `الأخطاء: ${n}`,
+    instruction: 'اضغط على الألوان من الأغمق إلى الأفتح',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولات مثالية`,
+  },
 };
 
 export const t = createI18n(STRINGS, getLang);

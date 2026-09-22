@@ -201,6 +201,39 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Touche les problèmes du plus petit au plus grand résultat',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
+  ar: {
+    title: 'Math Tricks Lab',
+    tagline: 'تعلّم حيلًا كلاسيكية للحساب الذهني،\nثم تدرّب عليها لتصبح أسرع.',
+    howItWorks: 'كيف تعمل الحيلة',
+    example: 'مثال محلول',
+    practice: (n) => `▶ تدرّب (${n} جولات)`,
+    back: '← الحيل',
+    round: (i, total) => `الجولة ${i} / ${total}`,
+    score: (n) => `النتيجة: ${n}`,
+    menu: '☰ القائمة',
+    wellDone: 'أتقنت الحيلة! 🧠',
+    roundSummary: (score, total) => `${score} / ${total} صحيحة`,
+    playAgain: '↻ العب مرة أخرى',
+    backToMenu: '☰ العودة إلى الحيل',
+    footer: 'اختر حيلة لتتعلمها، ثم تدرّب عليها حتى تصبح تلقائية.',
+
+    modeLearn: '📖 تعلّم',
+    modeQuiz: '❓ اختبار',
+    modeMatch: '🃏 طابق',
+    modeSequence: '🔢 ترتيب',
+    startLearn: '▶ ابدأ الدرس',
+    startQuiz: '▶ ابدأ الاختبار',
+    startMatch: '▶ ابدأ المطابقة',
+    startSequence: '▶ ابدأ الترتيب',
+
+    moves: (n) => `الحركات: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} أزواج تمت مطابقتها في ${moves} حركة\nالوقت: ${time}`,
+    nextLevelHint: 'الجولة التالية تبدأ…',
+
+    mistakes: (n) => `الأخطاء: ${n}`,
+    instruction: 'اضغط على المسائل من أصغر إجابة إلى أكبرها',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولات مثالية`,
+  },
 };
 
 export const t = createI18n(STRINGS, getLang);

@@ -153,6 +153,31 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Touche les réponses de la plus courte à la plus longue',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
+  ar: {
+    title: 'Kind Hearts',
+    tagline: 'دروس بسيطة عن اللطف،\nالمشاركة، وفهم المشاعر.',
+    start: '▶ ابدأ (10 أسئلة)',
+    menu: '☰ القائمة',
+    wellDone: 'قلب طيب! 💛',
+    playAgain: '↻ العب مجددًا',
+    backToMenu: '☰ العودة إلى القائمة',
+    footer: 'هناك دائمًا خيار لطيف — هل يمكنك اكتشافه؟',
+
+    modeQuiz: 'اختبار',
+    round: (i, total) => `الجولة ${i} / ${total}`,
+    score: (n) => `النتيجة: ${n}`,
+    roundSummary: (score, total) => `${score} / ${total} إجابة صحيحة`,
+
+    modeMatch: 'مطابقة',
+    moves: (n) => `الحركات: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `تمت مطابقة ${pairs} من الأزواج في ${moves} حركة\nالوقت: ${time}`,
+    nextLevelHint: 'الجولة التالية تبدأ…',
+
+    modeSequence: 'ترتيب',
+    mistakes: (n) => `الأخطاء: ${n}`,
+    instruction: 'اضغط على الإجابات من الأقصر إلى الأطول',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولة مثالية`,
+  },
 };
 
 export const t = createI18n(STRINGS, getLang);

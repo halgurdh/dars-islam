@@ -170,6 +170,34 @@ const STRINGS: Record<LangMode, Strings> = {
     score: (n) => `Score : ${n}`,
     quizRoundSummary: (score, total) => `${score} / ${total} correctes`,
   },
+  ar: {
+    title: 'Fiqh Essentials',
+    tagline: 'رتّب خطوات الوضوء، أجب عن الأسئلة، أو\nطابق كل خطوة باسمها العربي.',
+    easy: 'سهل · 4',
+    medium: 'متوسط · 6',
+    hard: 'صعب · 8',
+    round: (i, total) => `الجولة ${i} / ${total}`,
+    menu: '☰ القائمة',
+    wellDone: 'أحسنت التعلم، ما شاء الله! 🤲',
+    playAgain: '↻ العب مرة أخرى',
+    backToMenu: '☰ العودة إلى القائمة',
+    footer: 'التدرب على خطوات الوضوء واحدة تلو الأخرى يساعد على تثبيت هذه الإجابات.',
+
+    modeSequence: 'الترتيب',
+    mistakes: (n) => `الأخطاء: ${n}`,
+    instruction: 'اضغط على خطوات الوضوء بالترتيب الصحيح.',
+    roundSummary: (perfectRounds, totalRounds) => `${perfectRounds} / ${totalRounds} جولة بدون أخطاء`,
+
+    modeMatch: 'مطابقة',
+    moves: (n) => `الحركات: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} خطوة تمت مطابقتها في ${moves} حركة\nالوقت: ${time}\n${learned} / ${total} خطوة تم تعلمها إجمالًا`,
+    nextLevelHint: 'المستوى التالي يبدأ…',
+
+    modeQuiz: 'اختبار',
+    score: (n) => `النتيجة: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} إجابة صحيحة`,
+  },
 };
 
 export const t = createI18n(STRINGS, getLang);

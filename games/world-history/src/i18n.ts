@@ -170,6 +170,34 @@ const STRINGS: Record<LangMode, Strings> = {
     score: (n) => `Score : ${n}`,
     quizRoundSummary: (score, total) => `${score} / ${total} correctes`,
   },
+  ar: {
+    title: 'World History',
+    tagline: 'رتب الأحداث المهمة، أجب عن أسئلة الاختبار، أو طابق\nالأحداث مع عصرها — ثلاث طرق لتعلم التاريخ.',
+    easy: 'سهل · 6',
+    medium: 'متوسط · 8',
+    hard: 'صعب · 10',
+    round: (i, total) => `الجولة ${i} / ${total}`,
+    menu: '☰ القائمة',
+    wellDone: 'أتقنت التاريخ! 🏛️',
+    playAgain: '↻ العب مرة أخرى',
+    backToMenu: '☰ العودة إلى القائمة',
+    footer: 'فكر بالقرون لا بالسنوات الدقيقة — الصورة الكبيرة هي ما يهم هنا.',
+
+    modeSequence: 'الترتيب',
+    mistakes: (n) => `الأخطاء: ${n}`,
+    instruction: 'اضغط على الأحداث بالترتيب الذي وقعت فيه.',
+    roundSummary: (perfectRounds, totalRounds) => `${perfectRounds} / ${totalRounds} جولات بلا أخطاء`,
+
+    modeMatch: 'المطابقة',
+    moves: (n) => `الحركات: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} حدثًا تمت مطابقته في ${moves} حركة\nالوقت: ${time}\n${learned} / ${total} حدث تم تعلمه إجمالاً`,
+    nextLevelHint: 'المستوى التالي يبدأ…',
+
+    modeQuiz: 'اختبار',
+    score: (n) => `النقاط: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} إجابة صحيحة`,
+  },
 };
 
 export const t = createI18n(STRINGS, getLang);

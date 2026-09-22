@@ -170,6 +170,34 @@ const STRINGS: Record<LangMode, Strings> = {
     sequenceInstruction: 'Touche les sourates dans l’ordre de mémorisation',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
+  ar: {
+    subtitle: 'Quran Juz Amma Match',
+    tagline: 'اقلب البطاقات، أجب عن الأسئلة، أو تذكّر\nترتيب الحفظ — ثلاث طرق لتعلّم كل سورة.',
+    easy: 'سهل · 6',
+    medium: 'متوسط · 8',
+    hard: 'صعب · 10',
+    footer: 'لا توجد موسيقى. المؤثرات الصوتية بسيطة واختيارية.',
+    menu: '☰ القائمة',
+    playAgain: 'العب مجددًا',
+    wellDone: 'أحسنت! 🌿',
+    hear: '🔊 استمع',
+
+    modeMatch: 'مطابقة',
+    moves: (n) => `الحركات: ${n}`,
+    roundSummary: (pairs, moves, time, learned, total) =>
+      `تمت مطابقة ${pairs} من السور في ${moves} حركة\nالوقت: ${time}\n${learned} / ${total} سورة تم تعلمها إجمالًا`,
+    nextLevelHint: 'المستوى التالي يبدأ…',
+
+    modeQuiz: 'اختبار',
+    quizRound: (i, total) => `السؤال ${i}/${total}`,
+    quizScore: (n) => `النتيجة: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} إجابة صحيحة`,
+
+    modeSequence: 'الترتيب',
+    sequenceMistakes: (n) => `الأخطاء: ${n}`,
+    sequenceInstruction: 'اضغط على السور بالترتيب الذي تحفظها به',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولة مثالية`,
+  },
 };
 
 export const t = createI18n(STRINGS, getLang);

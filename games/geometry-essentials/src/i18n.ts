@@ -165,6 +165,33 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Touche les problèmes du plus petit au plus grand résultat',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
+  ar: {
+    title: 'Geometry Essentials',
+    tagline: 'المساحة، المحيط، الزوايا و\nنظرية فيثاغورس.',
+    easy: 'سهل · المساحة والمحيط',
+    medium: 'متوسط · المثلثات والدوائر',
+    hard: 'صعب · نظرية فيثاغورس',
+    menu: '☰ القائمة',
+    wellDone: 'شكل ممتاز! 📐',
+    playAgain: '↻ العب مرة أخرى',
+    backToMenu: '☰ العودة إلى القائمة',
+    footer: 'ارسمها على ورقة إن ساعدك ذلك — رسمة سريعة تسهّل الهندسة.',
+
+    modeQuiz: 'اختبار',
+    round: (i, total) => `الجولة ${i} / ${total}`,
+    score: (n) => `النتيجة: ${n}`,
+    roundSummary: (score, total) => `${score} / ${total} إجابة صحيحة`,
+
+    modeMatch: 'مطابقة',
+    moves: (n) => `الحركات: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} زوج تمت مطابقته في ${moves} حركة\nالوقت: ${time}`,
+    nextLevelHint: 'الجولة التالية تبدأ…',
+
+    modeSequence: 'الترتيب',
+    mistakes: (n) => `الأخطاء: ${n}`,
+    instruction: 'اضغط على المسائل من الأصغر إلى الأكبر إجابةً',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولة مثالية`,
+  },
 };
 
 export const t = createI18n(STRINGS, getLang);

@@ -170,6 +170,34 @@ const STRINGS: Record<LangMode, Strings> = {
     score: (n) => `Score : ${n}`,
     quizRoundSummary: (score, total) => `${score} / ${total} correctes`,
   },
+  ar: {
+    title: 'Earth & Space Science',
+    tagline: 'رتّب الكواكب، أجب عن الأسئلة، أو طابق\nكل كوكب بما يميزه.',
+    easy: 'سهل · 4',
+    medium: 'متوسط · 6',
+    hard: 'صعب · 8',
+    round: (i, total) => `الجولة ${i} / ${total}`,
+    menu: '☰ القائمة',
+    wellDone: 'عمل رائع! 🪐',
+    playAgain: '↻ العب مرة أخرى',
+    backToMenu: '☰ العودة إلى القائمة',
+    footer: 'ابتكر طريقتك الخاصة لتذكر ترتيب الكواكب — إنها تساعد فعلًا.',
+
+    modeSequence: 'الترتيب',
+    mistakes: (n) => `الأخطاء: ${n}`,
+    instruction: 'اضغط على الكواكب بالترتيب، بدءًا من الأقرب إلى الشمس.',
+    roundSummary: (perfectRounds, totalRounds) => `${perfectRounds} / ${totalRounds} جولة بدون أخطاء`,
+
+    modeMatch: 'مطابقة',
+    moves: (n) => `الحركات: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} كوكب تمت مطابقته في ${moves} حركة\nالوقت: ${time}\n${learned} / ${total} كوكب تم تعلمه إجمالًا`,
+    nextLevelHint: 'المستوى التالي يبدأ…',
+
+    modeQuiz: 'اختبار',
+    score: (n) => `النتيجة: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} إجابة صحيحة`,
+  },
 };
 
 export const t = createI18n(STRINGS, getLang);

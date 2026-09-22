@@ -165,6 +165,33 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Touche les groupes du moins nombreux au plus nombreux',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
+  ar: {
+    title: 'Counting Fun',
+    tagline: 'عدّ الأرقام وتعرّف عليها،\nمن 1 إلى 20.',
+    easy: 'سهل · حتى 5',
+    medium: 'متوسط · حتى 10',
+    hard: 'صعب · حتى 20',
+    menu: '☰ القائمة',
+    wellDone: 'أحسنت العد! 🔢',
+    playAgain: '↻ العب مرة أخرى',
+    backToMenu: '☰ العودة إلى القائمة',
+    footer: 'عدّ بعناية، ثم اضغط على الرقم الصحيح.',
+
+    modeQuiz: 'اختبار',
+    round: (i, total) => `الجولة ${i} / ${total}`,
+    score: (n) => `النقاط: ${n}`,
+    roundSummary: (score, total) => `${score} / ${total} صحيحة`,
+
+    modeMatch: 'مطابقة',
+    moves: (n) => `الحركات: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} أزواج تمت مطابقتها في ${moves} حركة\nالوقت: ${time}`,
+    nextLevelHint: 'الجولة التالية تبدأ…',
+
+    modeSequence: 'ترتيب',
+    mistakes: (n) => `الأخطاء: ${n}`,
+    instruction: 'اضغط على المجموعات من الأقل إلى الأكثر',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولات مثالية`,
+  },
 };
 
 export const t = createI18n(STRINGS, getLang);

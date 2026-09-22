@@ -153,6 +153,31 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Touche les réponses de la plus courte à la plus longue',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
+  ar: {
+    title: 'Wonder Why',
+    tagline: 'معلومات ممتعة عن الحيوانات والطقس\nوالنباتات وكيف يعمل العالم.',
+    start: '▶ ابدأ (10 أسئلة)',
+    menu: '☰ القائمة',
+    wellDone: 'يا للعجب! 🌱',
+    playAgain: '↻ العب مرة أخرى',
+    backToMenu: '☰ العودة إلى القائمة',
+    footer: 'كل جولة تجمع مجموعة جديدة من المعلومات الممتعة.',
+
+    modeQuiz: 'اختبار',
+    round: (i, total) => `الجولة ${i} / ${total}`,
+    score: (n) => `النقاط: ${n}`,
+    roundSummary: (score, total) => `${score} / ${total} إجابة صحيحة`,
+
+    modeMatch: 'المطابقة',
+    moves: (n) => `الحركات: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} أزواج تمت مطابقتها في ${moves} حركة\nالوقت: ${time}`,
+    nextLevelHint: 'الجولة التالية تبدأ…',
+
+    modeSequence: 'الترتيب',
+    mistakes: (n) => `الأخطاء: ${n}`,
+    instruction: 'اضغط على الإجابات من الأقصر إلى الأطول',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولات مثالية`,
+  },
 };
 
 export const t = createI18n(STRINGS, getLang);

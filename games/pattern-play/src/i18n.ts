@@ -183,6 +183,36 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Touche les nombres dans l’ordre de comptage',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
+  ar: {
+    title: 'Pattern Play',
+    tagline: 'اكتشف النمط\nوخمّن ماذا يأتي بعده.',
+    shapes: 'أنماط الأشكال',
+    numbers: 'أنماط الأعداد',
+    oddOneOut: 'العنصر المختلف',
+    menu: '☰ القائمة',
+    wellDone: 'اكتشفت النمط! 🧩',
+    playAgain: '↻ العب مرة أخرى',
+    backToMenu: '☰ العودة إلى القائمة',
+    footer: 'ابحث عمّا يتكرر، ثم خمّن ماذا يأتي بعده.',
+    tierEasy: 'سهل',
+    tierMedium: 'متوسط',
+    tierHard: 'صعب',
+
+    modeQuiz: 'اختبار',
+    round: (i, total) => `الجولة ${i} / ${total}`,
+    score: (n) => `النقاط: ${n}`,
+    roundSummary: (score, total) => `${score} / ${total} صحيحة`,
+
+    modeMatch: 'مطابقة',
+    moves: (n) => `الحركات: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `تمت مطابقة ${pairs} أزواج في ${moves} حركة\nالوقت: ${time}`,
+    nextLevelHint: 'الجولة التالية تبدأ…',
+
+    modeSequence: 'ترتيب',
+    mistakes: (n) => `الأخطاء: ${n}`,
+    instruction: 'اضغط على الأعداد بترتيب العدّ',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولات مثالية`,
+  },
 };
 
 export const t = createI18n(STRINGS, getLang);

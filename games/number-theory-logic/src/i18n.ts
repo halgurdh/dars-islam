@@ -165,6 +165,33 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Touche les problèmes du plus petit au plus grand résultat',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
+  ar: {
+    title: 'Number Theory & Logic',
+    tagline: 'الأعداد الأولية، العوامل، المضاعفات\nوأنماط الأعداد.',
+    easy: 'سهل · الأعداد الأولية والمضاعفات',
+    medium: 'متوسط · القاسم المشترك الأكبر والمضاعف المشترك الأصغر',
+    hard: 'صعب · الأنماط والبواقي',
+    menu: '☰ القائمة',
+    wellDone: 'مفكر منطقي! 🔢',
+    playAgain: '↻ العب مرة أخرى',
+    backToMenu: '☰ العودة إلى القائمة',
+    footer: 'اكتب العوامل على ورقة — الأنماط تظهر بوضوح عندما تراها كلها معًا.',
+
+    modeQuiz: 'اختبار',
+    round: (i, total) => `الجولة ${i} / ${total}`,
+    score: (n) => `النقاط: ${n}`,
+    roundSummary: (score, total) => `${score} / ${total} صحيحة`,
+
+    modeMatch: 'مطابقة',
+    moves: (n) => `الحركات: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `تمت مطابقة ${pairs} أزواج في ${moves} حركة\nالوقت: ${time}`,
+    nextLevelHint: 'الجولة التالية تبدأ…',
+
+    modeSequence: 'ترتيب',
+    mistakes: (n) => `الأخطاء: ${n}`,
+    instruction: 'اضغط على المسائل من الإجابة الأصغر إلى الأكبر',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولات مثالية`,
+  },
 };
 
 export const t = createI18n(STRINGS, getLang);

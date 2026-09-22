@@ -183,6 +183,36 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Touche les valeurs du plus petit au plus grand',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
+  ar: {
+    title: 'Advanced Trigonometry',
+    tagline: 'الجيب وجيب التمام والظل،\nدائرة الوحدة والمتطابقات.',
+    easy: 'سهل · النسب والمفردات',
+    medium: 'متوسط · الزوايا الخاصة',
+    hard: 'صعب · الراديان والمتطابقات',
+    menu: '☰ القائمة',
+    wellDone: 'إصابة في الزاوية الصحيحة! 📐',
+    playAgain: '↻ العب مرة أخرى',
+    backToMenu: '☰ العودة إلى القائمة',
+    footer: 'ارسم المثلث وسمِّ الأضلاع — عندها تصبح قاعدة SOH-CAH-TOA واضحة.',
+    tierEasy: 'سهل',
+    tierMedium: 'متوسط',
+    tierHard: 'صعب',
+
+    modeQuiz: 'اختبار',
+    round: (i, total) => `الجولة ${i} / ${total}`,
+    score: (n) => `النقاط: ${n}`,
+    roundSummary: (score, total) => `${score} / ${total} صحيحة`,
+
+    modeMatch: 'مطابقة',
+    moves: (n) => `الحركات: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} أزواج تمت مطابقتها في ${moves} حركة\nالوقت: ${time}`,
+    nextLevelHint: 'الجولة التالية تبدأ…',
+
+    modeSequence: 'ترتيب',
+    mistakes: (n) => `الأخطاء: ${n}`,
+    instruction: 'اضغط على القيم من الأصغر إلى الأكبر',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولات مثالية`,
+  },
 };
 
 export const t = createI18n(STRINGS, getLang);

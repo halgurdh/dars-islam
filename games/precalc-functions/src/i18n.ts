@@ -183,6 +183,36 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Touche les fonctions du plus petit au plus grand résultat',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
+  ar: {
+    title: 'Pre-Calc Functions',
+    tagline: 'تدوين الدوال، الرسوم البيانية،\nالتركيب والدوال العكسية.',
+    easy: 'سهل · التدوين والمجال',
+    medium: 'متوسط · خطية وتربيعية',
+    hard: 'صعب · التركيب والدوال العكسية',
+    menu: '☰ القائمة',
+    wellDone: 'خبير الدوال! 📈',
+    playAgain: '↻ العب مرة أخرى',
+    backToMenu: '☰ العودة إلى القائمة',
+    footer: 'في الدوال المركّبة، اعمل من الداخل إلى الخارج — f(g(x)) تعني احسب g أولًا.',
+    tierEasy: 'سهل',
+    tierMedium: 'متوسط',
+    tierHard: 'صعب',
+
+    modeQuiz: 'اختبار',
+    round: (i, total) => `الجولة ${i} / ${total}`,
+    score: (n) => `النقاط: ${n}`,
+    roundSummary: (score, total) => `${score} / ${total} صحيحة`,
+
+    modeMatch: 'مطابقة',
+    moves: (n) => `الحركات: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `تمت مطابقة ${pairs} أزواج في ${moves} حركة\nالوقت: ${time}`,
+    nextLevelHint: 'الجولة التالية تبدأ…',
+
+    modeSequence: 'ترتيب',
+    mistakes: (n) => `الأخطاء: ${n}`,
+    instruction: 'اضغط على الدوال من الناتج الأصغر إلى الأكبر',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولات مثالية`,
+  },
 };
 
 export const t = createI18n(STRINGS, getLang);

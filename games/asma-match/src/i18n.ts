@@ -170,6 +170,34 @@ const STRINGS: Record<LangMode, Strings> = {
     sequenceInstruction: 'Touche les Noms dans leur ordre traditionnel',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
+  ar: {
+    subtitle: 'Asma Match',
+    tagline: 'اقلب البطاقات، أجب عن أسئلة الاختبار، أو تذكّر\nالترتيب التقليدي — ثلاث طرق لتعلم الأسماء الحسنى.',
+    easy: 'سهل · 6',
+    medium: 'متوسط · 8',
+    hard: 'صعب · 10',
+    footer: 'بدون موسيقى. المؤثرات الصوتية بسيطة واختيارية.',
+    menu: '☰ القائمة',
+    playAgain: 'العب مرة أخرى',
+    wellDone: 'أحسنت! 🌿',
+    hear: '🔊 استمع',
+
+    modeMatch: 'مطابقة',
+    moves: (n) => `الحركات: ${n}`,
+    roundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} اسمًا تمت مطابقته في ${moves} حركة\nالوقت: ${time}\n${learned} / ${total} اسمًا تم تعلمها إجمالًا`,
+    nextLevelHint: 'المستوى التالي يبدأ…',
+
+    modeQuiz: 'اختبار',
+    quizRound: (i, total) => `السؤال ${i}/${total}`,
+    quizScore: (n) => `النقاط: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} صحيحة`,
+
+    modeSequence: 'الترتيب',
+    sequenceMistakes: (n) => `الأخطاء: ${n}`,
+    sequenceInstruction: 'اضغط على الأسماء بترتيبها التقليدي',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولات مثالية`,
+  },
 };
 
 export const t = createI18n(STRINGS, getLang);

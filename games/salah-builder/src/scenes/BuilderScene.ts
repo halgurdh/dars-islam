@@ -30,6 +30,7 @@ function meaningFor(item: BuilderItem): string {
     case 'de': return item.meaningDe;
     case 'es': return item.meaningEs;
     case 'fr': return item.meaningFr;
+    case 'ar': return item.meaningAr;
     default: return item.meaningEn;
   }
 }

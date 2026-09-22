@@ -177,6 +177,35 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Touche les calculs du plus petit au plus grand résultat',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
+  ar: {
+    title: 'Mental Math Sprint',
+    tagline: 'سابق الساعة، طابق المسائل مع إجاباتها،\nأو رتّبها حسب القيمة — ثلاث طرق للتدرّب.',
+    menu: '☰ القائمة',
+    wellDone: 'انتهى السباق! ⚡',
+    playAgain: '↻ العب مرة أخرى',
+    backToMenu: '☰ العودة للقائمة',
+    footer: '💡 يعتمد هذا السباق على حيل ×11 و×5 وغيرها\nمن Math Tricks Lab — تعلّمها هناك، ثم سابق هنا.',
+    easy: 'سهل',
+    medium: 'متوسط',
+    hard: 'صعب',
+
+    modeQuiz: 'سباق',
+    relaxed: 'مسترخٍ · 12 ثانية لكل سؤال',
+    normal: 'عادي · 7 ثوانٍ لكل سؤال',
+    round: (i, total) => `الجولة ${i} / ${total}`,
+    score: (n) => `النتيجة: ${n}`,
+    roundSummary: (score, total) => `${score} / ${total} صحيحة`,
+
+    modeMatch: 'طابق',
+    moves: (n) => `الحركات: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} أزواج تمت مطابقتها في ${moves} حركة\nالوقت: ${time}`,
+    nextLevelHint: 'الجولة التالية تبدأ…',
+
+    modeSequence: 'ترتيب',
+    mistakes: (n) => `الأخطاء: ${n}`,
+    instruction: 'اضغط على المسائل من أصغر إجابة إلى أكبرها',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولات مثالية`,
+  },
 };
 
 export const t = createI18n(STRINGS, getLang);

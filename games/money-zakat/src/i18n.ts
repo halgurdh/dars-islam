@@ -183,6 +183,36 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Touche les montants du plus petit au plus grand',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
+  ar: {
+    title: 'Money & Zakat Math',
+    tagline: 'الاحتياجات مقابل الرغبات، الخصومات والنسب المئوية،\nوحساب الزكاة.',
+    easy: 'سهل · الاحتياجات والرغبات والمال',
+    medium: 'متوسط · النسب المئوية والخصومات',
+    hard: 'صعب · حساب الزكاة',
+    menu: '☰ القائمة',
+    wellDone: 'بارع في إدارة المال! 💰',
+    playAgain: '↻ العب مرة أخرى',
+    backToMenu: '☰ العودة للقائمة',
+    footer: 'تعتمد الزكاة هنا على القاعدة المبسطة: 2.5% من المدخرات، كما تُعلَّم للمبتدئين.',
+    tierEasy: 'سهل',
+    tierMedium: 'متوسط',
+    tierHard: 'صعب',
+
+    modeQuiz: 'اختبار',
+    round: (i, total) => `الجولة ${i} / ${total}`,
+    score: (n) => `النتيجة: ${n}`,
+    roundSummary: (score, total) => `${score} / ${total} صحيحة`,
+
+    modeMatch: 'طابق',
+    moves: (n) => `الحركات: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} أزواج تمت مطابقتها في ${moves} حركة\nالوقت: ${time}`,
+    nextLevelHint: 'الجولة التالية تبدأ…',
+
+    modeSequence: 'ترتيب',
+    mistakes: (n) => `الأخطاء: ${n}`,
+    instruction: 'اضغط على المبالغ من الأصغر إلى الأكبر',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولات مثالية`,
+  },
 };
 
 export const t = createI18n(STRINGS, getLang);

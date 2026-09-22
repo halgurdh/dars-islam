@@ -164,6 +164,33 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Touche les pays du plus petit au plus grand par superficie',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
+  ar: {
+    title: 'World Geography',
+    tagline: 'طابق الدول بعواصمها، أجب عن الأسئلة، أو\nرتّب حسب المساحة — ثلاث طرق لتعلم الجغرافيا.',
+    easy: 'سهل · 6',
+    medium: 'متوسط · 8',
+    hard: 'صعب · 10',
+    menu: '☰ القائمة',
+    playAgain: 'العب مرة أخرى',
+    wellDone: 'مستكشف العالم! 🌍',
+    footer: 'تخيّل الخريطة في ذهنك — يساعدك ذلك أكثر مما تظن.',
+
+    modeMatch: 'مطابقة',
+    moves: (n) => `الحركات: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} أزواج تمت مطابقتها في ${moves} حركة\nالوقت: ${time}\n${learned} / ${total} عاصمة تم تعلمها إجمالًا`,
+    nextLevelHint: 'الجولة التالية تبدأ…',
+
+    modeQuiz: 'اختبار',
+    round: (i, total) => `السؤال ${i}/${total}`,
+    score: (n) => `النتيجة: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} إجابة صحيحة`,
+
+    modeSequence: 'ترتيب حسب الحجم',
+    mistakes: (n) => `الأخطاء: ${n}`,
+    instruction: 'اضغط على الدول من الأصغر إلى الأكبر مساحةً',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولة مثالية`,
+  },
 };
 
 export const t = createI18n(STRINGS, getLang);

@@ -165,6 +165,33 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Touche les problèmes du plus petit au plus grand résultat',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
+  ar: {
+    title: 'Statistics Essentials',
+    tagline: 'المتوسط، الوسيط، المنوال، قراءة الرسوم البيانية\nواكتشاف القيم الشاذة في البيانات.',
+    easy: 'سهل · المتوسط، الوسيط، المنوال',
+    medium: 'متوسط · المدى والرسوم البيانية',
+    hard: 'صعب · قراءة البيانات',
+    menu: '☰ القائمة',
+    wellDone: 'حس رياضي رائع! 📊',
+    playAgain: '↻ العب مرة أخرى',
+    backToMenu: '☰ العودة إلى القائمة',
+    footer: 'رتّب الأرقام أولًا — هذا يجعل الوسيط والمدى أسهل بكثير.',
+
+    modeQuiz: 'اختبار',
+    round: (i, total) => `الجولة ${i} / ${total}`,
+    score: (n) => `النتيجة: ${n}`,
+    roundSummary: (score, total) => `${score} / ${total} إجابات صحيحة`,
+
+    modeMatch: 'مطابقة',
+    moves: (n) => `الحركات: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} أزواج تمت مطابقتها في ${moves} حركة\nالوقت: ${time}`,
+    nextLevelHint: 'الجولة التالية تبدأ…',
+
+    modeSequence: 'ترتيب',
+    mistakes: (n) => `الأخطاء: ${n}`,
+    instruction: 'اضغط على المسائل من الأصغر إلى الأكبر إجابةً',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولات مثالية`,
+  },
 };
 
 export const t = createI18n(STRINGS, getLang);

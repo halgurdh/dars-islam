@@ -164,6 +164,33 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: "Touche-les d'une seule personne jusqu'à tout un pays",
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
+  ar: {
+    title: 'Civics & Community',
+    tagline: 'طابق المصطلحات المدنية، أجب عن أسئلة الاختبار، أو رتبها\nحسب النطاق — ثلاث طرق لتتعلم كيف تعمل المجتمعات.',
+    easy: 'سهل · 6',
+    medium: 'متوسط · 8',
+    hard: 'صعب · 10',
+    menu: '☰ القائمة',
+    playAgain: 'العب مرة أخرى',
+    wellDone: 'مواطن رائع! 🏛️',
+    footer: 'فكّر في حيّك الخاص — هذه الكلمات تظهر هناك أيضًا.',
+
+    modeMatch: 'مطابقة',
+    moves: (n) => `الحركات: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} أزواج تمت مطابقتها في ${moves} حركة\nالوقت: ${time}\n${learned} / ${total} مصطلح تم تعلمه إجمالًا`,
+    nextLevelHint: 'الجولة التالية تبدأ…',
+
+    modeQuiz: 'اختبار',
+    round: (i, total) => `السؤال ${i}/${total}`,
+    score: (n) => `النقاط: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} صحيحة`,
+
+    modeSequence: 'ترتيب حسب النطاق',
+    mistakes: (n) => `الأخطاء: ${n}`,
+    instruction: 'اضغط عليها من شخص واحد إلى بلد كامل',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولات مثالية`,
+  },
 };
 
 export const t = createI18n(STRINGS, getLang);

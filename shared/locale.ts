@@ -3,10 +3,10 @@
 // A factory, not a singleton: each game still needs its own localStorage
 // key so switching language in one game doesn't affect another — same
 // per-game-namespacing reasoning as Progress/Sfx's own keys.
-export type LangMode = 'en' | 'nl' | 'de' | 'es' | 'fr';
+export type LangMode = 'en' | 'nl' | 'de' | 'es' | 'fr' | 'ar';
 
 // The order toggleLang() cycles through.
-const CYCLE: LangMode[] = ['en', 'nl', 'de', 'es', 'fr'];
+const CYCLE: LangMode[] = ['en', 'nl', 'de', 'es', 'fr', 'ar'];
 
 export interface Locale {
   getLang(): LangMode;
@@ -63,5 +63,8 @@ function countryToLang(code: string): LangMode {
   if (code === 'DE' || code === 'AT') return 'de';
   if (code === 'FR') return 'fr';
   if (['ES', 'MX', 'AR', 'CO', 'CL', 'PE', 'VE'].includes(code)) return 'es';
+  if (
+    ['SA', 'AE', 'EG', 'JO', 'MA', 'DZ', 'TN', 'IQ', 'KW', 'QA', 'BH', 'OM', 'LB', 'SY', 'YE', 'LY', 'SD', 'PS'].includes(code)
+  ) return 'ar';
   return 'en';
 }

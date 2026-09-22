@@ -164,6 +164,33 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Touche les mots dans l’ordre alphabétique arabe (ا→ي)',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
+  ar: {
+    title: 'Arabic Grammar Basics',
+    tagline: 'طابق الكلمات بجموعها، أجب عن أسئلة الاختبار،\nأو رتبها حسب الحروف الأبجدية العربية.',
+    easy: 'سهل · 4',
+    medium: 'متوسط · 6',
+    hard: 'صعب · 8',
+    menu: '☰ القائمة',
+    playAgain: 'العب مرة أخرى',
+    wellDone: 'ممتاز، ما شاء الله! 📖',
+    footer: 'انطق الكلمات بصوت عالٍ — القواعد ترسخ أفضل عندما تسمعها.',
+
+    modeMatch: 'مطابقة',
+    moves: (n) => `الحركات: ${n}`,
+    matchRoundSummary: (pairs, moves, time, learned, total) =>
+      `${pairs} أزواج تمت مطابقتها في ${moves} حركة\nالوقت: ${time}\n${learned} / ${total} كلمة تم تعلمها إجمالًا`,
+    nextLevelHint: 'الجولة التالية تبدأ…',
+
+    modeQuiz: 'اختبار',
+    round: (i, total) => `السؤال ${i}/${total}`,
+    score: (n) => `النقاط: ${n}`,
+    quizRoundSummary: (score, total) => `${score} / ${total} صحيحة`,
+
+    modeSequence: 'ترتيب الحروف الأبجدية',
+    mistakes: (n) => `الأخطاء: ${n}`,
+    instruction: 'اضغط على الكلمات حسب الترتيب الأبجدي العربي (ا→ي)',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولات مثالية`,
+  },
 };
 
 export const t = createI18n(STRINGS, getLang);

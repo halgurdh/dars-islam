@@ -201,6 +201,39 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Touche les problèmes du plus petit au plus grand résultat',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
   },
+  ar: {
+    title: 'Math Mastery',
+    tagline: 'المجموعة المتقدمة: الضرب متعدد الأرقام،\nالجذور التربيعية، الكسور، وحساب المثلثات.',
+    practice: (n) => `▶ تدرّب (${n} جولات)`,
+    back: '← المواضيع',
+    prevPage: '‹',
+    next: 'التالي →',
+    round: (i, total) => `الجولة ${i} / ${total}`,
+    score: (n) => `النتيجة: ${n}`,
+    menu: '☰ القائمة',
+    wellDone: 'إتقان! 🎓',
+    roundSummary: (score, total) => `${score} / ${total} صحيحة`,
+    playAgain: '↻ العب مرة أخرى',
+    backToMenu: '☰ العودة للقائمة',
+    footer: 'اختر موضوعًا أدناه لبدء مجموعة من 10 جولات.',
+
+    modeLearn: '📖 تعلّم',
+    modeQuiz: '❓ اختبار',
+    modeMatch: '🃏 طابق',
+    modeSequence: '🔢 ترتيب',
+    startLearn: '▶ ابدأ الدرس',
+    startQuiz: '▶ ابدأ الاختبار',
+    startMatch: '▶ ابدأ المطابقة',
+    startSequence: '▶ ابدأ الترتيب',
+
+    moves: (n) => `الحركات: ${n}`,
+    matchRoundSummary: (pairs, moves, time) => `${pairs} أزواج تمت مطابقتها في ${moves} حركة\nالوقت: ${time}`,
+    nextLevelHint: 'الجولة التالية تبدأ…',
+
+    mistakes: (n) => `الأخطاء: ${n}`,
+    instruction: 'اضغط على المسائل من أصغر إجابة إلى أكبرها',
+    sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولات مثالية`,
+  },
 };
 
 export const t = createI18n(STRINGS, getLang);

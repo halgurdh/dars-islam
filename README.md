@@ -1,5 +1,7 @@
 # darsislam.games — Monorepo
 
+> **⚠️ Disclaimer:** This project was built entirely with AI assistance (Claude Code). While care has been taken with testing and review, the code, game content, and translations (including educational/religious content) may contain mistakes, bugs, or inaccuracies. Please verify anything important — especially religious or educational content — independently before relying on it, and feel free to open an issue or pull request if you spot a problem.
+
 This repository is the monorepo for darsislam Arcade: a small multi-app
 platform that hosts web PWAs (games) plus a wrapper hub. Each game is
 contained in `games/<game-name>/` and may have its own README and
