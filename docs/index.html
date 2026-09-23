@@ -16,12 +16,12 @@
         src="https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js">
     </script>
  
-    <script type="module" crossorigin src="/dars-islam/assets/main-nHZg16fQ.js"></script>
-    <link rel="modulepreload" crossorigin href="/dars-islam/assets/Locale-DRE6GHvG.js">
-    <link rel="modulepreload" crossorigin href="/dars-islam/assets/sync-CsgRh07u.js">
-    <link rel="modulepreload" crossorigin href="/dars-islam/assets/progress-bar-Cd33REFF.js">
+    <script type="module" crossorigin src="/dars-islam/assets/main-kdEUuXXQ.js"></script>
+    <link rel="modulepreload" crossorigin href="/dars-islam/assets/Locale-CIm9FfwC.js">
+    <link rel="modulepreload" crossorigin href="/dars-islam/assets/report-api-BlDYw9SI.js">
+    <link rel="modulepreload" crossorigin href="/dars-islam/assets/progress-bar-CAGjav9x.js">
     <link rel="stylesheet" crossorigin href="/dars-islam/assets/Locale-cUHdOL2G.css">
-    <link rel="stylesheet" crossorigin href="/dars-islam/assets/main-WYoAudCo.css">
+    <link rel="stylesheet" crossorigin href="/dars-islam/assets/main-DJ0S_43_.css">
   </head>
   <body>
     <amp-auto-ads type="adsense"
@@ -73,6 +73,7 @@
     <header id="all_games" class="hub-header">
       <h2 class="hub-title" id="chooseGameTitle">Choose a Game</h2>
       <p class="hub-subtitle" id="chooseGameSub">Free to play, no account needed.</p>
+      <input type="search" id="gameSearch" class="game-search" autocomplete="off" />
       <div class="category-filter" id="categoryFilter" role="tablist" aria-label="Filter games by category">
         <button class="category-filter__btn is-active" data-category-filter="all" id="catAll">All Games</button>
         <button class="category-filter__btn" data-category-filter="islamic" id="catIslamic">🕌 Islamic Studies</button>
@@ -680,6 +681,8 @@
         </div>
       </div>
     </main>
+
+    <p class="no-results-msg" id="noResultsMsg" hidden>No games match your search.</p>
 
     <!-- Footer -->
     <footer class="hub-footer">
