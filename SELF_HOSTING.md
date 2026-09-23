@@ -133,6 +133,14 @@ the image itself just serves plain HTTP on port 80.
 
   Free, no Docker needed. If your repo isn't named `dars-islam`, also update
   `VITE_BASE_PATH` in the workflow file to match (`/your-repo-name/`).
+- **Inactivity scan** (`.github/workflows/inactivity-scan.yml`, optional):
+  runs daily, warns teacher/parent accounts inactive 3+ months, anonymizes
+  ones still inactive 30 days after that (see
+  `database/supabase/0004_inactivity_cleanup.sql`). Needs three more repo
+  secrets — `SUPABASE_SERVICE_ROLE_KEY` (Project Settings → API), a
+  [Resend](https://resend.com) `RESEND_API_KEY`, and `OWNER_EMAIL` (where the
+  daily summary goes). Until `RESEND_API_KEY` is set, the job runs and exits
+  safely without touching any account.
 - **Any static host** (Netlify, Vercel, S3+CloudFront, a plain VPS with
   nginx you manage yourself): run `npm run build`, upload/serve `dist/`.
   `scripts/deploy-sftp.mjs` is included if you want to push `dist/` over

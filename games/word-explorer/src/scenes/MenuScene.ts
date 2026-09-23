@@ -1,5 +1,5 @@
 import { COLORS, FONT } from '../theme';
-import { DIFFICULTIES, ITEMS, wordAFor, wordBFor } from '../questions';
+import { DIFFICULTIES, VOCAB, type VocabItem } from '../questions';
 import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { t } from '../i18n';
 import { createModeMenuScene, matchMode, quizMode, sequenceMode } from '@shared/mode-menu-kit';
@@ -7,7 +7,7 @@ import type { MatchItem } from '@shared/match-kit';
 import type { QuizQuestion } from '@shared/quiz-kit';
 import type { SequenceItem } from '@shared/sequence-kit';
 
-const GAME_ID = 'language-arts';
+const GAME_ID = 'word-explorer';
 
 const LABELS: Record<string, () => string> = {
   easy: () => t().easy,
@@ -25,28 +25,24 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 function buildMatchItems(): MatchItem[] {
-  return ITEMS.map((it) => ({ id: it.id, sideA: wordAFor(it), sideB: wordBFor(it) }));
+  return VOCAB.map((v) => ({ id: v.id, sideA: v.word, sideB: v.meaning }));
 }
 
 function generateQuizQuestion(): QuizQuestion {
-  const [correct, ...distractors] = shuffle(ITEMS).slice(0, 4);
-  const choices = shuffle([correct, ...distractors].map((it) => wordBFor(it)));
+  const [correct, ...distractors] = shuffle(VOCAB).slice(0, 4);
+  const choices = shuffle([correct, ...distractors].map((v) => v.meaning));
   return {
-    prompt: wordAFor(correct),
+    prompt: correct.word,
     choices,
-    correctIndex: choices.indexOf(wordBFor(correct)),
+    correctIndex: choices.indexOf(correct.meaning),
   };
 }
 
-// These words are independent adjective/verb pairs (Happy vs. Cold vs.
-// Fast...) with no shared magnitude to compare, unlike memory-match's sizes
-// or geography's areas — word length is the one honest orderable property
-// this dataset has, without resorting to a rote A-Z sort.
 function generateSequenceRound(count: number): () => SequenceItem[] {
   return () => {
-    const pool = shuffle(ITEMS).slice(0, count);
-    const sorted = [...pool].sort((a, b) => wordAFor(a).length - wordAFor(b).length || wordAFor(a).localeCompare(wordAFor(b)));
-    return sorted.map((it) => ({ id: it.id, label: wordAFor(it) }));
+    const pool = shuffle(VOCAB).slice(0, count) as VocabItem[];
+    const sorted = [...pool].sort((a, b) => a.rank - b.rank);
+    return sorted.map((v) => ({ id: v.id, label: v.meaning }));
   };
 }
 

@@ -6,6 +6,7 @@ import { getSupabase } from './supabase-client';
 import { t, getLang, setLang, detectDefaultLang } from './progress-bar-i18n';
 import { renderLanguagePickerDom } from './language-picker-dom';
 import { reportContent, currentGameSlug } from './report-api';
+import { notifyActiveGameLanguageChange } from './active-game-locale';
 
 interface LeaderboardEntry { display_name: string; xp: number; level: number; }
 
@@ -175,6 +176,10 @@ export class ProgressBar {
       if (!container) return;
       renderLanguagePickerDom(container, getLang(), (lang) => {
         setLang(lang);
+        // If a Quiz/Match/Sequence scene is currently active, this also
+        // switches ITS content language (see shared/active-game-locale.ts)
+        // — a no-op on the menu/wrapper, where nothing is registered.
+        notifyActiveGameLanguageChange(lang);
         this.openPanel(tab);
       });
     };
@@ -247,6 +252,7 @@ export class ProgressBar {
     if (langContainer) {
       renderLanguagePickerDom(langContainer, getLang(), (lang) => {
         setLang(lang);
+        notifyActiveGameLanguageChange(lang);
         this.openAuth();
       });
     }

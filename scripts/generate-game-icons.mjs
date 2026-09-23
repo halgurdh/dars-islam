@@ -58,6 +58,7 @@ const GAMES = {
   'advanced-trigonometry': { bgLight: '#352010', bgDark: '#1a0f0a', accent: '#e0854f', accentLight: '#f7d9c2' },
   'precalc-functions': { bgLight: '#10352c', bgDark: '#0a1a17', accent: '#4fe0b8', accentLight: '#c2f7e9' },
   'digital-literacy': { bgLight: '#1a1a35', bgDark: '#0f0f1a', accent: '#6b7ae0', accentLight: '#d0d6f7' },
+  'word-explorer': { bgLight: '#14323d', bgDark: '#0a1a20', accent: '#4fd6e0', accentLight: '#c8f5f7' },
 };
 
 function renderSvg(colors) {

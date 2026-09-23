@@ -16,22 +16,23 @@ const matchMode: GameMode = {
   difficulties: [
     {
       label: () => t().start,
-      onSelect: (scene) => {
+      onSelect: (scene, locale) => {
         getMatchSfx(GAME_ID).flip();
         scene.scene.start('Match', {
           gameId: GAME_ID,
           pairs: MATCH_PAIRS,
           theme: COLORS,
           fontFamily: FONT,
-          strings: {
+          strings: () => ({
             menu: t().menu,
             moves: t().moves,
             wellDone: t().wellDone,
             roundSummary: t().matchRoundSummary,
             nextLevelHint: t().nextLevelHint,
-          },
-          items: () => generateMatchItems(MATCH_PAIRS),
+          }),
+          items: generateMatchItems(MATCH_PAIRS),
           menuSceneKey: 'MenuScene',
+          locale,
         });
       },
     },

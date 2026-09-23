@@ -1,0 +1,39 @@
+name: Inactivity scan
+
+# Daily check for teacher/parent accounts inactive 3+ months: sends a
+# one-time warning email, then anonymizes accounts still inactive 30 days
+# after that warning. auth.users rows are never deleted — see
+# database/supabase/0004_inactivity_cleanup.sql for the cascade-delete
+# danger this avoids. Side effect: also pings the Supabase API daily, which
+# keeps the free-tier project from idle-pausing.
+#
+# Needs these repo secrets before it does anything: SUPABASE_SERVICE_ROLE_KEY,
+# RESEND_API_KEY, OWNER_EMAIL (VITE_SUPABASE_URL already exists, reused
+# below). Until RESEND_API_KEY is set, the script below no-ops safely.
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run inactivity scan
+        env:
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          OWNER_EMAIL: ${{ secrets.OWNER_EMAIL }}
+        run: node scripts/inactivity-scan.mjs

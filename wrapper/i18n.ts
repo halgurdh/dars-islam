@@ -24,6 +24,7 @@ export interface Strings {
   catMath: string;
   catEarly: string;
   catGeneral: string;
+  catLanguage: string;
   searchPlaceholder: string;
   searchNoResults: string;
 
@@ -72,6 +73,7 @@ export const STRINGS: Record<LangMode, Strings> = {
     catMath: '🔢 Math',
     catEarly: '🧸 Early Learning',
     catGeneral: '🌍 General Subjects',
+    catLanguage: '🗣️ Language Learning',
     searchPlaceholder: '🔍 Search games…',
     searchNoResults: 'No games match your search.',
 
@@ -118,6 +120,7 @@ export const STRINGS: Record<LangMode, Strings> = {
     catMath: '🔢 Rekenen',
     catEarly: '🧸 Vroeg Leren',
     catGeneral: '🌍 Algemene Vakken',
+    catLanguage: '🗣️ Talen Leren',
     searchPlaceholder: '🔍 Zoek spellen…',
     searchNoResults: 'Geen spellen komen overeen met je zoekopdracht.',
 
@@ -164,6 +167,7 @@ export const STRINGS: Record<LangMode, Strings> = {
     catMath: '🔢 Mathe',
     catEarly: '🧸 Frühes Lernen',
     catGeneral: '🌍 Allgemeine Fächer',
+    catLanguage: '🗣️ Sprachen Lernen',
     searchPlaceholder: '🔍 Spiele suchen…',
     searchNoResults: 'Keine Spiele entsprechen deiner Suche.',
 
@@ -210,6 +214,7 @@ export const STRINGS: Record<LangMode, Strings> = {
     catMath: '🔢 Matemáticas',
     catEarly: '🧸 Primeros Aprendizajes',
     catGeneral: '🌍 Asignaturas Generales',
+    catLanguage: '🗣️ Aprender Idiomas',
     searchPlaceholder: '🔍 Buscar juegos…',
     searchNoResults: 'Ningún juego coincide con tu búsqueda.',
 
@@ -256,6 +261,7 @@ export const STRINGS: Record<LangMode, Strings> = {
     catMath: '🔢 Maths',
     catEarly: '🧸 Premiers Apprentissages',
     catGeneral: '🌍 Matières Générales',
+    catLanguage: '🗣️ Apprentissage des Langues',
     searchPlaceholder: '🔍 Rechercher des jeux…',
     searchNoResults: 'Aucun jeu ne correspond à votre recherche.',
 
@@ -302,6 +308,7 @@ export const STRINGS: Record<LangMode, Strings> = {
     catMath: '🔢 الرياضيات',
     catEarly: '🧸 التعلم المبكر',
     catGeneral: '🌍 مواد عامة',
+    catLanguage: '🗣️ تعلّم اللغات',
     searchPlaceholder: '🔍 ابحث عن الألعاب…',
     searchNoResults: 'لا توجد ألعاب مطابقة لبحثك.',
 

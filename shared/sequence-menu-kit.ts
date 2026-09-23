@@ -45,7 +45,7 @@ export function createSequenceMenuScene(config: SequenceMenuConfig): typeof Phas
             totalRounds: d.totalRounds,
             theme: config.theme,
             fontFamily: config.fontFamily,
-            strings: config.strings(),
+            strings: config.strings,
             generateRound: d.generateRound,
             menuSceneKey: config.sceneKey,
           });

@@ -41,22 +41,23 @@ const matchMode: GameMode = {
   icon: '🎴',
   difficulties: DIFFICULTIES.map((d, i) => ({
     label: TIER_LABELS[i],
-    onSelect: (scene) => {
+    onSelect: (scene, locale) => {
       getMatchSfx(GAME_ID).flip();
       scene.scene.start('Match', {
         gameId: GAME_ID,
         pairs: [6, 8, 10][i] ?? 6,
         theme: COLORS,
         fontFamily: FONT,
-        strings: {
+        strings: () => ({
           menu: t().menu,
           moves: t().moves,
           wellDone: t().wellDone,
           roundSummary: t().matchRoundSummary,
           nextLevelHint: t().nextLevelHint,
-        },
-        items: () => generateMatchItems(d, [6, 8, 10][i] ?? 6),
+        }),
+        items: generateMatchItems(d, [6, 8, 10][i] ?? 6),
         menuSceneKey: 'MenuScene',
+        locale,
       });
     },
   })),

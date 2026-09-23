@@ -65,7 +65,7 @@ function buildTrickHomeScene(trick: Trick): typeof Phaser.Scene {
     difficulties: [
       {
         label: () => t().startMatch,
-        onSelect: (scene) => {
+        onSelect: (scene, locale) => {
           const items = trick.generateMatchItems(MATCH_POOL_SIZE);
           getMatchSfx(GAME_ID).flip();
           scene.scene.start('Match', {
@@ -73,15 +73,16 @@ function buildTrickHomeScene(trick: Trick): typeof Phaser.Scene {
             pairs: Math.min(MATCH_PAIRS, items.length),
             theme: COLORS,
             fontFamily: FONT,
-            strings: {
+            strings: () => ({
               menu: t().menu,
               moves: t().moves,
               wellDone: t().wellDone,
               roundSummary: t().matchRoundSummary,
               nextLevelHint: t().nextLevelHint,
-            },
+            }),
             items,
             menuSceneKey: homeSceneKey(trick),
+            locale,
           });
         },
       },
@@ -95,13 +96,13 @@ function buildTrickHomeScene(trick: Trick): typeof Phaser.Scene {
     difficulties: [
       {
         label: () => t().startSequence,
-        onSelect: (scene) => {
+        onSelect: (scene, locale) => {
           scene.scene.start('Sequence', {
             gameId: GAME_ID,
             totalRounds: SEQUENCE_ROUNDS,
             theme: COLORS,
             fontFamily: FONT,
-            strings: {
+            strings: () => ({
               round: t().round,
               mistakes: t().mistakes,
               menu: t().menu,
@@ -110,9 +111,10 @@ function buildTrickHomeScene(trick: Trick): typeof Phaser.Scene {
               roundSummary: t().sequenceRoundSummary,
               playAgain: t().playAgain,
               backToMenu: t().backToMenu,
-            },
+            }),
             generateRound: () => trick.generateSequenceRound(SEQUENCE_COUNT),
             menuSceneKey: homeSceneKey(trick),
+            locale,
           });
         },
       },

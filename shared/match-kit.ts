@@ -9,6 +9,8 @@ import Phaser from 'phaser';
 import { PlayerProgress } from './player-progress';
 import { ProgressBar } from './progress-bar';
 import type { QuizTheme } from './quiz-kit';
+import { registerActiveGameLocale, unregisterActiveGameLocale } from './active-game-locale';
+import type { LocaleHooks } from './quiz-menu-kit';
 
 const progressBar = new ProgressBar();
 
@@ -46,9 +48,12 @@ export interface MatchRunConfig {
   pairs: number;
   theme: MatchTheme;
   fontFamily: string;
-  strings: MatchStrings;
+  /** A function, not a resolved object — see quiz-kit.ts's QuizRunConfig.strings for why. */
+  strings: () => MatchStrings;
   items: MatchItem[];
   menuSceneKey?: string;
+  /** Optional: this game's own language hooks, enabling mid-game switching. */
+  locale?: LocaleHooks;
 }
 
 // ── Per-game persistent "learned" set + mute preference ─────────────────
@@ -200,6 +205,7 @@ export class MatchScene extends Phaser.Scene {
   private moves = 0;
   private matchesFound = 0;
   private startTime = 0;
+  private menuBtn!: Phaser.GameObjects.Text;
   private movesText!: Phaser.GameObjects.Text;
   private timerText!: Phaser.GameObjects.Text;
   private overlayShown = false;
@@ -223,6 +229,15 @@ export class MatchScene extends Phaser.Scene {
     this.startTime = this.time.now;
     this.buildHud();
     this.buildBoard();
+
+    if (this.cfg.locale) {
+      const hooks = {
+        setLang: this.cfg.locale.setLang,
+        refreshChrome: () => this.refreshHud(),
+      };
+      registerActiveGameLocale(hooks);
+      this.events.once('shutdown', () => unregisterActiveGameLocale(hooks));
+    }
   }
 
   update(): void {
@@ -243,16 +258,17 @@ export class MatchScene extends Phaser.Scene {
 
   private buildHud(): void {
     const { width } = this.scale;
-    const { theme, fontFamily, strings, gameId } = this.cfg;
+    const { theme, fontFamily, gameId } = this.cfg;
+    const strings = this.cfg.strings();
     const sfx = getMatchSfx(gameId);
     const y = MatchScene.HUD_TOP;
 
-    const menuBtn = this.add.text(70, y, strings.menu, {
+    this.menuBtn = this.add.text(70, y, strings.menu, {
       fontFamily,
       fontSize: '16px',
       color: theme.textMuted,
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-    menuBtn.on('pointerdown', () => this.scene.start(this.cfg.menuSceneKey ?? 'MenuScene'));
+    this.menuBtn.on('pointerdown', () => this.scene.start(this.cfg.menuSceneKey ?? 'MenuScene'));
 
     const muteBtn = this.add.text(width - 70, y, sfx.isMuted() ? '🔇' : '🔈', {
       fontFamily,
@@ -276,6 +292,15 @@ export class MatchScene extends Phaser.Scene {
       fontSize: '14px',
       color: theme.textMuted,
     }).setOrigin(0.5);
+  }
+
+  // Safe to call mid-round: only touches independent HUD text objects, never
+  // this.tiles/this.flipped/matchesFound — an in-progress board survives a
+  // language switch untouched, matching quiz-kit/sequence-kit's refreshHud.
+  private refreshHud(): void {
+    const strings = this.cfg.strings();
+    this.menuBtn.setText(strings.menu);
+    this.movesText.setText(strings.moves(this.moves));
   }
 
   private pickItems(): MatchItem[] {
@@ -376,7 +401,7 @@ export class MatchScene extends Phaser.Scene {
 
     if (this.flipped.length === 2) {
       this.moves++;
-      this.movesText.setText(this.cfg.strings.moves(this.moves));
+      this.refreshHud();
       this.locked = true;
       this.time.delayedCall(500, () => this.resolvePair());
     }
@@ -442,7 +467,8 @@ export class MatchScene extends Phaser.Scene {
       mistakes: Math.max(0, this.moves - this.cfg.pairs),
     }));
     const { width, height } = this.scale;
-    const { theme, fontFamily, strings } = this.cfg;
+    const { theme, fontFamily } = this.cfg;
+    const strings = this.cfg.strings();
 
     this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.55);
     const panelW = width * 0.8;

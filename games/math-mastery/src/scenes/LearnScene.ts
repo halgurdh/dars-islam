@@ -5,6 +5,7 @@ import { COLORS, FONT, hex } from '../theme';
 import { TOPICS, type Topic } from '../topics';
 import { drawTriangleDiagram } from '../triangleDiagram';
 import { t } from '../i18n';
+import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { homeSceneKey } from './TopicHomeScenes';
 
 export class LearnScene extends Phaser.Scene {
@@ -178,7 +179,7 @@ export class LearnScene extends Phaser.Scene {
       totalQuestions: this.topic.totalQuestions,
       theme: COLORS,
       fontFamily: FONT,
-      strings: {
+      strings: () => ({
         round: t().round,
         score: t().score,
         menu: t().menu,
@@ -186,9 +187,10 @@ export class LearnScene extends Phaser.Scene {
         roundSummary: t().roundSummary,
         playAgain: t().playAgain,
         backToMenu: t().backToMenu,
-      },
+      }),
       generateQuestion: this.topic.generateQuestion,
       menuSceneKey: homeSceneKey(this.topic),
+      locale: { getLang, setLang, detectDefaultLang },
     };
     this.scene.start('Quiz', cfg);
   }

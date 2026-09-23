@@ -11,6 +11,7 @@ import {
   addFooter,
   type BaseMenuConfig,
   type MenuDifficulty,
+  type LocaleHooks,
 } from './quiz-menu-kit';
 import type { QuizQuestion, QuizStrings } from './quiz-kit';
 import type { MatchTheme, MatchItem, MatchStrings } from './match-kit';
@@ -126,7 +127,7 @@ export function createModeMenuScene(config: ModeMenuConfig): typeof Phaser.Scene
           d.label(),
           config.theme,
           config.fontFamily,
-          () => d.onSelect(this)
+          () => d.onSelect(this, config.locale)
         );
         this.diffViews.push(btn);
       });
@@ -165,16 +166,17 @@ export function quizMode(opts: {
     icon: opts.icon,
     difficulties: opts.difficulties.map((d) => ({
       label: d.label,
-      onSelect: (scene: Phaser.Scene) => {
+      onSelect: (scene: Phaser.Scene, locale: LocaleHooks) => {
         scene.scene.start(opts.quizSceneKey ?? 'Quiz', {
           gameId: opts.gameId,
           totalQuestions: d.totalQuestions,
           theme: opts.theme,
           fontFamily: opts.fontFamily,
-          strings: opts.strings(),
+          strings: opts.strings,
           generateQuestion: d.generateQuestion,
           menuSceneKey: opts.homeSceneKey ?? 'MenuScene',
           timeLimitMs: d.timeLimitMs,
+          locale,
         });
       },
     })),
@@ -205,16 +207,17 @@ export function matchMode(opts: {
     icon: opts.icon,
     difficulties: opts.difficulties.map((d) => ({
       label: d.label,
-      onSelect: (scene: Phaser.Scene) => {
+      onSelect: (scene: Phaser.Scene, locale: LocaleHooks) => {
         getMatchSfx(opts.gameId).flip();
         scene.scene.start(opts.matchSceneKey ?? 'Match', {
           gameId: opts.gameId,
           pairs: d.pairs,
           theme: opts.theme,
           fontFamily: opts.fontFamily,
-          strings: opts.strings(),
+          strings: opts.strings,
           items: opts.items(),
           menuSceneKey: opts.homeSceneKey ?? 'MenuScene',
+          locale,
         });
       },
     })),
@@ -245,15 +248,16 @@ export function sequenceMode(opts: {
     icon: opts.icon,
     difficulties: opts.difficulties.map((d) => ({
       label: d.label,
-      onSelect: (scene: Phaser.Scene) => {
+      onSelect: (scene: Phaser.Scene, locale: LocaleHooks) => {
         scene.scene.start(opts.sequenceSceneKey ?? 'Sequence', {
           gameId: opts.gameId,
           totalRounds: d.totalRounds,
           theme: opts.theme,
           fontFamily: opts.fontFamily,
-          strings: opts.strings(),
+          strings: opts.strings,
           generateRound: d.generateRound,
           menuSceneKey: opts.homeSceneKey ?? 'MenuScene',
+          locale,
         });
       },
     })),
@@ -298,19 +302,20 @@ export function listenMode(opts: {
     icon: opts.icon,
     difficulties: opts.difficulties.map((d) => ({
       label: d.label,
-      onSelect: (scene: Phaser.Scene) => {
+      onSelect: (scene: Phaser.Scene, locale: LocaleHooks) => {
         scene.scene.start(opts.quizSceneKey ?? 'Quiz', {
           gameId: opts.gameId,
           totalQuestions: d.totalQuestions,
           theme: opts.theme,
           fontFamily: opts.fontFamily,
-          strings: opts.strings(),
+          strings: opts.strings,
           generateQuestion: d.generateQuestion,
-          replayLabel: opts.replayLabel(),
+          replayLabel: opts.replayLabel,
           onQuestionShown: (question: QuizQuestion) => {
             if (question.speak) void speak(question.speak.text, question.speak.lang);
           },
           menuSceneKey: opts.homeSceneKey ?? 'MenuScene',
+          locale,
         });
       },
     })),

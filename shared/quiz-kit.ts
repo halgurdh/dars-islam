@@ -9,6 +9,8 @@ import Phaser from 'phaser';
 import { PlayerProgress } from './player-progress';
 import { ProgressBar } from './progress-bar';
 import { startScreenTimeEnforcement } from './parental-controls';
+import { registerActiveGameLocale, unregisterActiveGameLocale } from './active-game-locale';
+import type { LocaleHooks } from './quiz-menu-kit';
 
 const progressBar = new ProgressBar();
 
@@ -55,7 +57,11 @@ export interface QuizRunConfig {
   totalQuestions: number;
   theme: QuizTheme;
   fontFamily: string;
-  strings: QuizStrings;
+  /** A function, not a resolved object — called fresh by refreshHud() so a
+   *  mid-game language switch (see shared/active-game-locale.ts) re-renders
+   *  chrome text in the new language instead of a snapshot frozen at
+   *  scene-start. Same reasoning as flashcardMode's `cards` field. */
+  strings: () => QuizStrings;
   generateQuestion: (index: number) => QuizQuestion;
   menuSceneKey?: string;
   /** Optional per-question countdown; a timeout counts as a wrong answer. */
@@ -66,7 +72,12 @@ export interface QuizRunConfig {
   onQuestionShown?: (question: QuizQuestion, index: number) => void;
   /** Optional: if set (together with onQuestionShown), shows a small replay
    *  button that re-invokes onQuestionShown for the current question. */
-  replayLabel?: string;
+  replayLabel?: () => string;
+  /** Optional: this game's own language hooks. When present, the scene
+   *  registers itself with shared/active-game-locale.ts so the ProgressBar
+   *  widget's language picker can switch this game's content mid-round
+   *  without losing score/round position. */
+  locale?: LocaleHooks;
 }
 
 const ADVANCE_DELAY_MS = 900;
@@ -97,6 +108,7 @@ export class QuizScene extends Phaser.Scene {
   private mistakes = 0;
   private locked = false;
 
+  private menuBtn!: Phaser.GameObjects.Text;
   private roundText!: Phaser.GameObjects.Text;
   private scoreText!: Phaser.GameObjects.Text;
   private promptText!: Phaser.GameObjects.Text;
@@ -131,6 +143,15 @@ export class QuizScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor(this.cfg.theme.bg);
     this.buildHud();
     this.renderQuestion();
+
+    if (this.cfg.locale) {
+      const hooks = {
+        setLang: this.cfg.locale.setLang,
+        refreshChrome: () => this.refreshHud(),
+      };
+      registerActiveGameLocale(hooks);
+      this.events.once('shutdown', () => unregisterActiveGameLocale(hooks));
+    }
   }
 
   // The wrapper chrome (Exit Game link, fullscreen toggle, and the
@@ -148,16 +169,17 @@ export class QuizScene extends Phaser.Scene {
 
   private buildHud(): void {
     const { width } = this.scale;
-    const { theme, fontFamily, strings } = this.cfg;
+    const { theme, fontFamily } = this.cfg;
+    const strings = this.cfg.strings();
     const y = QuizScene.HUD_Y;
 
-    const menuBtn = this.add.text(80, y, strings.menu, {
+    this.menuBtn = this.add.text(80, y, strings.menu, {
       fontFamily,
       fontSize: '24px',
       color: theme.textMuted,
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-    menuBtn.setPadding(16, 16, 16, 16);
-    menuBtn.on('pointerdown', () => {
+    this.menuBtn.setPadding(16, 16, 16, 16);
+    this.menuBtn.on('pointerdown', () => {
       this.cleanupTimer();
       this.scene.start(this.cfg.menuSceneKey ?? 'MenuScene');
     });
@@ -209,15 +231,21 @@ export class QuizScene extends Phaser.Scene {
   }
 
   private refreshHud(): void {
-    this.roundText.setText(this.cfg.strings.round(this.index + 1, this.cfg.totalQuestions));
-    this.scoreText.setText(this.cfg.strings.score(this.score));
+    const strings = this.cfg.strings();
+    this.roundText.setText(strings.round(this.index + 1, this.cfg.totalQuestions));
+    this.scoreText.setText(strings.score(this.score));
+    this.menuBtn.setText(strings.menu);
+    // "Listen & Identify" mode shows a static tap-to-replay label here
+    // instead of per-question text — chrome, not question content, so it
+    // refreshes on a language switch like the rest of the HUD.
+    if (this.cfg.replayLabel) this.promptText.setText(this.cfg.replayLabel());
   }
 
   private renderQuestion(): void {
     this.locked = false;
     this.currentQuestion = this.cfg.generateQuestion(this.index);
     this.refreshHud();
-    const promptStr = this.cfg.replayLabel ?? this.currentQuestion.prompt;
+    const promptStr = this.cfg.replayLabel?.() ?? this.currentQuestion.prompt;
     this.promptText.setText(promptStr);
     this.promptText.setFontSize(promptFontSize(promptStr));
     this.subText.setText(this.currentQuestion.sub ?? '');
@@ -351,7 +379,8 @@ export class QuizScene extends Phaser.Scene {
 
   private showComplete(): void {
     const { width, height } = this.scale;
-    const { theme, fontFamily, strings } = this.cfg;
+    const { theme, fontFamily } = this.cfg;
+    const strings = this.cfg.strings();
 
     this.choiceViews.forEach((v) => v.container.destroy());
     this.choiceViews = [];

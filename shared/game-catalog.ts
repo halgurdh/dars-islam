@@ -43,6 +43,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   { id: 'advanced-trigonometry', title: 'Advanced Trigonometry', icon: '📐' },
   { id: 'precalc-functions',     title: 'Pre-Calc Functions',    icon: '📈' },
   { id: 'digital-literacy',      title: 'Digital Literacy',      icon: '💻' },
+  { id: 'word-explorer',         title: 'Word Explorer',         icon: '🗣️' },
 ];
 
 export function gameTitle(gameId: string): string {

@@ -11,8 +11,10 @@ export interface LocaleHooks {
 
 export interface MenuDifficulty {
   label: () => string;
-  /** Receives the live scene so it can call scene.start('Quiz', cfg) etc. */
-  onSelect: (scene: Phaser.Scene) => void;
+  /** Receives the live scene (so it can call scene.start('Quiz', cfg) etc.)
+   *  and this menu's locale hooks, forwarded into the gameplay scene's
+   *  RunConfig so it can register for mid-game language switching. */
+  onSelect: (scene: Phaser.Scene, locale: LocaleHooks) => void;
 }
 
 export interface BaseMenuConfig {
@@ -94,7 +96,7 @@ export function createDifficultyMenuScene(config: DifficultyMenuConfig): typeof 
       const gap = height * 0.11;
       config.difficulties.forEach((d, i) => {
         createButton(this, width / 2, startY + i * gap, config.buttonWidth ?? 380, 84, d.label(), config.theme, config.fontFamily, () => {
-          d.onSelect(this);
+          d.onSelect(this, config.locale);
         });
       });
 

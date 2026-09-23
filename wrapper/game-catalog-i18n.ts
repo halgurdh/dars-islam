@@ -322,6 +322,14 @@ export const GAME_CARDS: Record<string, Record<LangMode, GameCardStrings>> = {
     fr: { title: 'Histoire du Monde', desc: "Chronologies et faits marquants de l'histoire mondiale et des civilisations anciennes" },
     ar: { title: 'تاريخ العالم', desc: 'خطوط زمنية وأبرز أحداث تاريخ العالم والحضارات القديمة' },
   },
+  'word-explorer': {
+    en: { title: 'Word Explorer', desc: 'Learn common words and phrases across several languages' },
+    nl: { title: 'Woordontdekker', desc: 'Leer veelgebruikte woorden en zinnen in verschillende talen' },
+    de: { title: 'Wortentdecker', desc: 'Lerne gebräuchliche Wörter und Redewendungen in mehreren Sprachen' },
+    es: { title: 'Explorador de Palabras', desc: 'Aprende palabras y frases comunes en varios idiomas' },
+    fr: { title: 'Explorateur de Mots', desc: 'Apprends des mots et expressions courants dans plusieurs langues' },
+    ar: { title: 'مستكشف الكلمات', desc: 'تعلّم الكلمات والعبارات الشائعة بعدة لغات' },
+  },
 };
 
 export const COMING_SOON: Record<LangMode, GameCardStrings> = {

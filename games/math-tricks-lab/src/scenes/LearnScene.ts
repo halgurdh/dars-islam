@@ -4,6 +4,7 @@ import { COLORS, FONT, hex } from '../theme';
 import { TRICKS, type Trick } from '../tricks';
 import { drawLineDiagram } from '@shared/line-diagram';
 import { t } from '../i18n';
+import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { homeSceneKey } from './TrickHomeScenes';
 
 export class LearnScene extends Phaser.Scene {
@@ -118,7 +119,7 @@ export class LearnScene extends Phaser.Scene {
       totalQuestions: this.trick.totalQuestions,
       theme: COLORS,
       fontFamily: FONT,
-      strings: {
+      strings: () => ({
         round: t().round,
         score: t().score,
         menu: t().menu,
@@ -126,9 +127,10 @@ export class LearnScene extends Phaser.Scene {
         roundSummary: t().roundSummary,
         playAgain: t().playAgain,
         backToMenu: t().backToMenu,
-      },
+      }),
       generateQuestion: () => this.trick.generateQuestion(),
       menuSceneKey: homeSceneKey(this.trick),
+      locale: { getLang, setLang, detectDefaultLang },
     };
     this.scene.start('Quiz', cfg);
   }

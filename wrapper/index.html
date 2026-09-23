@@ -75,6 +75,7 @@
         <button class="category-filter__btn" data-category-filter="math" id="catMath">🔢 Math</button>
         <button class="category-filter__btn" data-category-filter="learning" id="catEarly">🧸 Early Learning</button>
         <button class="category-filter__btn" data-category-filter="general" id="catGeneral">🌍 General Subjects</button>
+        <button class="category-filter__btn" data-category-filter="language" id="catLanguage">🗣️ Language Learning</button>
       </div>
     </header>
 
@@ -665,6 +666,21 @@
         </div>
       </a>
 
+      <a href="__VITE_BASE_PATH__games/word-explorer/" class="game-card" data-game="word-explorer" data-category="language">
+        <div class="game-card__thumb" style="background: linear-gradient(135deg, #14323d, #0a1a20);">
+          <img
+            src="__VITE_BASE_PATH__games/word-explorer/assets/icons/icon.svg"
+            alt="Word Explorer icon"
+            class="game-card__icon"
+            loading="lazy"
+          />
+        </div>
+        <div class="game-card__body">
+          <h2 class="game-card__title">Word Explorer</h2>
+          <p class="game-card__desc">Learn common words and phrases across several languages</p>
+        </div>
+      </a>
+
       <!-- Placeholder for future games -->
       <div class="game-card game-card--coming-soon">
         <div class="game-card__thumb" style="background: linear-gradient(135deg, #2d2d2d, #1a1a1a); opacity: 0.5;">
@@ -751,6 +767,7 @@
         setText('catMath', s.catMath);
         setText('catEarly', s.catEarly);
         setText('catGeneral', s.catGeneral);
+        setText('catLanguage', s.catLanguage);
         setText('noResultsMsg', s.searchNoResults);
         const lang = getLang();
         document.querySelectorAll('.game-card[data-game]').forEach((card) => {

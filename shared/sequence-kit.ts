@@ -8,6 +8,8 @@ import Phaser from 'phaser';
 import { PlayerProgress } from './player-progress';
 import { ProgressBar } from './progress-bar';
 import type { QuizTheme } from './quiz-kit';
+import { registerActiveGameLocale, unregisterActiveGameLocale } from './active-game-locale';
+import type { LocaleHooks } from './quiz-menu-kit';
 
 const progressBar = new ProgressBar();
 
@@ -44,10 +46,13 @@ export interface SequenceRunConfig {
   totalRounds: number;
   theme: SequenceTheme;
   fontFamily: string;
-  strings: SequenceStrings;
+  /** A function, not a resolved object — see quiz-kit.ts's QuizRunConfig.strings for why. */
+  strings: () => SequenceStrings;
   /** Returns the round's items in the CORRECT order; the scene shuffles them for display. */
   generateRound: (index: number) => SequenceItem[];
   menuSceneKey?: string;
+  /** Optional: this game's own language hooks, enabling mid-game switching. */
+  locale?: LocaleHooks;
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -69,8 +74,10 @@ export class SequenceScene extends Phaser.Scene {
   private roundMistakes = 0;
   private locked = false;
 
+  private menuBtn!: Phaser.GameObjects.Text;
   private roundText!: Phaser.GameObjects.Text;
   private mistakesText!: Phaser.GameObjects.Text;
+  private instructionText!: Phaser.GameObjects.Text;
   private placedText!: Phaser.GameObjects.Text;
   private correctOrder: SequenceItem[] = [];
   private placedCount = 0;
@@ -92,6 +99,15 @@ export class SequenceScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor(this.cfg.theme.bg);
     this.buildHud();
     this.renderRound();
+
+    if (this.cfg.locale) {
+      const hooks = {
+        setLang: this.cfg.locale.setLang,
+        refreshChrome: () => this.refreshHud(),
+      };
+      registerActiveGameLocale(hooks);
+      this.events.once('shutdown', () => unregisterActiveGameLocale(hooks));
+    }
   }
 
   // Same HUD_Y convention as quiz-kit/match-kit — clears the fixed wrapper
@@ -103,16 +119,17 @@ export class SequenceScene extends Phaser.Scene {
 
   private buildHud(): void {
     const { width } = this.scale;
-    const { theme, fontFamily, strings } = this.cfg;
+    const { theme, fontFamily } = this.cfg;
+    const strings = this.cfg.strings();
     const y = SequenceScene.HUD_Y;
 
-    const menuBtn = this.add.text(80, y, strings.menu, {
+    this.menuBtn = this.add.text(80, y, strings.menu, {
       fontFamily,
       fontSize: '24px',
       color: theme.textMuted,
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-    menuBtn.setPadding(16, 16, 16, 16);
-    menuBtn.on('pointerdown', () => this.scene.start(this.cfg.menuSceneKey ?? 'MenuScene'));
+    this.menuBtn.setPadding(16, 16, 16, 16);
+    this.menuBtn.on('pointerdown', () => this.scene.start(this.cfg.menuSceneKey ?? 'MenuScene'));
 
     this.roundText = this.add.text(width / 2, y, '', {
       fontFamily,
@@ -126,7 +143,7 @@ export class SequenceScene extends Phaser.Scene {
       color: hex(theme.accent),
     }).setOrigin(0.5);
 
-    this.add.text(width / 2, this.scale.height * SequenceScene.INSTRUCTION_Y_FRAC, strings.instruction, {
+    this.instructionText = this.add.text(width / 2, this.scale.height * SequenceScene.INSTRUCTION_Y_FRAC, strings.instruction, {
       fontFamily,
       fontSize: '24px',
       fontStyle: 'bold',
@@ -146,8 +163,11 @@ export class SequenceScene extends Phaser.Scene {
   }
 
   private refreshHud(): void {
-    this.roundText.setText(this.cfg.strings.round(this.index + 1, this.cfg.totalRounds));
-    this.mistakesText.setText(this.cfg.strings.mistakes(this.roundMistakes));
+    const strings = this.cfg.strings();
+    this.roundText.setText(strings.round(this.index + 1, this.cfg.totalRounds));
+    this.mistakesText.setText(strings.mistakes(this.roundMistakes));
+    this.menuBtn.setText(strings.menu);
+    this.instructionText.setText(strings.instruction);
   }
 
   private renderRound(): void {
@@ -254,7 +274,8 @@ export class SequenceScene extends Phaser.Scene {
 
   private showComplete(): void {
     const { width, height } = this.scale;
-    const { theme, fontFamily, strings } = this.cfg;
+    const { theme, fontFamily } = this.cfg;
+    const strings = this.cfg.strings();
 
     this.cardViews.forEach((v) => v.container.destroy());
     this.cardViews = [];

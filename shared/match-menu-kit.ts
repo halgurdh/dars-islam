@@ -4,7 +4,7 @@
 // plus a mute toggle (asma-match/memory-match both had one on the menu).
 import Phaser from 'phaser';
 import { createButton } from './quiz-kit';
-import { setupHeaderAndPicker, addFooter, type LocaleHooks, type BaseMenuConfig } from './quiz-menu-kit';
+import { setupHeaderAndPicker, addFooter, type BaseMenuConfig } from './quiz-menu-kit';
 import type { MatchTheme, MatchItem, MatchStrings } from './match-kit';
 import { getMatchSfx } from './match-kit';
 
@@ -53,7 +53,7 @@ export function createMatchMenuScene(config: MatchMenuConfig): typeof Phaser.Sce
             pairs: d.pairs,
             theme: config.theme,
             fontFamily: config.fontFamily,
-            strings: config.strings(),
+            strings: config.strings,
             items: config.items,
             menuSceneKey: config.sceneKey,
           });
