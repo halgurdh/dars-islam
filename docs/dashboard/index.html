@@ -111,22 +111,23 @@
         .site-header__back { margin-right: 2rem; }
       }
     </style>
-    <script type="module" crossorigin src="/dars-islam/assets/dashboard-BX1e24O9.js"></script>
-    <link rel="modulepreload" crossorigin href="/dars-islam/assets/theme-BRE4rC8K.js">
+    <script type="module" crossorigin src="/dars-islam/assets/dashboard-Bp6IMy-u.js"></script>
+    <link rel="modulepreload" crossorigin href="/dars-islam/assets/Locale-DRE6GHvG.js">
     <link rel="modulepreload" crossorigin href="/dars-islam/assets/sync-CsgRh07u.js">
     <link rel="modulepreload" crossorigin href="/dars-islam/assets/certificates-DyPrvBPs.js">
-    <link rel="stylesheet" crossorigin href="/dars-islam/assets/theme-cUHdOL2G.css">
+    <link rel="stylesheet" crossorigin href="/dars-islam/assets/Locale-cUHdOL2G.css">
   </head>
   <body>
     <header class="site-header">
       <a href="/dars-islam/" class="site-header__brand">dars-islam</a>
-      <a href="/dars-islam/" class="site-header__back">← Back to games</a>
+      <div id="langPicker" style="margin:0 8px"></div>
+      <a href="/dars-islam/" class="site-header__back" id="backLink">← Back to games</a>
     </header>
 
     <main class="content">
       <header>
-        <h1>📊 My Dashboard</h1>
-        <p>Your progress across every game — just for you.</p>
+        <h1 id="dashTitle">📊 My Dashboard</h1>
+        <p id="dashSub">Your progress across every game — just for you.</p>
       </header>
 
       <section id="welcomeSection" class="card class-card" hidden></section>
@@ -140,7 +141,7 @@
       <section id="announcementsSection" class="card class-card" hidden></section>
 
       <section class="card">
-        <h2>Level &amp; Streak</h2>
+        <h2 id="levelStreakHeading">Level &amp; Streak</h2>
         <div class="level-row">
           <span class="level-big" id="levelText">⭐ Level 1</span>
           <span class="streak-big" id="streakText">🔥 0-day streak</span>
@@ -150,15 +151,15 @@
       </section>
 
       <section class="card">
-        <h2>Badges</h2>
+        <h2 id="badgesHeading">Badges</h2>
         <div class="badges-grid" id="badgesGrid"></div>
       </section>
 
       <section class="card">
-        <h2>Report Card</h2>
-        <p class="sub" style="margin-top:0">A friendly read on how much you've practiced each game — there's no failing grade, just keep going!</p>
+        <h2 id="reportCardHeading">Report Card</h2>
+        <p class="sub" id="reportCardSub" style="margin-top:0"></p>
         <table class="report-table">
-          <thead><tr><th>Game</th><th>Rounds</th><th>Grade</th><th></th></tr></thead>
+          <thead><tr><th id="reportTableGame">Game</th><th id="reportTableRounds">Rounds</th><th id="reportTableGrade">Grade</th><th></th></tr></thead>
           <tbody id="reportBody"></tbody>
         </table>
       </section>

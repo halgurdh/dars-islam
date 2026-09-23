@@ -16,11 +16,11 @@
         src="https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js">
     </script>
  
-    <script type="module" crossorigin src="/dars-islam/assets/main-Bu0S3alJ.js"></script>
-    <link rel="modulepreload" crossorigin href="/dars-islam/assets/theme-BRE4rC8K.js">
+    <script type="module" crossorigin src="/dars-islam/assets/main-nHZg16fQ.js"></script>
+    <link rel="modulepreload" crossorigin href="/dars-islam/assets/Locale-DRE6GHvG.js">
     <link rel="modulepreload" crossorigin href="/dars-islam/assets/sync-CsgRh07u.js">
-    <link rel="modulepreload" crossorigin href="/dars-islam/assets/progress-bar-D1fgc0yC.js">
-    <link rel="stylesheet" crossorigin href="/dars-islam/assets/theme-cUHdOL2G.css">
+    <link rel="modulepreload" crossorigin href="/dars-islam/assets/progress-bar-Cd33REFF.js">
+    <link rel="stylesheet" crossorigin href="/dars-islam/assets/Locale-cUHdOL2G.css">
     <link rel="stylesheet" crossorigin href="/dars-islam/assets/main-WYoAudCo.css">
   </head>
   <body>
@@ -30,10 +30,11 @@
     <!-- Account / dashboards nav -->
     <nav class="site-nav">
       <div class="site-nav__links">
-        <a href="/dars-islam/dashboard/" class="site-nav__link">📊 My Dashboard</a>
+        <a href="/dars-islam/dashboard/" class="site-nav__link" id="navDashboardLink">📊 My Dashboard</a>
         <a href="/dars-islam/teacher/" class="site-nav__link" id="navTeacherLink" hidden>🏫 Teacher Dashboard</a>
         <a href="/dars-islam/parent/" class="site-nav__link" id="navParentLink" hidden>👪 Parent Dashboard</a>
       </div>
+      <div id="langPicker" style="margin:0 8px"></div>
       <div id="authChip" class="site-nav__auth">
         <button id="authSignIn" class="site-nav__btn">☁ Sign in</button>
       </div>
@@ -43,42 +44,41 @@
         <div class="hero-feature">
           <span class="hero-feature__icon">💛</span>
           <div>
-            <strong>FREE & AD-FREE</strong>
-            <span>No cost, no ads — donations are optional.</span>
+            <strong id="heroFreeTitle">FREE & AD-FREE</strong>
+            <span id="heroFreeDesc">No cost, no ads — donations are optional.</span>
           </div>
           <span class="hero-feature__icon">👨‍👩‍👧‍👦</span>
           <div>
-            <strong>FOR SCHOOLS & FAMILIES</strong>
-            <span>Built for students, teachers, parents, and mosques.</span>
+            <strong id="heroForTitle">FOR SCHOOLS & FAMILIES</strong>
+            <span id="heroForDesc">Built for students, teachers, parents, and mosques.</span>
           </div>
         </div>
         <div class="hero-feature">
           <span class="hero-feature__icon">🕌</span>
           <div>
-            <strong>ISLAMIC STUDIES + MORE</strong>
-            <span>Quran, duas, Arabic, plus math, science and other school subjects.</span>
+            <strong id="heroIslamicTitle">ISLAMIC STUDIES + MORE</strong>
+            <span id="heroIslamicDesc">Quran, duas, Arabic, plus math, science and other school subjects.</span>
           </div>
           <span class="hero-feature__icon">🌍</span>
           <div>
-            <strong>Multiple Device Sync</strong>
-            <span>Play on any device and pick up right where you left off.</span>
+            <strong id="heroSyncTitle">Multiple Device Sync</strong>
+            <span id="heroSyncDesc">Play on any device and pick up right where you left off.</span>
           </div>
         </div>
       </div>
-    </section>
 
     <div id="donateBanner" class="premium-banner" hidden></div>
 
     <!-- Game Grid -->
     <header id="all_games" class="hub-header">
-      <h2 class="hub-title">Choose a Game</h2>
-      <p class="hub-subtitle">Free to play, no account needed.</p>
+      <h2 class="hub-title" id="chooseGameTitle">Choose a Game</h2>
+      <p class="hub-subtitle" id="chooseGameSub">Free to play, no account needed.</p>
       <div class="category-filter" id="categoryFilter" role="tablist" aria-label="Filter games by category">
-        <button class="category-filter__btn is-active" data-category-filter="all">All Games</button>
-        <button class="category-filter__btn" data-category-filter="islamic">🕌 Islamic Studies</button>
-        <button class="category-filter__btn" data-category-filter="math">🔢 Math</button>
-        <button class="category-filter__btn" data-category-filter="learning">🧸 Early Learning</button>
-        <button class="category-filter__btn" data-category-filter="general">🌍 General Subjects</button>
+        <button class="category-filter__btn is-active" data-category-filter="all" id="catAll">All Games</button>
+        <button class="category-filter__btn" data-category-filter="islamic" id="catIslamic">🕌 Islamic Studies</button>
+        <button class="category-filter__btn" data-category-filter="math" id="catMath">🔢 Math</button>
+        <button class="category-filter__btn" data-category-filter="learning" id="catEarly">🧸 Early Learning</button>
+        <button class="category-filter__btn" data-category-filter="general" id="catGeneral">🌍 General Subjects</button>
       </div>
     </header>
 
@@ -689,27 +689,27 @@
             <img src="/dars-islam/games/asma-match/assets/icons/icon-512.png" alt="dars-islam logo" class="footer-logo__img" />
             <span>dars-islam</span>
           </div>
-          <p>Free educational games for Islamic studies and general school subjects.</p>
+          <p id="footerTagline">Free educational games for Islamic studies and general school subjects.</p>
         </div>
         <div class="footer-column">
-          <h4>Studio</h4>
-          <a href="mailto:halgurdh@gmail.com">Contact</a>
-          <a href="https://github.com/halgurdh/dars-islam" target="_blank" rel="noopener">Source Code</a>
+          <h4 id="footerStudio">Studio</h4>
+          <a href="mailto:halgurdh@gmail.com" id="footerContact">Contact</a>
+          <a href="https://github.com/halgurdh/dars-islam" target="_blank" rel="noopener" id="footerSource">Source Code</a>
         </div>
         <div class="footer-column">
-          <h4>Legal</h4>
-          <a href="/dars-islam/terms">Terms of Service</a>
-          <a href="/dars-islam/privacy">Privacy Policy</a>
+          <h4 id="footerLegal">Legal</h4>
+          <a href="/dars-islam/terms" id="footerTerms">Terms of Service</a>
+          <a href="/dars-islam/privacy" id="footerPrivacy">Privacy Policy</a>
         </div>
         <div class="footer-column">
-          <h4>Support this project</h4>
-          <a href="https://paypal.me/halgurdh" target="_blank" rel="noopener">💛 Donate via PayPal</a>
+          <h4 id="footerSupportHeading">Support this project</h4>
+          <a href="https://paypal.me/halgurdh" target="_blank" rel="noopener" id="footerDonate">💛 Donate via PayPal</a>
         </div>
       </div>
-      <p class="footer-disclaimer">⚠️ Built with AI assistance — not professionally audited, and Islamic content has not been reviewed by a qualified scholar. Verify anything important independently. See <a href="/dars-islam/terms">Terms</a> for details.</p>
+      <p class="footer-disclaimer"><span id="footerDisclaimerText">⚠️ Built with AI assistance — not professionally audited, and Islamic content has not been reviewed by a qualified scholar. However, all the information is fetched from reliable sources such as quran.com, sunnah.com and islamqa.info/en. Verify anything important independently. See</span> <a href="/dars-islam/terms" id="footerDisclaimerLink">Terms</a>.</p>
       <div class="footer-bottom">
-        <p>PLAY MORE. SMILE MORE.</p>
-        <p>All rights reserved © 2018–<span id="year"></span> dars-islam.</p>
+        <p id="footerPlayMore">PLAY MORE. SMILE MORE.</p>
+        <p><span id="footerRights">All rights reserved</span> © 2018–<span id="year"></span> dars-islam.</p>
         <script>document.getElementById("year").innerHTML = new Date().getFullYear();</script>
       </div>
     </footer>
