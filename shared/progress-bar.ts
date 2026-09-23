@@ -5,6 +5,7 @@ import { sync } from './sync';
 import { getSupabase } from './supabase-client';
 import { t, getLang, setLang, detectDefaultLang } from './progress-bar-i18n';
 import { renderLanguagePickerDom } from './language-picker-dom';
+import { reportContent, currentGameSlug } from './report-api';
 
 interface LeaderboardEntry { display_name: string; xp: number; level: number; }
 
@@ -163,6 +164,7 @@ export class ProgressBar {
               <a href="${siteRoot}dashboard/">${t().linkDashboard}</a>
               ${sync.isTeacher ? `<a href="${siteRoot}teacher/">${t().linkTeacher}</a>` : ''}
               ${sync.isParent ? `<a href="${siteRoot}parent/">${t().linkParent}</a>` : ''}
+              <a href="#" id="pbReportOpen">${t().reportButton}</a>
             </div>
           ` : `<div id="pbBoardList" class="pb-board-list"><p class="pb-sub">${t().loading}</p></div>`}
         </div>
@@ -182,6 +184,7 @@ export class ProgressBar {
     m.querySelector('#pbTabProgress')!.addEventListener('click', () => this.openPanel('progress'));
     m.querySelector('#pbTabBoard')!.addEventListener('click', () => this.openPanel('leaderboard'));
     m.querySelector('#pbSignIn')?.addEventListener('click', () => this.openAuth());
+    m.querySelector('#pbReportOpen')?.addEventListener('click', (e) => { e.preventDefault(); this.openReport(); });
     m.querySelector('#pbNameSave')?.addEventListener('click', () => {
       const input = m.querySelector('#pbName') as HTMLInputElement;
       ArcadeStore.setPlayerName(input.value.trim().slice(0, 24));
@@ -274,6 +277,48 @@ export class ProgressBar {
     });
   }
 
+  /** Available from inside every game (this widget is shared everywhere),
+   *  not just the wrapper — lets anyone flag a factual/content problem
+   *  without needing an account. */
+  private openReport(): void {
+    const s = t();
+    const targetId = currentGameSlug();
+    const m = this.openModal(`
+      <div class="pb-panel" style="max-width:320px">
+        <h2>${s.reportTitle}</h2>
+        <p class="pb-sub">${s.reportBody}</p>
+        <textarea id="pbReportReason" rows="4" maxlength="500" placeholder="${s.reportPlaceholder}"></textarea>
+        <div id="pbReportMsg" style="min-height:16px;font-size:12px;margin:6px 0;color:#f60"></div>
+        <button id="pbReportSend">${s.reportSubmit}</button>
+        <button id="pbReportBack" style="opacity:0.65;margin-top:6px">${s.back}</button>
+      </div>`);
+
+    const reasonEl = m.querySelector('#pbReportReason') as HTMLTextAreaElement;
+    const msgEl    = m.querySelector('#pbReportMsg')    as HTMLElement;
+    const sendBtn  = m.querySelector('#pbReportSend')   as HTMLButtonElement;
+
+    m.querySelector('#pbReportBack')!.addEventListener('click', () => this.openPanel());
+    sendBtn.addEventListener('click', async () => {
+      const reason = reasonEl.value.trim();
+      if (!reason) { msgEl.style.color = '#f60'; msgEl.textContent = t().reportEmptyError; return; }
+      sendBtn.disabled = true; msgEl.style.color = '#f60'; msgEl.textContent = t().sending;
+      try {
+        await reportContent('game', targetId, reason);
+        m.innerHTML = `
+          <div class="pb-panel" style="max-width:320px">
+            <h2>${t().reportSentTitle}</h2>
+            <p class="pb-sub">${t().reportSent}</p>
+            <button id="pbReportDone" style="margin-top:14px">${t().back}</button>
+          </div>`;
+        m.querySelector('#pbReportDone')!.addEventListener('click', () => this.closeModal());
+      } catch {
+        sendBtn.disabled = false;
+        msgEl.style.color = '#e54040';
+        msgEl.textContent = t().reportFailed;
+      }
+    });
+  }
+
   private injectStyles(): void {
     if (document.getElementById('progress-bar-styles')) return;
     const s = document.createElement('style');
@@ -316,9 +361,10 @@ export class ProgressBar {
         max-height:88vh; overflow-y:auto; box-sizing:border-box; }
       .pb-panel h2 { margin:0 0 8px; font-size:21px; }
       .pb-sub { opacity:0.75; font-size:13px; margin:6px 0; }
-      .pb-panel input { background:rgba(255,255,255,0.07); color:#eee;
+      .pb-panel input, .pb-panel textarea { background:rgba(255,255,255,0.07); color:#eee;
         border:1px solid rgba(255,255,255,0.18); border-radius:6px;
         padding:8px 10px; font-size:14px; width:100%; box-sizing:border-box; }
+      .pb-panel textarea { font-family:inherit; resize:vertical; }
       .pb-panel button { background:rgba(255,255,255,0.11); color:#fff;
         border:1px solid rgba(255,255,255,0.18); border-radius:6px;
         padding:9px 16px; font-size:14px; cursor:pointer; width:100%;

@@ -30,6 +30,9 @@ interface Strings {
   mistakes: (n: number) => string;
   instruction: string;
   sequenceRoundSummary: (perfect: number, total: number) => string;
+
+  promptNext: string;
+  promptOddOneOut: string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
@@ -62,6 +65,9 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Mistakes: ${n}`,
     instruction: 'Tap the numbers in counting order',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rounds perfect`,
+
+    promptNext: 'What comes next?',
+    promptOddOneOut: 'Which one doesn’t belong?',
   },
   nl: {
     title: 'Pattern Play',
@@ -92,6 +98,9 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Fouten: ${n}`,
     instruction: 'Tik de getallen op telvolgorde aan',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondes perfect`,
+
+    promptNext: 'Wat komt er hierna?',
+    promptOddOneOut: 'Welke hoort er niet bij?',
   },
   de: {
     title: 'Pattern Play',
@@ -122,6 +131,9 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Fehler: ${n}`,
     instruction: 'Tippe die Zahlen in Zählreihenfolge an',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} Runden perfekt`,
+
+    promptNext: 'Was kommt als Nächstes?',
+    promptOddOneOut: 'Welches gehört nicht dazu?',
   },
   es: {
     title: 'Pattern Play',
@@ -152,6 +164,9 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Errores: ${n}`,
     instruction: 'Toca los números en orden de conteo',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondas perfectas`,
+
+    promptNext: '¿Qué viene después?',
+    promptOddOneOut: '¿Cuál no pertenece al grupo?',
   },
   fr: {
     title: 'Pattern Play',
@@ -182,6 +197,9 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Erreurs : ${n}`,
     instruction: 'Touche les nombres dans l’ordre de comptage',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
+
+    promptNext: 'Qu’est-ce qui vient ensuite ?',
+    promptOddOneOut: 'Lequel ne va pas avec les autres ?',
   },
   ar: {
     title: 'Pattern Play',
@@ -212,6 +230,9 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `الأخطاء: ${n}`,
     instruction: 'اضغط على الأعداد بترتيب العدّ',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولات مثالية`,
+
+    promptNext: 'ما الذي يأتي بعد ذلك؟',
+    promptOddOneOut: 'أيها لا ينتمي إلى المجموعة؟',
   },
 };
 

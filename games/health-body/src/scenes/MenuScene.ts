@@ -1,5 +1,5 @@
 import { COLORS, FONT } from '../theme';
-import { DIFFICULTIES, BODY_PARTS, type BodyPart } from '../questions';
+import { DIFFICULTIES, BODY_PARTS, partFor, fnFor, type BodyPart } from '../questions';
 import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { t } from '../i18n';
 import { createModeMenuScene, matchMode, quizMode, sequenceMode } from '@shared/mode-menu-kit';
@@ -25,16 +25,16 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 function buildMatchItems(): MatchItem[] {
-  return BODY_PARTS.map((b) => ({ id: b.id, sideA: b.part, sideB: b.fn }));
+  return BODY_PARTS.map((b) => ({ id: b.id, sideA: partFor(b), sideB: fnFor(b) }));
 }
 
 function generateQuizQuestion(): QuizQuestion {
   const [correct, ...distractors] = shuffle(BODY_PARTS).slice(0, 4);
-  const choices = shuffle([correct, ...distractors].map((b) => b.fn));
+  const choices = shuffle([correct, ...distractors].map((b) => fnFor(b)));
   return {
-    prompt: correct.part,
+    prompt: partFor(correct),
     choices,
-    correctIndex: choices.indexOf(correct.fn),
+    correctIndex: choices.indexOf(fnFor(correct)),
   };
 }
 
@@ -42,7 +42,7 @@ function generateSequenceRound(count: number): () => SequenceItem[] {
   return () => {
     const pool = shuffle(BODY_PARTS).slice(0, count) as BodyPart[];
     const sorted = [...pool].sort((a, b) => a.weightGrams - b.weightGrams);
-    return sorted.map((b) => ({ id: b.id, label: b.part }));
+    return sorted.map((b) => ({ id: b.id, label: partFor(b) }));
   };
 }
 
@@ -68,7 +68,7 @@ export const MenuScene = createModeMenuScene({
         roundSummary: t().matchRoundSummary,
         nextLevelHint: t().nextLevelHint,
       }),
-      items: buildMatchItems(),
+      items: buildMatchItems,
       difficulties: DIFFICULTIES.map((d) => ({ label: LABELS[d.id], pairs: d.pairs })),
     }),
     quizMode({

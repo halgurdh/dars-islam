@@ -30,6 +30,10 @@ interface Strings {
   mistakes: (n: number) => string;
   instruction: string;
   sequenceRoundSummary: (perfect: number, total: number) => string;
+
+  promptShape: string;
+  promptColor: string;
+  promptOddColor: string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
@@ -62,6 +66,10 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Mistakes: ${n}`,
     instruction: 'Tap the colors from darkest to lightest',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rounds perfect`,
+
+    promptShape: 'What shape is this?',
+    promptColor: 'What color is this?',
+    promptOddColor: 'Which one is a different color?',
   },
   nl: {
     title: 'Shapes & Colors',
@@ -92,6 +100,10 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Fouten: ${n}`,
     instruction: 'Tik de kleuren van donker naar licht aan',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondes perfect`,
+
+    promptShape: 'Welke vorm is dit?',
+    promptColor: 'Welke kleur is dit?',
+    promptOddColor: 'Welke heeft een andere kleur?',
   },
   de: {
     title: 'Shapes & Colors',
@@ -122,6 +134,10 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Fehler: ${n}`,
     instruction: 'Tippe die Farben von dunkel nach hell an',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} Runden perfekt`,
+
+    promptShape: 'Welche Form ist das?',
+    promptColor: 'Welche Farbe ist das?',
+    promptOddColor: 'Welches hat eine andere Farbe?',
   },
   es: {
     title: 'Shapes & Colors',
@@ -152,6 +168,10 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Errores: ${n}`,
     instruction: 'Toca los colores del más oscuro al más claro',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondas perfectas`,
+
+    promptShape: '¿Qué forma es esta?',
+    promptColor: '¿Qué color es este?',
+    promptOddColor: '¿Cuál tiene un color diferente?',
   },
   fr: {
     title: 'Shapes & Colors',
@@ -182,6 +202,10 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Erreurs : ${n}`,
     instruction: 'Touche les couleurs du plus foncé au plus clair',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
+
+    promptShape: 'Quelle est cette forme ?',
+    promptColor: 'Quelle est cette couleur ?',
+    promptOddColor: 'Laquelle a une couleur différente ?',
   },
   ar: {
     title: 'Shapes & Colors',
@@ -212,6 +236,10 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `الأخطاء: ${n}`,
     instruction: 'اضغط على الألوان من الأغمق إلى الأفتح',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولات مثالية`,
+
+    promptShape: 'ما هذا الشكل؟',
+    promptColor: 'ما هذا اللون؟',
+    promptOddColor: 'أيها له لون مختلف؟',
   },
 };
 

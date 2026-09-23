@@ -68,6 +68,7 @@
     <header id="all_games" class="hub-header">
       <h2 class="hub-title" id="chooseGameTitle">Choose a Game</h2>
       <p class="hub-subtitle" id="chooseGameSub">Free to play, no account needed.</p>
+      <input type="search" id="gameSearch" class="game-search" autocomplete="off" />
       <div class="category-filter" id="categoryFilter" role="tablist" aria-label="Filter games by category">
         <button class="category-filter__btn is-active" data-category-filter="all" id="catAll">All Games</button>
         <button class="category-filter__btn" data-category-filter="islamic" id="catIslamic">🕌 Islamic Studies</button>
@@ -676,6 +677,8 @@
       </div>
     </main>
 
+    <p class="no-results-msg" id="noResultsMsg" hidden>No games match your search.</p>
+
     <!-- Footer -->
     <footer class="hub-footer">
       <div class="footer-inner">
@@ -747,6 +750,9 @@
         setText('catMath', s.catMath);
         setText('catEarly', s.catEarly);
         setText('catGeneral', s.catGeneral);
+        setText('noResultsMsg', s.searchNoResults);
+        const searchInput = document.getElementById('gameSearch');
+        if (searchInput) searchInput.setAttribute('placeholder', s.searchPlaceholder);
         setText('footerTagline', s.footerTagline);
         setText('footerStudio', s.footerStudio);
         setText('footerContact', s.footerContact);
@@ -799,36 +805,65 @@
       }
       renderAuthChip();
 
-      // Category filter — remembers the last choice per visitor so
-      // returning to the hub keeps their filter instead of resetting to "All".
-      (function initCategoryFilter() {
+      // Category filter + text search — remembers the last category choice
+      // per visitor so returning to the hub keeps their filter instead of
+      // resetting to "All". Search is session-only (not persisted). Both
+      // conditions are tracked independently and recombined on every change
+      // so neither filter clobbers the other's `hidden` writes.
+      (function initFilters() {
         const filterBar = document.getElementById('categoryFilter');
         const grid = document.getElementById('gameGrid');
+        const searchInput = document.getElementById('gameSearch');
+        const noResultsMsg = document.getElementById('noResultsMsg');
         if (!filterBar || !grid) return;
         const cards = Array.from(grid.querySelectorAll('.game-card[data-category]'));
         const buttons = Array.from(filterBar.querySelectorAll('[data-category-filter]'));
         const STORE_KEY = 'dars-islam:hub-category-filter';
 
-        function applyFilter(category) {
+        let currentCategory = 'all';
+        let currentSearchTerm = '';
+
+        function cardMatchesSearch(card, term) {
+          if (!term) return true;
+          const title = card.querySelector('.game-card__title')?.textContent ?? '';
+          const desc = card.querySelector('.game-card__desc')?.textContent ?? '';
+          return (title + ' ' + desc).toLowerCase().includes(term);
+        }
+
+        function applyFilters() {
+          let visibleCount = 0;
           cards.forEach((card) => {
-            card.hidden = category !== 'all' && card.getAttribute('data-category') !== category;
+            const matchesCategory = currentCategory === 'all' || card.getAttribute('data-category') === currentCategory;
+            const matchesSearch = cardMatchesSearch(card, currentSearchTerm);
+            const visible = matchesCategory && matchesSearch;
+            card.hidden = !visible;
+            if (visible) visibleCount++;
           });
           buttons.forEach((btn) => {
-            btn.classList.toggle('is-active', btn.dataset.categoryFilter === category);
+            btn.classList.toggle('is-active', btn.dataset.categoryFilter === currentCategory);
           });
+          if (noResultsMsg) noResultsMsg.hidden = visibleCount > 0;
         }
 
         buttons.forEach((btn) => {
           btn.addEventListener('click', () => {
-            const category = btn.dataset.categoryFilter;
-            try { localStorage.setItem(STORE_KEY, category); } catch {}
-            applyFilter(category);
+            currentCategory = btn.dataset.categoryFilter;
+            try { localStorage.setItem(STORE_KEY, currentCategory); } catch {}
+            applyFilters();
           });
         });
 
+        if (searchInput) {
+          searchInput.addEventListener('input', () => {
+            currentSearchTerm = searchInput.value.trim().toLowerCase();
+            applyFilters();
+          });
+        }
+
         let saved = 'all';
         try { saved = localStorage.getItem(STORE_KEY) || 'all'; } catch {}
-        if (buttons.some((btn) => btn.dataset.categoryFilter === saved)) applyFilter(saved);
+        if (buttons.some((btn) => btn.dataset.categoryFilter === saved)) currentCategory = saved;
+        applyFilters();
       })();
 
       // Language: render the flag picker immediately, then apply translations

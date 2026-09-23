@@ -194,7 +194,7 @@ export function matchMode(opts: {
   theme: MatchTheme;
   fontFamily: string;
   strings: () => MatchStrings;
-  items: MatchItem[];
+  items: () => MatchItem[];
   difficulties: MatchModeDifficulty[];
   matchSceneKey?: string;
   homeSceneKey?: string;
@@ -213,7 +213,7 @@ export function matchMode(opts: {
           theme: opts.theme,
           fontFamily: opts.fontFamily,
           strings: opts.strings(),
-          items: opts.items,
+          items: opts.items(),
           menuSceneKey: opts.homeSceneKey ?? 'MenuScene',
         });
       },

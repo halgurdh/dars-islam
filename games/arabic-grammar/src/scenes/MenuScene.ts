@@ -66,7 +66,7 @@ export const MenuScene = createModeMenuScene({
         roundSummary: t().matchRoundSummary,
         nextLevelHint: t().nextLevelHint,
       }),
-      items: ITEMS,
+      items: () => ITEMS,
       difficulties: DIFFICULTIES.map((d) => ({ label: LABELS[d.id], pairs: d.pairs })),
     }),
     quizMode({

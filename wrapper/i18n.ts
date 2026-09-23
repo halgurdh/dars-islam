@@ -24,6 +24,8 @@ export interface Strings {
   catMath: string;
   catEarly: string;
   catGeneral: string;
+  searchPlaceholder: string;
+  searchNoResults: string;
 
   donateTitle: string;
   donateBody: string;
@@ -70,6 +72,8 @@ export const STRINGS: Record<LangMode, Strings> = {
     catMath: '🔢 Math',
     catEarly: '🧸 Early Learning',
     catGeneral: '🌍 General Subjects',
+    searchPlaceholder: '🔍 Search games…',
+    searchNoResults: 'No games match your search.',
 
     donateTitle: 'This is free and ad-free by choice.',
     donateBody: 'If your family gets value from it, a donation helps keep it that way.',
@@ -114,6 +118,8 @@ export const STRINGS: Record<LangMode, Strings> = {
     catMath: '🔢 Rekenen',
     catEarly: '🧸 Vroeg Leren',
     catGeneral: '🌍 Algemene Vakken',
+    searchPlaceholder: '🔍 Zoek spellen…',
+    searchNoResults: 'Geen spellen komen overeen met je zoekopdracht.',
 
     donateTitle: 'Dit platform is bewust gratis en advertentievrij.',
     donateBody: 'Als jouw gezin er waarde uit haalt, helpt een donatie om dat zo te houden.',
@@ -158,6 +164,8 @@ export const STRINGS: Record<LangMode, Strings> = {
     catMath: '🔢 Mathe',
     catEarly: '🧸 Frühes Lernen',
     catGeneral: '🌍 Allgemeine Fächer',
+    searchPlaceholder: '🔍 Spiele suchen…',
+    searchNoResults: 'Keine Spiele entsprechen deiner Suche.',
 
     donateTitle: 'Diese Plattform ist bewusst kostenlos und werbefrei.',
     donateBody: 'Wenn deine Familie davon profitiert, hilft eine Spende, das so zu halten.',
@@ -202,6 +210,8 @@ export const STRINGS: Record<LangMode, Strings> = {
     catMath: '🔢 Matemáticas',
     catEarly: '🧸 Primeros Aprendizajes',
     catGeneral: '🌍 Asignaturas Generales',
+    searchPlaceholder: '🔍 Buscar juegos…',
+    searchNoResults: 'Ningún juego coincide con tu búsqueda.',
 
     donateTitle: 'Esta plataforma es gratuita y sin publicidad a propósito.',
     donateBody: 'Si tu familia le saca valor, una donación ayuda a mantenerlo así.',
@@ -246,6 +256,8 @@ export const STRINGS: Record<LangMode, Strings> = {
     catMath: '🔢 Maths',
     catEarly: '🧸 Premiers Apprentissages',
     catGeneral: '🌍 Matières Générales',
+    searchPlaceholder: '🔍 Rechercher des jeux…',
+    searchNoResults: 'Aucun jeu ne correspond à votre recherche.',
 
     donateTitle: 'Cette plateforme est volontairement gratuite et sans publicité.',
     donateBody: "Si ta famille y trouve de la valeur, un don aide à ce que ça le reste.",
@@ -290,6 +302,8 @@ export const STRINGS: Record<LangMode, Strings> = {
     catMath: '🔢 الرياضيات',
     catEarly: '🧸 التعلم المبكر',
     catGeneral: '🌍 مواد عامة',
+    searchPlaceholder: '🔍 ابحث عن الألعاب…',
+    searchNoResults: 'لا توجد ألعاب مطابقة لبحثك.',
 
     donateTitle: 'هذه المنصة مجانية وخالية من الإعلانات عن قصد.',
     donateBody: 'إذا استفادت عائلتك منها، فإن التبرع يساعد في الحفاظ على ذلك.',

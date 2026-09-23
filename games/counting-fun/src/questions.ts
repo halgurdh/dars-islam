@@ -1,6 +1,7 @@
 import type { QuizQuestion } from '@shared/quiz-kit';
 import type { MatchItem } from '@shared/match-kit';
 import type { SequenceItem } from '@shared/sequence-kit';
+import { t } from './i18n';
 
 export interface Difficulty {
   id: string;
@@ -55,7 +56,7 @@ export function generateQuestion(difficulty: Difficulty, index: number): QuizQue
   if (!reversed) {
     const n = randInt(1, difficulty.max);
     const { choices, correctIndex } = numberChoices(n, difficulty.max);
-    return { prompt: dots(n, icon), sub: 'How many are there?', choices, correctIndex };
+    return { prompt: dots(n, icon), sub: t().promptHowMany, choices, correctIndex };
   }
 
   // Capped independently of difficulty: answer buttons render on one line
@@ -70,7 +71,7 @@ export function generateQuestion(difficulty: Difficulty, index: number): QuizQue
   const options = shuffle([n, ...wrongCounts]);
   return {
     prompt: `${n}`,
-    sub: 'Tap the group with this many',
+    sub: t().promptTapGroup,
     choices: options.map((c) => dots(c, icon)),
     correctIndex: options.indexOf(n),
   };

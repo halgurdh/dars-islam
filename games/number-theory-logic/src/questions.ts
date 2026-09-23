@@ -1,6 +1,7 @@
 import type { QuizQuestion } from '@shared/quiz-kit';
 import type { MatchItem } from '@shared/match-kit';
 import type { SequenceItem } from '@shared/sequence-kit';
+import { t } from './i18n';
 
 export interface Difficulty {
   id: string;
@@ -58,7 +59,7 @@ function easyQuestion(): QuizQuestion {
     const prime = pick(PRIMES.slice(0, 6));
     const wrongPool = shuffle(COMPOSITES).slice(0, 3);
     const options = shuffle([prime, ...wrongPool]);
-    return { prompt: 'Which of these numbers is prime?', choices: options.map(String), correctIndex: options.indexOf(prime) };
+    return { prompt: t().askPrime, choices: options.map(String), correctIndex: options.indexOf(prime) };
   }
   const n = randInt(2, 9);
   const k = randInt(2, 9);
@@ -66,7 +67,7 @@ function easyQuestion(): QuizQuestion {
   const wrongPool = [correct + 1, correct - 1, correct + n === correct ? correct + n + 1 : n * (k + 2) + 1].filter((v) => v % n !== 0);
   while (wrongPool.length < 3) wrongPool.push(correct + wrongPool.length + 2);
   const { choices, correctIndex } = buildChoices(correct, wrongPool);
-  return { prompt: `Which of these numbers is a multiple of ${n}?`, choices, correctIndex };
+  return { prompt: t().askMultiple(n), choices, correctIndex };
 }
 
 // Medium: greatest common factor and least common multiple.
@@ -76,13 +77,13 @@ function mediumQuestion(): QuizQuestion {
     const b = randInt(4, 30);
     const correct = gcd(a, b);
     const { choices, correctIndex } = buildChoices(correct, [a, b, correct + 2, Math.max(1, correct - 1)]);
-    return { prompt: `What is the greatest common factor (GCF) of ${a} and ${b}?`, choices, correctIndex };
+    return { prompt: t().askGcf(a, b), choices, correctIndex };
   }
   const a = randInt(2, 12);
   const b = randInt(2, 12);
   const correct = lcm(a, b);
   const { choices, correctIndex } = buildChoices(correct, [a * b, correct + a, correct - b > 0 ? correct - b : correct + 5]);
-  return { prompt: `What is the least common multiple (LCM) of ${a} and ${b}?`, choices, correctIndex };
+  return { prompt: t().askLcm(a, b), choices, correctIndex };
 }
 
 // Hard: number patterns (arithmetic sequences) and remainders.
@@ -93,13 +94,13 @@ function hardQuestion(): QuizQuestion {
     const terms = [start, start + diff, start + 2 * diff, start + 3 * diff];
     const correct = start + 4 * diff;
     const { choices, correctIndex } = buildChoices(correct, [correct + diff, correct - diff, correct + 1]);
-    return { prompt: `What comes next in the pattern: ${terms.join(', ')}, ___?`, choices, correctIndex };
+    return { prompt: t().askNextInPattern(terms.join(', ')), choices, correctIndex };
   }
   const b = randInt(3, 9);
   const a = randInt(b * 3, b * 8) + randInt(1, b - 1);
   const correct = a % b;
   const { choices, correctIndex } = buildChoices(correct, [b, correct + 1, Math.max(0, correct - 1)]);
-  return { prompt: `What is the remainder when ${a} is divided by ${b}?`, choices, correctIndex };
+  return { prompt: t().askRemainder(a, b), choices, correctIndex };
 }
 
 export function generateQuestion(difficulty: Difficulty): QuizQuestion {

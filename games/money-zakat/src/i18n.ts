@@ -37,6 +37,18 @@ interface Strings {
   trueFalseStatement: (equation: string) => string;
 
   modeFillBlank: string;
+
+  needsWords: string[];
+  wantsWords: string[];
+  askWant: string;
+  askNeed: string;
+  haveMore: (a: number, b: number) => string;
+  howMuchNow: string;
+  percentOf: (percent: number, price: number) => string;
+  discountOff: (price: number, percent: number) => string;
+  salePrice: string;
+  savedYear: (base: number) => string;
+  zakatQuestion: string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
@@ -76,6 +88,18 @@ const STRINGS: Record<LangMode, Strings> = {
     trueFalseStatement: (equation) => `${equation} — true or false?`,
 
     modeFillBlank: '✏️ Fill in the Blank',
+
+    needsWords: ['Food', 'Water', 'A place to live', 'Medicine'],
+    wantsWords: ['A new toy', 'Candy', 'A video game', 'A second dessert'],
+    askWant: 'Which one is a want (nice to have, not necessary)?',
+    askNeed: 'Which one is a need (something you must have)?',
+    haveMore: (a, b) => `You have $${a} and get $${b} more.`,
+    howMuchNow: 'How much do you have now?',
+    percentOf: (percent, price) => `What is ${percent}% of $${price}?`,
+    discountOff: (price, percent) => `A toy costs $${price} and is ${percent}% off.`,
+    salePrice: 'What is the sale price?',
+    savedYear: (base) => `Someone has saved $${base} for a full year.`,
+    zakatQuestion: 'Zakat on savings is 2.5%. How much zakat do they owe?',
   },
   nl: {
     title: 'Money & Zakat Math',
@@ -113,6 +137,18 @@ const STRINGS: Record<LangMode, Strings> = {
     trueFalseStatement: (equation) => `${equation} — waar of niet waar?`,
 
     modeFillBlank: '✏️ Vul het Cijfer In',
+
+    needsWords: ['Eten', 'Water', 'Een plek om te wonen', 'Medicijnen'],
+    wantsWords: ['Een nieuw speeltje', 'Snoep', 'Een videogame', 'Een tweede toetje'],
+    askWant: 'Welke is een wens (leuk om te hebben, niet noodzakelijk)?',
+    askNeed: 'Welke is een behoefte (iets wat je moet hebben)?',
+    haveMore: (a, b) => `Je hebt $${a} en krijgt er $${b} bij.`,
+    howMuchNow: 'Hoeveel heb je nu?',
+    percentOf: (percent, price) => `Wat is ${percent}% van $${price}?`,
+    discountOff: (price, percent) => `Een speeltje kost $${price} en heeft ${percent}% korting.`,
+    salePrice: 'Wat is de aanbiedingsprijs?',
+    savedYear: (base) => `Iemand heeft $${base} een heel jaar lang gespaard.`,
+    zakatQuestion: 'Zakat over spaargeld is 2,5%. Hoeveel zakat is verschuldigd?',
   },
   de: {
     title: 'Money & Zakat Math',
@@ -150,6 +186,18 @@ const STRINGS: Record<LangMode, Strings> = {
     trueFalseStatement: (equation) => `${equation} — wahr oder falsch?`,
 
     modeFillBlank: '✏️ Ziffer Einsetzen',
+
+    needsWords: ['Essen', 'Wasser', 'Ein Zuhause', 'Medizin'],
+    wantsWords: ['Ein neues Spielzeug', 'Süßigkeiten', 'Ein Videospiel', 'Ein zweites Dessert'],
+    askWant: 'Was ist ein Wunsch (schön zu haben, aber nicht notwendig)?',
+    askNeed: 'Was ist ein Bedürfnis (etwas, das du haben musst)?',
+    haveMore: (a, b) => `Du hast $${a} und bekommst $${b} mehr.`,
+    howMuchNow: 'Wie viel hast du jetzt?',
+    percentOf: (percent, price) => `Was sind ${percent}% von $${price}?`,
+    discountOff: (price, percent) => `Ein Spielzeug kostet $${price} und ist um ${percent}% reduziert.`,
+    salePrice: 'Was ist der reduzierte Preis?',
+    savedYear: (base) => `Jemand hat $${base} ein ganzes Jahr lang gespart.`,
+    zakatQuestion: 'Zakat auf Ersparnisse beträgt 2,5%. Wie viel Zakat ist fällig?',
   },
   es: {
     title: 'Money & Zakat Math',
@@ -187,6 +235,18 @@ const STRINGS: Record<LangMode, Strings> = {
     trueFalseStatement: (equation) => `${equation} — ¿verdadero o falso?`,
 
     modeFillBlank: '✏️ Completa el Dígito',
+
+    needsWords: ['Comida', 'Agua', 'Un lugar para vivir', 'Medicina'],
+    wantsWords: ['Un juguete nuevo', 'Dulces', 'Un videojuego', 'Un segundo postre'],
+    askWant: '¿Cuál es un deseo (agradable de tener, no necesario)?',
+    askNeed: '¿Cuál es una necesidad (algo que debes tener)?',
+    haveMore: (a, b) => `Tienes $${a} y recibes $${b} más.`,
+    howMuchNow: '¿Cuánto tienes ahora?',
+    percentOf: (percent, price) => `¿Cuánto es el ${percent}% de $${price}?`,
+    discountOff: (price, percent) => `Un juguete cuesta $${price} y tiene un ${percent}% de descuento.`,
+    salePrice: '¿Cuál es el precio de oferta?',
+    savedYear: (base) => `Alguien ha ahorrado $${base} durante un año completo.`,
+    zakatQuestion: 'El zakat sobre los ahorros es del 2,5%. ¿Cuánto zakat debe pagar?',
   },
   fr: {
     title: 'Money & Zakat Math',
@@ -224,6 +284,18 @@ const STRINGS: Record<LangMode, Strings> = {
     trueFalseStatement: (equation) => `${equation} — vrai ou faux ?`,
 
     modeFillBlank: '✏️ Complète le Chiffre',
+
+    needsWords: ['Nourriture', 'Eau', 'Un endroit pour vivre', 'Médicaments'],
+    wantsWords: ['Un nouveau jouet', 'Des bonbons', 'Un jeu vidéo', 'Un deuxième dessert'],
+    askWant: 'Lequel est une envie (agréable à avoir, pas nécessaire) ?',
+    askNeed: 'Lequel est un besoin (quelque chose dont tu as absolument besoin) ?',
+    haveMore: (a, b) => `Tu as $${a} et reçois $${b} de plus.`,
+    howMuchNow: 'Combien as-tu maintenant ?',
+    percentOf: (percent, price) => `Combien font ${percent}% de $${price} ?`,
+    discountOff: (price, percent) => `Un jouet coûte $${price} et bénéficie de ${percent}% de réduction.`,
+    salePrice: 'Quel est le prix soldé ?',
+    savedYear: (base) => `Quelqu'un a économisé $${base} pendant une année complète.`,
+    zakatQuestion: 'La zakat sur l\'épargne est de 2,5 %. Combien de zakat doit-il payer ?',
   },
   ar: {
     title: 'Money & Zakat Math',
@@ -261,6 +333,18 @@ const STRINGS: Record<LangMode, Strings> = {
     trueFalseStatement: (equation) => `${equation} — صح أم خطأ؟`,
 
     modeFillBlank: '✏️ أكمل الرقم',
+
+    needsWords: ['طعام', 'ماء', 'مكان للسكن', 'دواء'],
+    wantsWords: ['لعبة جديدة', 'حلوى', 'لعبة فيديو', 'حلوى إضافية'],
+    askWant: 'أي منها رغبة (لطيف أن يكون لديك، وليس ضروريًا)؟',
+    askNeed: 'أي منها حاجة (شيء يجب أن تملكه)؟',
+    haveMore: (a, b) => `لديك $${a} وحصلت على $${b} إضافية.`,
+    howMuchNow: 'كم لديك الآن؟',
+    percentOf: (percent, price) => `كم يساوي ${percent}% من $${price}؟`,
+    discountOff: (price, percent) => `تكلفة لعبة $${price} وعليها خصم ${percent}%.`,
+    salePrice: 'ما هو سعر البيع بعد الخصم؟',
+    savedYear: (base) => `ادّخر شخص ما $${base} لمدة عام كامل.`,
+    zakatQuestion: 'الزكاة على المدخرات هي 2.5%. كم تبلغ الزكاة الواجبة؟',
   },
 };
 

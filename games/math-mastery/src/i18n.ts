@@ -33,6 +33,8 @@ interface Strings {
   mistakes: (n: number) => string;
   instruction: string;
   sequenceRoundSummary: (perfect: number, total: number) => string;
+
+  sqrtTrick: string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
@@ -68,6 +70,8 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Mistakes: ${n}`,
     instruction: 'Tap the problems from smallest to largest answer',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rounds perfect`,
+
+    sqrtTrick: 'Trick: find the two perfect squares it sits between',
   },
   nl: {
     title: 'Math Mastery',
@@ -101,6 +105,8 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Fouten: ${n}`,
     instruction: 'Tik de sommen aan van kleinste naar grootste antwoord',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondes perfect`,
+
+    sqrtTrick: 'Truc: vind de twee kwadraten waar het tussenin ligt',
   },
   de: {
     title: 'Math Mastery',
@@ -134,6 +140,8 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Fehler: ${n}`,
     instruction: 'Tippe die Aufgaben vom kleinsten zum größten Ergebnis an',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} Runden perfekt`,
+
+    sqrtTrick: 'Trick: finde die zwei Quadratzahlen, zwischen denen es liegt',
   },
   es: {
     title: 'Math Mastery',
@@ -167,6 +175,8 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Errores: ${n}`,
     instruction: 'Toca los problemas del resultado más pequeño al más grande',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondas perfectas`,
+
+    sqrtTrick: 'Truco: encuentra los dos cuadrados perfectos entre los que está',
   },
   fr: {
     title: 'Math Mastery',
@@ -200,6 +210,8 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Erreurs : ${n}`,
     instruction: 'Touche les problèmes du plus petit au plus grand résultat',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
+
+    sqrtTrick: 'Astuce : trouve les deux carrés parfaits entre lesquels il se situe',
   },
   ar: {
     title: 'Math Mastery',
@@ -233,6 +245,8 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `الأخطاء: ${n}`,
     instruction: 'اضغط على المسائل من أصغر إجابة إلى أكبرها',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولات مثالية`,
+
+    sqrtTrick: 'حيلة: ابحث عن المربعين الكاملين اللذين يقع بينهما',
   },
 };
 

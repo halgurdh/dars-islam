@@ -46,6 +46,16 @@ export interface Strings {
   linkSentTo: (email: string) => string;
   sendFailed: string;
 
+  reportButton: string;
+  reportTitle: string;
+  reportBody: string;
+  reportPlaceholder: string;
+  reportSubmit: string;
+  reportEmptyError: string;
+  reportFailed: string;
+  reportSentTitle: string;
+  reportSent: string;
+
   toastLevelUp: (level: number) => string;
   toastStreak: (n: number) => string;
   toastNewBadge: (name: string) => string;
@@ -91,6 +101,16 @@ export const STRINGS: Record<LangMode, Strings> = {
     linkSentTo: (email) => `Link sent to <strong>${email}</strong>. Click it to sign in.`,
     sendFailed: 'Could not send — try again.',
 
+    reportButton: '🚩 Report an issue',
+    reportTitle: 'Report a problem',
+    reportBody: 'Spotted something inappropriate or factually wrong in this game? Let us know.',
+    reportPlaceholder: 'Describe the issue…',
+    reportSubmit: 'Send report',
+    reportEmptyError: 'Please describe the issue first.',
+    reportFailed: 'Could not send — try again.',
+    reportSentTitle: 'Thanks for letting us know',
+    reportSent: 'We\'ll review this as soon as possible.',
+
     toastLevelUp: (level) => `🎉 Level ${level}!`,
     toastStreak: (n) => `🔥 ${n}-day streak`,
     toastNewBadge: (name) => `New badge: ${name}`,
@@ -133,6 +153,16 @@ export const STRINGS: Record<LangMode, Strings> = {
     checkEmailTitle: '✉ Controleer je e-mail!',
     linkSentTo: (email) => `Link verstuurd naar <strong>${email}</strong>. Klik erop om in te loggen.`,
     sendFailed: 'Versturen mislukt — probeer het opnieuw.',
+
+    reportButton: '🚩 Probleem melden',
+    reportTitle: 'Meld een probleem',
+    reportBody: 'Iets ongepasts of feitelijk onjuists gezien in dit spel? Laat het ons weten.',
+    reportPlaceholder: 'Beschrijf het probleem…',
+    reportSubmit: 'Melding versturen',
+    reportEmptyError: 'Beschrijf eerst het probleem.',
+    reportFailed: 'Versturen mislukt — probeer het opnieuw.',
+    reportSentTitle: 'Bedankt voor je melding',
+    reportSent: 'We bekijken dit zo snel mogelijk.',
 
     toastLevelUp: (level) => `🎉 Level ${level}!`,
     toastStreak: (n) => `🔥 ${n}-daagse reeks`,
@@ -177,6 +207,16 @@ export const STRINGS: Record<LangMode, Strings> = {
     linkSentTo: (email) => `Link gesendet an <strong>${email}</strong>. Klicke darauf, um dich anzumelden.`,
     sendFailed: 'Senden fehlgeschlagen — bitte erneut versuchen.',
 
+    reportButton: '🚩 Problem melden',
+    reportTitle: 'Ein Problem melden',
+    reportBody: 'Etwas Unangemessenes oder sachlich Falsches in diesem Spiel entdeckt? Lass es uns wissen.',
+    reportPlaceholder: 'Beschreibe das Problem…',
+    reportSubmit: 'Meldung senden',
+    reportEmptyError: 'Bitte beschreibe zuerst das Problem.',
+    reportFailed: 'Senden fehlgeschlagen — bitte erneut versuchen.',
+    reportSentTitle: 'Danke für deine Meldung',
+    reportSent: 'Wir schauen uns das so schnell wie möglich an.',
+
     toastLevelUp: (level) => `🎉 Level ${level}!`,
     toastStreak: (n) => `🔥 ${n}-Tage-Serie`,
     toastNewBadge: (name) => `Neues Abzeichen: ${name}`,
@@ -219,6 +259,16 @@ export const STRINGS: Record<LangMode, Strings> = {
     checkEmailTitle: '✉ ¡Revisa tu correo!',
     linkSentTo: (email) => `Enlace enviado a <strong>${email}</strong>. Haz clic en él para iniciar sesión.`,
     sendFailed: 'No se pudo enviar — inténtalo de nuevo.',
+
+    reportButton: '🚩 Reportar un problema',
+    reportTitle: 'Reportar un problema',
+    reportBody: '¿Viste algo inapropiado o incorrecto en este juego? Avísanos.',
+    reportPlaceholder: 'Describe el problema…',
+    reportSubmit: 'Enviar reporte',
+    reportEmptyError: 'Describe primero el problema.',
+    reportFailed: 'No se pudo enviar — inténtalo de nuevo.',
+    reportSentTitle: 'Gracias por avisarnos',
+    reportSent: 'Lo revisaremos lo antes posible.',
 
     toastLevelUp: (level) => `🎉 ¡Nivel ${level}!`,
     toastStreak: (n) => `🔥 racha de ${n} días`,
@@ -263,6 +313,16 @@ export const STRINGS: Record<LangMode, Strings> = {
     linkSentTo: (email) => `Lien envoyé à <strong>${email}</strong>. Clique dessus pour te connecter.`,
     sendFailed: "Échec de l'envoi — réessaie.",
 
+    reportButton: '🚩 Signaler un problème',
+    reportTitle: 'Signaler un problème',
+    reportBody: 'Tu as remarqué quelque chose d\'inapproprié ou d\'incorrect dans ce jeu ? Dis-le-nous.',
+    reportPlaceholder: 'Décris le problème…',
+    reportSubmit: 'Envoyer le signalement',
+    reportEmptyError: 'Décris d\'abord le problème.',
+    reportFailed: "Échec de l'envoi — réessaie.",
+    reportSentTitle: 'Merci de nous avoir prévenus',
+    reportSent: 'Nous allons examiner cela dès que possible.',
+
     toastLevelUp: (level) => `🎉 Niveau ${level} !`,
     toastStreak: (n) => `🔥 série de ${n} jours`,
     toastNewBadge: (name) => `Nouveau badge : ${name}`,
@@ -305,6 +365,16 @@ export const STRINGS: Record<LangMode, Strings> = {
     checkEmailTitle: '✉ تحقق من بريدك الإلكتروني!',
     linkSentTo: (email) => `تم إرسال رابط إلى <strong>${email}</strong>. اضغط عليه لتسجيل الدخول.`,
     sendFailed: 'تعذر الإرسال — حاول مرة أخرى.',
+
+    reportButton: '🚩 الإبلاغ عن مشكلة',
+    reportTitle: 'الإبلاغ عن مشكلة',
+    reportBody: 'هل لاحظت شيئًا غير لائق أو غير صحيح في هذه اللعبة؟ أخبرنا بذلك.',
+    reportPlaceholder: 'صِف المشكلة…',
+    reportSubmit: 'إرسال البلاغ',
+    reportEmptyError: 'يرجى وصف المشكلة أولاً.',
+    reportFailed: 'تعذر الإرسال — حاول مرة أخرى.',
+    reportSentTitle: 'شكرًا لإخبارنا',
+    reportSent: 'سنراجع هذا في أقرب وقت ممكن.',
 
     toastLevelUp: (level) => `🎉 المستوى ${level}!`,
     toastStreak: (n) => `🔥 سلسلة ${n} أيام`,

@@ -1,6 +1,7 @@
 import type { QuizQuestion } from '@shared/quiz-kit';
 import type { MatchItem } from '@shared/match-kit';
 import type { SequenceItem } from '@shared/sequence-kit';
+import { t } from './i18n';
 
 export interface Difficulty {
   id: string;
@@ -44,11 +45,11 @@ function easyQuestion(): QuizQuestion {
   if (Math.random() < 0.5) {
     const correct = w * h;
     const { choices, correctIndex } = buildChoices(correct, [w + h, correct + w, correct - h, 2 * (w + h)]);
-    return { prompt: `A rectangle is ${w} × ${h}.`, sub: 'What is its area?', choices, correctIndex };
+    return { prompt: t().rectanglePrompt(w, h), sub: t().askArea, choices, correctIndex };
   }
   const correct = 2 * (w + h);
   const { choices, correctIndex } = buildChoices(correct, [w * h, w + h, correct + 2, correct - 4]);
-  return { prompt: `A rectangle is ${w} × ${h}.`, sub: 'What is its perimeter?', choices, correctIndex };
+  return { prompt: t().rectanglePrompt(w, h), sub: t().askPerimeter, choices, correctIndex };
 }
 
 // Medium: triangle area, circle area/circumference (π ≈ 3.14), and the
@@ -60,19 +61,19 @@ function mediumQuestion(): QuizQuestion {
     const h = [4, 6, 8, 10, 12][randInt(0, 4)];
     const correct = (b * h) / 2;
     const { choices, correctIndex } = buildChoices(correct, [b * h, correct + b, correct - h, correct + 5]);
-    return { prompt: `A triangle has base ${b} and height ${h}.`, sub: 'Area = ½ × base × height. What is its area?', choices, correctIndex };
+    return { prompt: t().trianglePrompt(b, h), sub: t().askTriangleArea, choices, correctIndex };
   }
   if (kind === 1) {
     const r = randInt(2, 10);
     const correct = Math.round(3.14 * r * r);
     const { choices, correctIndex } = buildChoices(correct, [Math.round(2 * 3.14 * r), correct + r, correct - r, correct + 10]);
-    return { prompt: `A circle has radius ${r}.`, sub: 'Area ≈ π × r² (use π ≈ 3.14). What is its area?', choices, correctIndex };
+    return { prompt: t().circlePrompt(r), sub: t().askCircleArea, choices, correctIndex };
   }
   const a = randInt(30, 100);
   const b = randInt(30, 150 - a > 30 ? 150 - a : 31);
   const correct = 180 - a - b;
   const { choices, correctIndex } = buildChoices(correct, [180 - a, 180 - b, correct + 10, correct - 10]);
-  return { prompt: `A triangle has angles ${a}° and ${b}°.`, sub: 'Angles in a triangle add up to 180°. What is the third angle?', choices, correctIndex };
+  return { prompt: t().anglesPrompt(a, b), sub: t().askThirdAngle, choices, correctIndex };
 }
 
 // Hard: Pythagorean theorem, using clean integer triples so the answer is
@@ -86,10 +87,10 @@ function hardQuestion(): QuizQuestion {
   const askHypotenuse = Math.random() < 0.5;
   if (askHypotenuse) {
     const { choices, correctIndex } = buildChoices(c, [c + 1, c - 1, a + b, c + 3]);
-    return { prompt: `A right triangle has legs ${a} and ${b}.`, sub: 'Use a² + b² = c². What is the hypotenuse?', choices, correctIndex };
+    return { prompt: t().legsPrompt(a, b), sub: t().askHypotenuse, choices, correctIndex };
   }
   const { choices, correctIndex } = buildChoices(a, [a + 1, a - 1, b, c - b]);
-  return { prompt: `A right triangle has one leg ${b} and hypotenuse ${c}.`, sub: 'Use a² + b² = c². What is the missing leg?', choices, correctIndex };
+  return { prompt: t().legHypotenusePrompt(b, c), sub: t().askMissingLeg, choices, correctIndex };
 }
 
 export function generateQuestion(difficulty: Difficulty): QuizQuestion {
@@ -107,8 +108,8 @@ interface GeometryProblem {
 function easyProblem(): GeometryProblem {
   const w = randInt(3, 12);
   const h = randInt(3, 12);
-  if (Math.random() < 0.5) return { label: `${w} × ${h} rectangle — area`, value: w * h };
-  return { label: `${w} × ${h} rectangle — perimeter`, value: 2 * (w + h) };
+  if (Math.random() < 0.5) return { label: t().rectangleAreaLabel(w, h), value: w * h };
+  return { label: t().rectanglePerimeterLabel(w, h), value: 2 * (w + h) };
 }
 
 function mediumProblem(): GeometryProblem {
@@ -116,21 +117,21 @@ function mediumProblem(): GeometryProblem {
   if (kind === 0) {
     const b = randInt(4, 16);
     const h = [4, 6, 8, 10, 12][randInt(0, 4)];
-    return { label: `Triangle base ${b}, height ${h} — area`, value: (b * h) / 2 };
+    return { label: t().triangleAreaLabel(b, h), value: (b * h) / 2 };
   }
   if (kind === 1) {
     const r = randInt(2, 10);
-    return { label: `Circle radius ${r} — area`, value: Math.round(3.14 * r * r) };
+    return { label: t().circleAreaLabel(r), value: Math.round(3.14 * r * r) };
   }
   const a = randInt(30, 100);
   const b = randInt(30, 150 - a > 30 ? 150 - a : 31);
-  return { label: `Triangle angles ${a}°, ${b}° — third angle`, value: 180 - a - b };
+  return { label: t().thirdAngleLabel(a, b), value: 180 - a - b };
 }
 
 function hardProblem(): GeometryProblem {
   const [a, b, c] = TRIPLES[randInt(0, TRIPLES.length - 1)];
-  if (Math.random() < 0.5) return { label: `Right triangle legs ${a}, ${b} — hypotenuse`, value: c };
-  return { label: `Right triangle leg ${b}, hypotenuse ${c} — other leg`, value: a };
+  if (Math.random() < 0.5) return { label: t().hypotenuseLabel(a, b), value: c };
+  return { label: t().otherLegLabel(b, c), value: a };
 }
 
 function problemFor(difficulty: Difficulty): GeometryProblem {

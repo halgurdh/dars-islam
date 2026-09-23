@@ -1,5 +1,5 @@
 import { COLORS, FONT } from '../theme';
-import { DIFFICULTIES, GREETINGS, type Greeting } from '../questions';
+import { DIFFICULTIES, GREETINGS, languageFor, type Greeting } from '../questions';
 import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { t } from '../i18n';
 import { createModeMenuScene, matchMode, quizMode, sequenceMode } from '@shared/mode-menu-kit';
@@ -25,16 +25,16 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 function buildMatchItems(): MatchItem[] {
-  return GREETINGS.map((g) => ({ id: g.id, sideA: g.greeting, sideB: g.language }));
+  return GREETINGS.map((g) => ({ id: g.id, sideA: g.greeting, sideB: languageFor(g) }));
 }
 
 function generateQuizQuestion(): QuizQuestion {
   const [correct, ...distractors] = shuffle(GREETINGS).slice(0, 4);
-  const choices = shuffle([correct, ...distractors].map((g) => g.language));
+  const choices = shuffle([correct, ...distractors].map((g) => languageFor(g)));
   return {
     prompt: correct.greeting,
     choices,
-    correctIndex: choices.indexOf(correct.language),
+    correctIndex: choices.indexOf(languageFor(correct)),
   };
 }
 
@@ -42,7 +42,7 @@ function generateSequenceRound(count: number): () => SequenceItem[] {
   return () => {
     const pool = shuffle(GREETINGS).slice(0, count) as Greeting[];
     const sorted = [...pool].sort((a, b) => a.speakersMillions - b.speakersMillions);
-    return sorted.map((g) => ({ id: g.id, label: g.language }));
+    return sorted.map((g) => ({ id: g.id, label: languageFor(g) }));
   };
 }
 
@@ -68,7 +68,7 @@ export const MenuScene = createModeMenuScene({
         roundSummary: t().matchRoundSummary,
         nextLevelHint: t().nextLevelHint,
       }),
-      items: buildMatchItems(),
+      items: buildMatchItems,
       difficulties: DIFFICULTIES.map((d) => ({ label: LABELS[d.id], pairs: d.pairs })),
     }),
     quizMode({

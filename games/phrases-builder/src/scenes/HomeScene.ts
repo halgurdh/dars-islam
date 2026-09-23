@@ -124,7 +124,7 @@ export const HomeScene = createModeMenuScene({
         roundSummary: t().matchRoundSummary,
         nextLevelHint: t().nextLevelHint,
       }),
-      items: buildMatchItems(),
+      items: buildMatchItems,
       difficulties: [
         { label: () => t().easy, pairs: 4 },
         { label: () => t().medium, pairs: 7 },

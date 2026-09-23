@@ -27,6 +27,9 @@ interface Strings {
   mistakes: (n: number) => string;
   instruction: string;
   sequenceRoundSummary: (perfect: number, total: number) => string;
+
+  promptHowMany: string;
+  promptTapGroup: string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
@@ -56,6 +59,9 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Mistakes: ${n}`,
     instruction: 'Tap the groups from fewest to most',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rounds perfect`,
+
+    promptHowMany: 'How many are there?',
+    promptTapGroup: 'Tap the group with this many',
   },
   nl: {
     title: 'Counting Fun',
@@ -83,6 +89,9 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Fouten: ${n}`,
     instruction: 'Tik de groepjes van minste naar meeste aan',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondes perfect`,
+
+    promptHowMany: 'Hoeveel zijn er?',
+    promptTapGroup: 'Tik op de groep met dit aantal',
   },
   de: {
     title: 'Counting Fun',
@@ -110,6 +119,9 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Fehler: ${n}`,
     instruction: 'Tippe die Gruppen von wenigsten zu meisten an',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} Runden perfekt`,
+
+    promptHowMany: 'Wie viele sind es?',
+    promptTapGroup: 'Tippe auf die Gruppe mit dieser Anzahl',
   },
   es: {
     title: 'Counting Fun',
@@ -137,6 +149,9 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Errores: ${n}`,
     instruction: 'Toca los grupos de menos a más',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondas perfectas`,
+
+    promptHowMany: '¿Cuántos hay?',
+    promptTapGroup: 'Toca el grupo con esta cantidad',
   },
   fr: {
     title: 'Counting Fun',
@@ -164,6 +179,9 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Erreurs : ${n}`,
     instruction: 'Touche les groupes du moins nombreux au plus nombreux',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
+
+    promptHowMany: 'Combien y en a-t-il ?',
+    promptTapGroup: 'Touche le groupe qui a ce nombre',
   },
   ar: {
     title: 'Counting Fun',
@@ -191,6 +209,9 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `الأخطاء: ${n}`,
     instruction: 'اضغط على المجموعات من الأقل إلى الأكثر',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولات مثالية`,
+
+    promptHowMany: 'كم عددها؟',
+    promptTapGroup: 'اضغط على المجموعة التي تحتوي على هذا العدد',
   },
 };
 

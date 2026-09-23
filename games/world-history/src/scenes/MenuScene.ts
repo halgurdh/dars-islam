@@ -1,5 +1,5 @@
 import { COLORS, FONT } from '../theme';
-import { DIFFICULTIES, EVENTS, generateRound } from '../questions';
+import { DIFFICULTIES, EVENTS, generateRound, labelFor } from '../questions';
 import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { t } from '../i18n';
 import { createModeMenuScene, matchMode, quizMode, sequenceMode } from '@shared/mode-menu-kit';
@@ -24,14 +24,14 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 function buildMatchItems(): MatchItem[] {
-  return EVENTS.map((e) => ({ id: e.id, sideA: e.label, sideB: e.era }));
+  return EVENTS.map((e) => ({ id: e.id, sideA: labelFor(e), sideB: e.era }));
 }
 
 function generateQuizQuestion(): QuizQuestion {
   const [correct, ...distractors] = shuffle(EVENTS).slice(0, 4);
   const choices = shuffle([correct, ...distractors].map((e) => e.era));
   return {
-    prompt: correct.label,
+    prompt: labelFor(correct),
     choices,
     correctIndex: choices.indexOf(correct.era),
   };
@@ -81,7 +81,7 @@ export const MenuScene = createModeMenuScene({
         roundSummary: t().matchRoundSummary,
         nextLevelHint: t().nextLevelHint,
       }),
-      items: buildMatchItems(),
+      items: buildMatchItems,
       difficulties: [
         { label: () => t().easy, pairs: 6 },
         { label: () => t().medium, pairs: 8 },

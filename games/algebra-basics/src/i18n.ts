@@ -27,6 +27,15 @@ interface Strings {
   mistakes: (n: number) => string;
   instruction: string;
   sequenceRoundSummary: (perfect: number, total: number) => string;
+
+  solveXPlusA: (a: number, b: number) => string;
+  solveXMinusA: (a: number, b: number) => string;
+  solveAxPlusB: (a: number, b: number, c: number) => string;
+  simplify: (c1: number, c2: number) => string;
+  combineLikeTerms: string;
+  solveBothSides: (a: number, b: number, c: number, d: number) => string;
+  evaluate: (x: number, a: number, b: number) => string;
+  evaluateLabel: (x: number, a: number, b: number) => string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
@@ -56,6 +65,15 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Mistakes: ${n}`,
     instruction: 'Tap the problems from smallest to largest answer',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rounds perfect`,
+
+    solveXPlusA: (a, b) => `Solve for x: x + ${a} = ${b}`,
+    solveXMinusA: (a, b) => `Solve for x: x - ${a} = ${b}`,
+    solveAxPlusB: (a, b, c) => `Solve for x: ${a}x + ${b} = ${c}`,
+    simplify: (c1, c2) => `Simplify: ${c1}x + ${c2}x`,
+    combineLikeTerms: 'Combine the like terms.',
+    solveBothSides: (a, b, c, d) => `Solve for x: ${a}x + ${b} = ${c}x + ${d}`,
+    evaluate: (x, a, b) => `If x = ${x}, what is ${a}x + ${b}?`,
+    evaluateLabel: (x, a, b) => `If x = ${x}: ${a}x + ${b}`,
   },
   nl: {
     title: 'Algebra Basics',
@@ -83,6 +101,15 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Fouten: ${n}`,
     instruction: 'Tik de opgaven van kleinste naar grootste antwoord aan',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondes perfect`,
+
+    solveXPlusA: (a, b) => `Los op voor x: x + ${a} = ${b}`,
+    solveXMinusA: (a, b) => `Los op voor x: x - ${a} = ${b}`,
+    solveAxPlusB: (a, b, c) => `Los op voor x: ${a}x + ${b} = ${c}`,
+    simplify: (c1, c2) => `Vereenvoudig: ${c1}x + ${c2}x`,
+    combineLikeTerms: 'Combineer de gelijksoortige termen.',
+    solveBothSides: (a, b, c, d) => `Los op voor x: ${a}x + ${b} = ${c}x + ${d}`,
+    evaluate: (x, a, b) => `Als x = ${x}, wat is ${a}x + ${b}?`,
+    evaluateLabel: (x, a, b) => `Als x = ${x}: ${a}x + ${b}`,
   },
   de: {
     title: 'Algebra Basics',
@@ -110,6 +137,15 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Fehler: ${n}`,
     instruction: 'Tippe die Aufgaben vom kleinsten zum größten Ergebnis an',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} Runden perfekt`,
+
+    solveXPlusA: (a, b) => `Löse nach x auf: x + ${a} = ${b}`,
+    solveXMinusA: (a, b) => `Löse nach x auf: x - ${a} = ${b}`,
+    solveAxPlusB: (a, b, c) => `Löse nach x auf: ${a}x + ${b} = ${c}`,
+    simplify: (c1, c2) => `Vereinfache: ${c1}x + ${c2}x`,
+    combineLikeTerms: 'Fasse die gleichartigen Terme zusammen.',
+    solveBothSides: (a, b, c, d) => `Löse nach x auf: ${a}x + ${b} = ${c}x + ${d}`,
+    evaluate: (x, a, b) => `Wenn x = ${x} ist, was ist ${a}x + ${b}?`,
+    evaluateLabel: (x, a, b) => `Wenn x = ${x}: ${a}x + ${b}`,
   },
   es: {
     title: 'Algebra Basics',
@@ -137,6 +173,15 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Errores: ${n}`,
     instruction: 'Toca los problemas de menor a mayor resultado',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondas perfectas`,
+
+    solveXPlusA: (a, b) => `Resuelve para x: x + ${a} = ${b}`,
+    solveXMinusA: (a, b) => `Resuelve para x: x - ${a} = ${b}`,
+    solveAxPlusB: (a, b, c) => `Resuelve para x: ${a}x + ${b} = ${c}`,
+    simplify: (c1, c2) => `Simplifica: ${c1}x + ${c2}x`,
+    combineLikeTerms: 'Combina los términos semejantes.',
+    solveBothSides: (a, b, c, d) => `Resuelve para x: ${a}x + ${b} = ${c}x + ${d}`,
+    evaluate: (x, a, b) => `Si x = ${x}, ¿cuánto es ${a}x + ${b}?`,
+    evaluateLabel: (x, a, b) => `Si x = ${x}: ${a}x + ${b}`,
   },
   fr: {
     title: 'Algebra Basics',
@@ -164,6 +209,15 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Erreurs : ${n}`,
     instruction: 'Touche les problèmes du plus petit au plus grand résultat',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
+
+    solveXPlusA: (a, b) => `Résous pour x : x + ${a} = ${b}`,
+    solveXMinusA: (a, b) => `Résous pour x : x - ${a} = ${b}`,
+    solveAxPlusB: (a, b, c) => `Résous pour x : ${a}x + ${b} = ${c}`,
+    simplify: (c1, c2) => `Simplifie : ${c1}x + ${c2}x`,
+    combineLikeTerms: 'Combine les termes semblables.',
+    solveBothSides: (a, b, c, d) => `Résous pour x : ${a}x + ${b} = ${c}x + ${d}`,
+    evaluate: (x, a, b) => `Si x = ${x}, que vaut ${a}x + ${b} ?`,
+    evaluateLabel: (x, a, b) => `Si x = ${x} : ${a}x + ${b}`,
   },
   ar: {
     title: 'Algebra Basics',
@@ -191,6 +245,15 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `الأخطاء: ${n}`,
     instruction: 'اضغط على المسائل من الإجابة الأصغر إلى الأكبر',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولات مثالية`,
+
+    solveXPlusA: (a, b) => `أوجد قيمة x: x + ${a} = ${b}`,
+    solveXMinusA: (a, b) => `أوجد قيمة x: x - ${a} = ${b}`,
+    solveAxPlusB: (a, b, c) => `أوجد قيمة x: ${a}x + ${b} = ${c}`,
+    simplify: (c1, c2) => `بسّط: ${c1}x + ${c2}x`,
+    combineLikeTerms: 'اجمع الحدود المتشابهة.',
+    solveBothSides: (a, b, c, d) => `أوجد قيمة x: ${a}x + ${b} = ${c}x + ${d}`,
+    evaluate: (x, a, b) => `إذا كانت x = ${x}، فما قيمة ${a}x + ${b}؟`,
+    evaluateLabel: (x, a, b) => `إذا كانت x = ${x}: ${a}x + ${b}`,
   },
 };
 

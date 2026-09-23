@@ -1,12 +1,16 @@
 // Shared language-state mechanism — the SAME code every game used to
 // duplicate in its own Locale.ts (get/set/toggle/detect), now written once.
-// A factory, not a singleton: each game still needs its own localStorage
-// key so switching language in one game doesn't affect another — same
-// per-game-namespacing reasoning as Progress/Sfx's own keys.
+// One shared localStorage key across every caller (every game, the wrapper,
+// and the progress-bar widget) on purpose: picking a language anywhere on
+// the site should carry over everywhere else, not reset to English when
+// opening a different game. `namespace` is kept as a parameter for call-site
+// compatibility but no longer affects the storage key.
 export type LangMode = 'en' | 'nl' | 'de' | 'es' | 'fr' | 'ar';
 
 // The order toggleLang() cycles through.
 const CYCLE: LangMode[] = ['en', 'nl', 'de', 'es', 'fr', 'ar'];
+
+const LANG_KEY = 'dars-islam:lang';
 
 export interface Locale {
   getLang(): LangMode;
@@ -15,8 +19,7 @@ export interface Locale {
   detectDefaultLang(): Promise<void>;
 }
 
-export function createLocale(namespace: string): Locale {
-  const LANG_KEY = `${namespace}:lang`;
+export function createLocale(_namespace: string): Locale {
   let currentLang: LangMode = (localStorage.getItem(LANG_KEY) as LangMode | null) ?? 'en';
 
   function getLang(): LangMode {

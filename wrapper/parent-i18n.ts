@@ -15,6 +15,11 @@ export interface Strings {
   linking: string;
   linked: string;
   couldNotLink: string;
+  tooManyAttempts: string;
+  reportLink: string;
+  reportPromptLabel: string;
+  reportSentAlert: string;
+  reportFailedAlert: string;
 
   screenTimeHeading: string;
   dailyLimitLabel: string;
@@ -61,6 +66,11 @@ export const STRINGS: Record<LangMode, Strings> = {
     linking: 'Linking…',
     linked: 'Linked! Loading…',
     couldNotLink: 'Could not link — check the code and try again.',
+    tooManyAttempts: 'Too many attempts. Please wait a few minutes and try again.',
+    reportLink: 'Report',
+    reportPromptLabel: 'What\'s wrong with this announcement?',
+    reportSentAlert: 'Thanks — we\'ll review this as soon as possible.',
+    reportFailedAlert: 'Could not send the report — try again.',
 
     screenTimeHeading: 'Screen Time & Content Limits',
     dailyLimitLabel: 'Daily time limit (minutes, blank = no limit)',
@@ -105,6 +115,11 @@ export const STRINGS: Record<LangMode, Strings> = {
     linking: 'Bezig met koppelen…',
     linked: 'Gekoppeld! Laden…',
     couldNotLink: 'Kon niet koppelen — controleer de code en probeer opnieuw.',
+    tooManyAttempts: 'Te veel pogingen. Wacht een paar minuten en probeer opnieuw.',
+    reportLink: 'Melden',
+    reportPromptLabel: 'Wat is er mis met deze mededeling?',
+    reportSentAlert: 'Bedankt — we bekijken dit zo snel mogelijk.',
+    reportFailedAlert: 'Kon de melding niet versturen — probeer opnieuw.',
 
     screenTimeHeading: 'Schermtijd & Inhoudslimieten',
     dailyLimitLabel: 'Dagelijkse tijdslimiet (minuten, leeg = geen limiet)',
@@ -149,6 +164,11 @@ export const STRINGS: Record<LangMode, Strings> = {
     linking: 'Wird verknüpft…',
     linked: 'Verknüpft! Wird geladen…',
     couldNotLink: 'Verknüpfung fehlgeschlagen — überprüfe den Code und versuche es erneut.',
+    tooManyAttempts: 'Zu viele Versuche. Bitte warte ein paar Minuten und versuche es erneut.',
+    reportLink: 'Melden',
+    reportPromptLabel: 'Was stimmt mit dieser Ankündigung nicht?',
+    reportSentAlert: 'Danke — wir prüfen das so schnell wie möglich.',
+    reportFailedAlert: 'Meldung konnte nicht gesendet werden — versuche es erneut.',
 
     screenTimeHeading: 'Bildschirmzeit & Inhaltsgrenzen',
     dailyLimitLabel: 'Tägliches Zeitlimit (Minuten, leer = kein Limit)',
@@ -193,6 +213,11 @@ export const STRINGS: Record<LangMode, Strings> = {
     linking: 'Vinculando…',
     linked: '¡Vinculado! Cargando…',
     couldNotLink: 'No se pudo vincular — verifica el código e inténtalo de nuevo.',
+    tooManyAttempts: 'Demasiados intentos. Espera unos minutos e inténtalo de nuevo.',
+    reportLink: 'Reportar',
+    reportPromptLabel: '¿Qué tiene de malo este anuncio?',
+    reportSentAlert: 'Gracias — lo revisaremos lo antes posible.',
+    reportFailedAlert: 'No se pudo enviar el reporte — inténtalo de nuevo.',
 
     screenTimeHeading: 'Tiempo de Pantalla y Límites de Contenido',
     dailyLimitLabel: 'Límite diario de tiempo (minutos, vacío = sin límite)',
@@ -237,6 +262,11 @@ export const STRINGS: Record<LangMode, Strings> = {
     linking: 'Liaison en cours…',
     linked: 'Lié ! Chargement…',
     couldNotLink: 'Impossible de lier — vérifie le code et réessaie.',
+    tooManyAttempts: 'Trop de tentatives. Veuillez patienter quelques minutes et réessayer.',
+    reportLink: 'Signaler',
+    reportPromptLabel: "Qu'est-ce qui ne va pas avec cette annonce ?",
+    reportSentAlert: 'Merci — nous allons examiner cela dès que possible.',
+    reportFailedAlert: "Impossible d'envoyer le signalement — réessaie.",
 
     screenTimeHeading: "Temps d'Écran et Limites de Contenu",
     dailyLimitLabel: 'Limite de temps quotidienne (minutes, vide = pas de limite)',
@@ -281,6 +311,11 @@ export const STRINGS: Record<LangMode, Strings> = {
     linking: 'جارٍ الربط…',
     linked: 'تم الربط! جارٍ التحميل…',
     couldNotLink: 'تعذر الربط — تحقق من الرمز وحاول مرة أخرى.',
+    tooManyAttempts: 'محاولات كثيرة جدًا. يرجى الانتظار بضع دقائق ثم المحاولة مرة أخرى.',
+    reportLink: 'إبلاغ',
+    reportPromptLabel: 'ما الخطأ في هذا الإعلان؟',
+    reportSentAlert: 'شكرًا — سنراجع هذا في أقرب وقت ممكن.',
+    reportFailedAlert: 'تعذر إرسال البلاغ — حاول مرة أخرى.',
 
     screenTimeHeading: 'وقت الشاشة وحدود المحتوى',
     dailyLimitLabel: 'الحد الزمني اليومي (بالدقائق، فارغ = بدون حد)',

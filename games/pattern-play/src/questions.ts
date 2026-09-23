@@ -1,6 +1,7 @@
 import type { QuizQuestion } from '@shared/quiz-kit';
 import type { MatchItem } from '@shared/match-kit';
 import type { SequenceItem } from '@shared/sequence-kit';
+import { t } from './i18n';
 
 export interface Difficulty {
   id: string;
@@ -39,7 +40,7 @@ function shapePatternQuestion(): QuizQuestion {
   const options = shuffle([correct, ...distractors]);
   return {
     prompt: `${seq.join(' ')}  ?`,
-    sub: 'What comes next?',
+    sub: t().promptNext,
     choices: options,
     correctIndex: options.indexOf(correct),
   };
@@ -59,7 +60,7 @@ function numberSequenceQuestion(): QuizQuestion {
   const arr = shuffle([...set]);
   return {
     prompt: `${seq.join(', ')}, ?`,
-    sub: 'What comes next?',
+    sub: t().promptNext,
     choices: arr.map(String),
     correctIndex: arr.indexOf(correct),
   };
@@ -80,7 +81,7 @@ function oddOneOutQuestion(): QuizQuestion {
   const choices = shuffle([...mainItems, oddItem]);
   return {
     prompt: '🔎',
-    sub: 'Which one doesn’t belong?',
+    sub: t().promptOddOneOut,
     choices,
     correctIndex: choices.indexOf(oddItem),
   };

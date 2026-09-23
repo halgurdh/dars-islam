@@ -1,5 +1,5 @@
 import { COLORS, FONT } from '../theme';
-import { DIFFICULTIES, TERMS, type TechTerm } from '../questions';
+import { DIFFICULTIES, TERMS, termFor, meaningFor, type TechTerm } from '../questions';
 import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { t } from '../i18n';
 import { createModeMenuScene, matchMode, quizMode, sequenceMode } from '@shared/mode-menu-kit';
@@ -25,16 +25,16 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 function buildMatchItems(): MatchItem[] {
-  return TERMS.map((t2) => ({ id: t2.id, sideA: t2.term, sideB: t2.meaning }));
+  return TERMS.map((t2) => ({ id: t2.id, sideA: termFor(t2), sideB: meaningFor(t2) }));
 }
 
 function generateQuizQuestion(): QuizQuestion {
   const [correct, ...distractors] = shuffle(TERMS).slice(0, 4);
-  const choices = shuffle([correct, ...distractors].map((t2) => t2.meaning));
+  const choices = shuffle([correct, ...distractors].map((t2) => meaningFor(t2)));
   return {
-    prompt: correct.term,
+    prompt: termFor(correct),
     choices,
-    correctIndex: choices.indexOf(correct.meaning),
+    correctIndex: choices.indexOf(meaningFor(correct)),
   };
 }
 
@@ -42,7 +42,7 @@ function generateSequenceRound(count: number): () => SequenceItem[] {
   return () => {
     const pool = shuffle(TERMS).slice(0, count) as TechTerm[];
     const sorted = [...pool].sort((a, b) => a.layer - b.layer);
-    return sorted.map((t2) => ({ id: t2.id, label: t2.term }));
+    return sorted.map((t2) => ({ id: t2.id, label: termFor(t2) }));
   };
 }
 
@@ -68,7 +68,7 @@ export const MenuScene = createModeMenuScene({
         roundSummary: t().matchRoundSummary,
         nextLevelHint: t().nextLevelHint,
       }),
-      items: buildMatchItems(),
+      items: buildMatchItems,
       difficulties: DIFFICULTIES.map((d) => ({ label: LABELS[d.id], pairs: d.pairs })),
     }),
     quizMode({

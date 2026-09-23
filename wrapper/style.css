@@ -229,6 +229,37 @@ body {
   font-weight: 400;
 }
 
+.game-search {
+  display: block;
+  margin: 1.25rem auto 0;
+  width: 100%;
+  max-width: 360px;
+  background: #1a1a2e;
+  border: 1.5px solid #333;
+  color: #eee;
+  padding: 0.55rem 1.1rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+
+.game-search:focus {
+  outline: none;
+  border-color: #ff6b35;
+}
+
+.game-search::placeholder {
+  color: #888;
+}
+
+.no-results-msg {
+  text-align: center;
+  color: #888;
+  font-size: 0.95rem;
+  padding: 2.5rem 1rem;
+  grid-column: 1 / -1;
+}
+
 .category-filter {
   display: flex;
   justify-content: center;

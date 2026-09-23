@@ -1,6 +1,7 @@
 import type { QuizQuestion } from '@shared/quiz-kit';
 import type { MatchItem } from '@shared/match-kit';
 import type { SequenceItem } from '@shared/sequence-kit';
+import { t } from './i18n';
 
 export interface Difficulty {
   id: string;
@@ -44,12 +45,12 @@ function easyQuestion(): QuizQuestion {
     const x = randInt(1, 20);
     const b = a + x;
     const { choices, correctIndex } = buildChoices(x, [x + 1, x - 1, b, a]);
-    return { prompt: `Solve for x: x + ${a} = ${b}`, choices, correctIndex };
+    return { prompt: t().solveXPlusA(a, b), choices, correctIndex };
   }
   const x = randInt(a + 1, a + 20);
   const b = x - a;
   const { choices, correctIndex } = buildChoices(x, [x + 1, x - 1, b, a]);
-  return { prompt: `Solve for x: x - ${a} = ${b}`, choices, correctIndex };
+  return { prompt: t().solveXMinusA(a, b), choices, correctIndex };
 }
 
 // Medium: two-step equations (ax + b = c) and combining like terms.
@@ -60,15 +61,15 @@ function mediumQuestion(): QuizQuestion {
     const b = randInt(1, 20);
     const c = a * x + b;
     const { choices, correctIndex } = buildChoices(x, [x + 1, x - 1, c, a]);
-    return { prompt: `Solve for x: ${a}x + ${b} = ${c}`, choices, correctIndex };
+    return { prompt: t().solveAxPlusB(a, b, c), choices, correctIndex };
   }
   const c1 = randInt(2, 9);
   const c2 = randInt(2, 9);
   const sum = c1 + c2;
   const { choices, correctIndex } = buildChoices(sum, [c1 * c2, sum + 1, sum - 1]);
   return {
-    prompt: `Simplify: ${c1}x + ${c2}x`,
-    sub: 'Combine the like terms.',
+    prompt: t().simplify(c1, c2),
+    sub: t().combineLikeTerms,
     choices: choices.map((n) => `${n}x`),
     correctIndex,
   };
@@ -83,14 +84,14 @@ function hardQuestion(): QuizQuestion {
     const b = randInt(1, 15);
     const d = b + (a - c) * x;
     const { choices, correctIndex } = buildChoices(x, [x + 1, x - 1, b, d]);
-    return { prompt: `Solve for x: ${a}x + ${b} = ${c}x + ${d}`, choices, correctIndex };
+    return { prompt: t().solveBothSides(a, b, c, d), choices, correctIndex };
   }
   const x = randInt(2, 10);
   const a = randInt(2, 8);
   const b = randInt(1, 15);
   const correct = a * x + b;
   const { choices, correctIndex } = buildChoices(correct, [a * x, correct + a, correct - b, x + a + b]);
-  return { prompt: `If x = ${x}, what is ${a}x + ${b}?`, choices, correctIndex };
+  return { prompt: t().evaluate(x, a, b), choices, correctIndex };
 }
 
 export function generateQuestion(difficulty: Difficulty): QuizQuestion {
@@ -140,7 +141,7 @@ function hardProblem(): AlgebraProblem {
   const a = randInt(2, 8);
   const b = randInt(1, 15);
   const value = a * x + b;
-  return { label: `If x = ${x}: ${a}x + ${b}`, value };
+  return { label: t().evaluateLabel(x, a, b), value };
 }
 
 function problemFor(difficulty: Difficulty): AlgebraProblem {

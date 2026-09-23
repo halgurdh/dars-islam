@@ -2,6 +2,7 @@ import type { QuizQuestion } from '@shared/quiz-kit';
 import type { MatchItem } from '@shared/match-kit';
 import type { SequenceItem } from '@shared/sequence-kit';
 import { buildNumericChoices, randInt, shuffle } from '../choices';
+import { t } from '../i18n';
 
 export const TOTAL_QUESTIONS = 10;
 
@@ -32,7 +33,7 @@ export function generateQuestion(index: number): QuizQuestion {
   ]);
   return {
     prompt: `√${num} ≈ ?`,
-    sub: 'Trick: find the two perfect squares it sits between',
+    sub: t().sqrtTrick,
     choices,
     correctIndex,
   };

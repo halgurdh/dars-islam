@@ -1,6 +1,7 @@
 import type { QuizQuestion } from '@shared/quiz-kit';
 import type { MatchItem } from '@shared/match-kit';
 import type { SequenceItem } from '@shared/sequence-kit';
+import { t } from './i18n';
 
 export interface Difficulty {
   id: string;
@@ -47,19 +48,18 @@ function buildStringChoices(correct: string, pool: string[]): { choices: string[
   return { choices: arr, correctIndex: arr.indexOf(correct) };
 }
 
-const NEEDS = ['Food', 'Water', 'A place to live', 'Medicine'];
-const WANTS = ['A new toy', 'Candy', 'A video game', 'A second dessert'];
-
 // Easy: needs vs. wants, and simple money addition/change-making.
 function easyQuestion(): QuizQuestion {
+  const needs = t().needsWords;
+  const wants = t().wantsWords;
   const kind = randInt(0, 1);
   if (kind === 0) {
     const wantAsAnswer = Math.random() < 0.5;
-    const correct = wantAsAnswer ? WANTS[randInt(0, WANTS.length - 1)] : NEEDS[randInt(0, NEEDS.length - 1)];
-    const wrongPool = wantAsAnswer ? NEEDS : WANTS;
+    const correct = wantAsAnswer ? wants[randInt(0, wants.length - 1)] : needs[randInt(0, needs.length - 1)];
+    const wrongPool = wantAsAnswer ? needs : wants;
     const { choices, correctIndex } = buildStringChoices(correct, wrongPool);
     return {
-      prompt: wantAsAnswer ? 'Which one is a want (nice to have, not necessary)?' : 'Which one is a need (something you must have)?',
+      prompt: wantAsAnswer ? t().askWant : t().askNeed,
       choices,
       correctIndex,
     };
@@ -68,7 +68,7 @@ function easyQuestion(): QuizQuestion {
   const haveB = [1, 2, 5][randInt(0, 2)];
   const correct = haveA + haveB;
   const { choices, correctIndex } = buildChoices(correct, [correct + 1, correct - 1, haveA * haveB, haveA]);
-  return { prompt: `You have $${haveA} and get $${haveB} more.`, sub: 'How much do you have now?', choices, correctIndex };
+  return { prompt: t().haveMore(haveA, haveB), sub: t().howMuchNow, choices, correctIndex };
 }
 
 // Medium: percentages and discounts on a price.
@@ -81,12 +81,12 @@ function mediumQuestion(): QuizQuestion {
   if (kind === 0) {
     const correct = (price * percent) / 100;
     const { choices, correctIndex } = buildChoices(correct, [price - correct, correct + 2, correct - 2, price]);
-    return { prompt: `What is ${percent}% of $${price}?`, choices, correctIndex };
+    return { prompt: t().percentOf(percent, price), choices, correctIndex };
   }
   const discount = (price * percent) / 100;
   const correct = price - discount;
   const { choices, correctIndex } = buildChoices(correct, [discount, correct + 2, correct - 2, price]);
-  return { prompt: `A toy costs $${price} and is ${percent}% off.`, sub: 'What is the sale price?', choices, correctIndex };
+  return { prompt: t().discountOff(price, percent), sub: t().salePrice, choices, correctIndex };
 }
 
 // Hard: zakat on savings — the standard simplified rule taught to
@@ -97,8 +97,8 @@ function hardQuestion(): QuizQuestion {
   const correct = (base * 2.5) / 100;
   const { choices, correctIndex } = buildChoices(correct, [correct * 2, Math.round(correct / 2), correct + 5, (base * 5) / 100]);
   return {
-    prompt: `Someone has saved $${base} for a full year.`,
-    sub: 'Zakat on savings is 2.5%. How much zakat do they owe?',
+    prompt: t().savedYear(base),
+    sub: t().zakatQuestion,
     choices,
     correctIndex,
   };

@@ -461,6 +461,13 @@ export function bootQuizGame(backgroundColor: string, scenes: Phaser.Scene[]): P
     scale: {
       mode: Phaser.Scale.FIT,
       autoCenter: Phaser.Scale.CENTER_BOTH,
+      // Without this the canvas keeps a fixed 720x1280 pixel buffer and
+      // Scale.FIT just stretches it via CSS to whatever size it's displayed
+      // at — barely visible at normal embedded size, but very visible once
+      // fullscreen (or a large/high-DPI screen) blows that same buffer up
+      // further. Capped at 2 so very high-DPR phones don't 3x/4x the actual
+      // render workload for a gain nobody can see past ~2x anyway.
+      resolution: Math.min(window.devicePixelRatio || 1, 2),
     },
     scene: scenes,
   });

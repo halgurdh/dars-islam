@@ -32,7 +32,7 @@ const matchMode: GameMode = {
             roundSummary: t().matchRoundSummary,
             nextLevelHint: t().nextLevelHint,
           },
-          items: generateMatchItems(MATCH_PAIRS),
+          items: () => generateMatchItems(MATCH_PAIRS),
           menuSceneKey: 'MenuScene',
         });
       },

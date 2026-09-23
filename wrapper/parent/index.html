@@ -138,6 +138,7 @@
       import { printCertificate } from '@shared/certificates';
       import { isCertificateEligible } from '@shared/player-progress';
       import { renderLanguagePickerDom } from '@shared/language-picker-dom';
+      import { reportContent } from '@shared/report-api';
       import { t } from '../parent-i18n';
       import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 
@@ -209,9 +210,9 @@
             msg.className = 'form-msg form-msg--ok';
             msg.textContent = t().linked;
             setTimeout(render, 600);
-          } catch {
+          } catch (err) {
             msg.className = 'form-msg form-msg--error';
-            msg.textContent = t().couldNotLink;
+            msg.textContent = String(err?.message ?? '').includes('Too many attempts') ? t().tooManyAttempts : t().couldNotLink;
           }
         });
       }
@@ -305,7 +306,23 @@
           card.hidden = false;
           card.innerHTML = `
             <h2>${t().announcementsHeading(escapeHtml(child.class_name))}</h2>
-            ${items.map((a) => `<p style="margin:0 0 8px"><strong>${new Date(a.created_at).toLocaleDateString()}:</strong> ${escapeHtml(a.message)}</p>`).join('')}`;
+            ${items.map((a) => `<p style="margin:0 0 8px">
+              <strong>${new Date(a.created_at).toLocaleDateString()}:</strong> ${escapeHtml(a.message)}
+              <a href="#" class="report-announcement-link" data-report-id="${a.id}" style="font-size:0.72rem;opacity:0.6;margin-left:6px;white-space:nowrap;">🚩 ${t().reportLink}</a>
+            </p>`).join('')}`;
+          card.querySelectorAll('.report-announcement-link').forEach((link) => {
+            link.addEventListener('click', async (e) => {
+              e.preventDefault();
+              const reason = window.prompt(t().reportPromptLabel);
+              if (!reason || !reason.trim()) return;
+              try {
+                await reportContent('announcement', link.dataset.reportId, reason.trim());
+                window.alert(t().reportSentAlert);
+              } catch {
+                window.alert(t().reportFailedAlert);
+              }
+            });
+          });
         } catch { card.hidden = true; }
       }
 

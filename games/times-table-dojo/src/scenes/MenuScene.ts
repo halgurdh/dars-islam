@@ -36,7 +36,7 @@ const matchMode: GameMode = {
           roundSummary: t().matchRoundSummary,
           nextLevelHint: t().nextLevelHint,
         },
-        items: generateMatchItems([6, 8, 10][i] ?? 6, d.maxTable),
+        items: () => generateMatchItems([6, 8, 10][i] ?? 6, d.maxTable),
         menuSceneKey: 'MenuScene',
       });
     },

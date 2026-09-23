@@ -1,5 +1,5 @@
 import { COLORS, FONT } from '../theme';
-import { DIFFICULTIES, PLANETS, generateRound } from '../questions';
+import { DIFFICULTIES, PLANETS, generateRound, nameFor, factFor } from '../questions';
 import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { t } from '../i18n';
 import { createModeMenuScene, matchMode, quizMode, sequenceMode } from '@shared/mode-menu-kit';
@@ -24,16 +24,16 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 function buildMatchItems(): MatchItem[] {
-  return PLANETS.map((p) => ({ id: p.id, sideA: p.name, sideB: p.fact }));
+  return PLANETS.map((p) => ({ id: p.id, sideA: nameFor(p), sideB: factFor(p) }));
 }
 
 function generateQuizQuestion(): QuizQuestion {
   const [correct, ...distractors] = shuffle(PLANETS).slice(0, 4);
-  const choices = shuffle([correct, ...distractors].map((p) => p.fact));
+  const choices = shuffle([correct, ...distractors].map((p) => factFor(p)));
   return {
-    prompt: correct.name,
+    prompt: nameFor(correct),
     choices,
-    correctIndex: choices.indexOf(correct.fact),
+    correctIndex: choices.indexOf(factFor(correct)),
   };
 }
 
@@ -81,7 +81,7 @@ export const MenuScene = createModeMenuScene({
         roundSummary: t().matchRoundSummary,
         nextLevelHint: t().nextLevelHint,
       }),
-      items: buildMatchItems(),
+      items: buildMatchItems,
       difficulties: [
         { label: () => t().easy, pairs: 4 },
         { label: () => t().medium, pairs: 6 },

@@ -68,14 +68,14 @@ export class MenuScene extends Phaser.Scene {
 
     const icon = this.add.text(-w / 2 + 40, 0, trick.icon, { fontSize: '34px' }).setOrigin(0.5);
 
-    const title = this.add.text(-w / 2 + 78, -h * 0.24, trick.title, {
+    const title = this.add.text(-w / 2 + 78, -h * 0.24, trick.title(), {
       fontFamily: FONT,
       fontSize: '23px',
       fontStyle: 'bold',
       color: COLORS.text,
     }).setOrigin(0, 0.5);
 
-    const summary = this.add.text(-w / 2 + 78, h * 0.18, trick.summary, {
+    const summary = this.add.text(-w / 2 + 78, h * 0.18, trick.summary(), {
       fontFamily: FONT,
       fontSize: '17px',
       color: COLORS.textMuted,

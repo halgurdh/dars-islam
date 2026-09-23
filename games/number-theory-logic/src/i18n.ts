@@ -27,6 +27,13 @@ interface Strings {
   mistakes: (n: number) => string;
   instruction: string;
   sequenceRoundSummary: (perfect: number, total: number) => string;
+
+  askPrime: string;
+  askMultiple: (n: number) => string;
+  askGcf: (a: number, b: number) => string;
+  askLcm: (a: number, b: number) => string;
+  askNextInPattern: (terms: string) => string;
+  askRemainder: (a: number, b: number) => string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
@@ -56,6 +63,13 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Mistakes: ${n}`,
     instruction: 'Tap the problems from smallest to largest answer',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rounds perfect`,
+
+    askPrime: 'Which of these numbers is prime?',
+    askMultiple: (n) => `Which of these numbers is a multiple of ${n}?`,
+    askGcf: (a, b) => `What is the greatest common factor (GCF) of ${a} and ${b}?`,
+    askLcm: (a, b) => `What is the least common multiple (LCM) of ${a} and ${b}?`,
+    askNextInPattern: (terms) => `What comes next in the pattern: ${terms}, ___?`,
+    askRemainder: (a, b) => `What is the remainder when ${a} is divided by ${b}?`,
   },
   nl: {
     title: 'Number Theory & Logic',
@@ -83,6 +97,13 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Fouten: ${n}`,
     instruction: 'Tik de opgaven van kleinste naar grootste antwoord aan',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondes perfect`,
+
+    askPrime: 'Welk van deze getallen is een priemgetal?',
+    askMultiple: (n) => `Welk van deze getallen is een veelvoud van ${n}?`,
+    askGcf: (a, b) => `Wat is de grootste gemene deler (GGD) van ${a} en ${b}?`,
+    askLcm: (a, b) => `Wat is het kleinste gemene veelvoud (KGV) van ${a} en ${b}?`,
+    askNextInPattern: (terms) => `Wat komt hierna in het patroon: ${terms}, ___?`,
+    askRemainder: (a, b) => `Wat is de rest als ${a} wordt gedeeld door ${b}?`,
   },
   de: {
     title: 'Number Theory & Logic',
@@ -110,6 +131,13 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Fehler: ${n}`,
     instruction: 'Tippe die Aufgaben vom kleinsten zum größten Ergebnis an',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} Runden perfekt`,
+
+    askPrime: 'Welche dieser Zahlen ist eine Primzahl?',
+    askMultiple: (n) => `Welche dieser Zahlen ist ein Vielfaches von ${n}?`,
+    askGcf: (a, b) => `Was ist der größte gemeinsame Teiler (GGT) von ${a} und ${b}?`,
+    askLcm: (a, b) => `Was ist das kleinste gemeinsame Vielfache (KGV) von ${a} und ${b}?`,
+    askNextInPattern: (terms) => `Was kommt als Nächstes in diesem Muster: ${terms}, ___?`,
+    askRemainder: (a, b) => `Was ist der Rest, wenn ${a} durch ${b} geteilt wird?`,
   },
   es: {
     title: 'Number Theory & Logic',
@@ -137,6 +165,13 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Errores: ${n}`,
     instruction: 'Toca los problemas de menor a mayor resultado',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondas perfectas`,
+
+    askPrime: '¿Cuál de estos números es primo?',
+    askMultiple: (n) => `¿Cuál de estos números es múltiplo de ${n}?`,
+    askGcf: (a, b) => `¿Cuál es el máximo común divisor (MCD) de ${a} y ${b}?`,
+    askLcm: (a, b) => `¿Cuál es el mínimo común múltiplo (MCM) de ${a} y ${b}?`,
+    askNextInPattern: (terms) => `¿Qué sigue en el patrón: ${terms}, ___?`,
+    askRemainder: (a, b) => `¿Cuál es el resto de dividir ${a} entre ${b}?`,
   },
   fr: {
     title: 'Number Theory & Logic',
@@ -164,6 +199,13 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Erreurs : ${n}`,
     instruction: 'Touche les problèmes du plus petit au plus grand résultat',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
+
+    askPrime: 'Lequel de ces nombres est un nombre premier ?',
+    askMultiple: (n) => `Lequel de ces nombres est un multiple de ${n} ?`,
+    askGcf: (a, b) => `Quel est le plus grand commun diviseur (PGCD) de ${a} et ${b} ?`,
+    askLcm: (a, b) => `Quel est le plus petit commun multiple (PPCM) de ${a} et ${b} ?`,
+    askNextInPattern: (terms) => `Qu'est-ce qui vient ensuite dans le motif : ${terms}, ___ ?`,
+    askRemainder: (a, b) => `Quel est le reste de la division de ${a} par ${b} ?`,
   },
   ar: {
     title: 'Number Theory & Logic',
@@ -191,6 +233,13 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `الأخطاء: ${n}`,
     instruction: 'اضغط على المسائل من الإجابة الأصغر إلى الأكبر',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولات مثالية`,
+
+    askPrime: 'أي من هذه الأرقام هو عدد أولي؟',
+    askMultiple: (n) => `أي من هذه الأرقام مضاعف لـ ${n}؟`,
+    askGcf: (a, b) => `ما هو القاسم المشترك الأكبر لـ ${a} و ${b}؟`,
+    askLcm: (a, b) => `ما هو المضاعف المشترك الأصغر لـ ${a} و ${b}؟`,
+    askNextInPattern: (terms) => `ما الذي يأتي بعد ذلك في النمط: ${terms}، ___؟`,
+    askRemainder: (a, b) => `ما هو الباقي عند قسمة ${a} على ${b}؟`,
   },
 };
 

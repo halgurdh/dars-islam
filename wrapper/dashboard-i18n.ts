@@ -46,6 +46,11 @@ export interface Strings {
   joining: string;
   joinedReloading: (className: string) => string;
   joinError: string;
+  tooManyAttempts: string;
+  reportLink: string;
+  reportPromptLabel: string;
+  reportSentAlert: string;
+  reportFailedAlert: string;
 }
 
 export const STRINGS: Record<LangMode, Strings> = {
@@ -95,6 +100,11 @@ export const STRINGS: Record<LangMode, Strings> = {
     joining: 'Joining…',
     joinedReloading: (className) => `Joined ${className}! Reloading…`,
     joinError: 'Could not join — check the code and try again.',
+    tooManyAttempts: 'Too many attempts. Please wait a few minutes and try again.',
+    reportLink: 'Report',
+    reportPromptLabel: 'What\'s wrong with this announcement?',
+    reportSentAlert: 'Thanks — we\'ll review this as soon as possible.',
+    reportFailedAlert: 'Could not send the report — try again.',
   },
   nl: {
     backToGames: '← Terug naar spellen',
@@ -142,6 +152,11 @@ export const STRINGS: Record<LangMode, Strings> = {
     joining: 'Bezig met deelnemen…',
     joinedReloading: (className) => `Deelgenomen aan ${className}! Herladen…`,
     joinError: 'Kon niet deelnemen — controleer de code en probeer opnieuw.',
+    tooManyAttempts: 'Te veel pogingen. Wacht een paar minuten en probeer opnieuw.',
+    reportLink: 'Melden',
+    reportPromptLabel: 'Wat is er mis met deze mededeling?',
+    reportSentAlert: 'Bedankt — we bekijken dit zo snel mogelijk.',
+    reportFailedAlert: 'Kon de melding niet versturen — probeer opnieuw.',
   },
   de: {
     backToGames: '← Zurück zu den Spielen',
@@ -189,6 +204,11 @@ export const STRINGS: Record<LangMode, Strings> = {
     joining: 'Trete bei…',
     joinedReloading: (className) => `${className} beigetreten! Wird neu geladen…`,
     joinError: 'Beitritt fehlgeschlagen — überprüfe den Code und versuche es erneut.',
+    tooManyAttempts: 'Zu viele Versuche. Bitte warte ein paar Minuten und versuche es erneut.',
+    reportLink: 'Melden',
+    reportPromptLabel: 'Was stimmt mit dieser Ankündigung nicht?',
+    reportSentAlert: 'Danke — wir prüfen das so schnell wie möglich.',
+    reportFailedAlert: 'Meldung konnte nicht gesendet werden — versuche es erneut.',
   },
   es: {
     backToGames: '← Volver a los juegos',
@@ -236,6 +256,11 @@ export const STRINGS: Record<LangMode, Strings> = {
     joining: 'Uniéndose…',
     joinedReloading: (className) => `¡Te uniste a ${className}! Recargando…`,
     joinError: 'No se pudo unir — verifica el código e inténtalo de nuevo.',
+    tooManyAttempts: 'Demasiados intentos. Espera unos minutos e inténtalo de nuevo.',
+    reportLink: 'Reportar',
+    reportPromptLabel: '¿Qué tiene de malo este anuncio?',
+    reportSentAlert: 'Gracias — lo revisaremos lo antes posible.',
+    reportFailedAlert: 'No se pudo enviar el reporte — inténtalo de nuevo.',
   },
   fr: {
     backToGames: '← Retour aux jeux',
@@ -283,6 +308,11 @@ export const STRINGS: Record<LangMode, Strings> = {
     joining: 'Adhésion en cours…',
     joinedReloading: (className) => `Rejoint ${className} ! Rechargement…`,
     joinError: "Impossible de rejoindre — vérifie le code et réessaie.",
+    tooManyAttempts: 'Trop de tentatives. Veuillez patienter quelques minutes et réessayer.',
+    reportLink: 'Signaler',
+    reportPromptLabel: "Qu'est-ce qui ne va pas avec cette annonce ?",
+    reportSentAlert: 'Merci — nous allons examiner cela dès que possible.',
+    reportFailedAlert: "Impossible d'envoyer le signalement — réessaie.",
   },
   ar: {
     backToGames: '← العودة إلى الألعاب',
@@ -330,6 +360,11 @@ export const STRINGS: Record<LangMode, Strings> = {
     joining: 'جارٍ الانضمام…',
     joinedReloading: (className) => `تم الانضمام إلى ${className}! جارٍ إعادة التحميل…`,
     joinError: 'تعذر الانضمام — تحقق من الرمز وحاول مرة أخرى.',
+    tooManyAttempts: 'محاولات كثيرة جدًا. يرجى الانتظار بضع دقائق ثم المحاولة مرة أخرى.',
+    reportLink: 'إبلاغ',
+    reportPromptLabel: 'ما الخطأ في هذا الإعلان؟',
+    reportSentAlert: 'شكرًا — سنراجع هذا في أقرب وقت ممكن.',
+    reportFailedAlert: 'تعذر إرسال البلاغ — حاول مرة أخرى.',
   },
 };
 

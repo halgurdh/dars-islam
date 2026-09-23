@@ -27,6 +27,23 @@ interface Strings {
   mistakes: (n: number) => string;
   instruction: string;
   sequenceRoundSummary: (perfect: number, total: number) => string;
+
+  numbersPrompt: (nums: string) => string;
+  askMean: string;
+  askMedian: string;
+  askMode: string;
+  fruitNames: string[];
+  askRange: string;
+  askMostPicked: string;
+  askTotalFruit: string;
+  dataPrompt: (data: string) => string;
+  askOutlier: string;
+  teamScorePrompt: (games: number, scores: string) => string;
+  askTotalScore: string;
+
+  meanLabel: (nums: string) => string;
+  rangeLabel: (nums: string) => string;
+  scoresLabel: (games: number, scores: string) => string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
@@ -56,6 +73,23 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Mistakes: ${n}`,
     instruction: 'Tap the problems from smallest to largest answer',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rounds perfect`,
+
+    numbersPrompt: (nums) => `Numbers: ${nums}`,
+    askMean: 'What is the mean (average)?',
+    askMedian: 'What is the median (middle value)?',
+    askMode: 'What is the mode (most frequent value)?',
+    fruitNames: ['apples', 'bananas', 'oranges', 'grapes'],
+    askRange: 'What is the range (biggest minus smallest)?',
+    askMostPicked: 'Which fruit was picked the most?',
+    askTotalFruit: 'How many pieces of fruit were picked in total?',
+    dataPrompt: (data) => `Data: ${data}`,
+    askOutlier: 'Which number is the outlier (very different from the rest)?',
+    teamScorePrompt: (games, scores) => `A team scored these points in ${games} games: ${scores}.`,
+    askTotalScore: 'What was their total score?',
+
+    meanLabel: (nums) => `Mean of ${nums}`,
+    rangeLabel: (nums) => `Range of ${nums}`,
+    scoresLabel: (games, scores) => `${games} scores: ${scores}`,
   },
   nl: {
     title: 'Statistics Essentials',
@@ -83,6 +117,23 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Fouten: ${n}`,
     instruction: 'Tik de opgaven van kleinste naar grootste antwoord aan',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondes perfect`,
+
+    numbersPrompt: (nums) => `Getallen: ${nums}`,
+    askMean: 'Wat is het gemiddelde?',
+    askMedian: 'Wat is de mediaan (middelste waarde)?',
+    askMode: 'Wat is de modus (meest voorkomende waarde)?',
+    fruitNames: ['appels', 'bananen', 'sinaasappels', 'druiven'],
+    askRange: 'Wat is de spreidingsbreedte (grootste min kleinste)?',
+    askMostPicked: 'Welk fruit werd het meest geplukt?',
+    askTotalFruit: 'Hoeveel stuks fruit werden er in totaal geplukt?',
+    dataPrompt: (data) => `Gegevens: ${data}`,
+    askOutlier: 'Welk getal is de uitschieter (heel anders dan de rest)?',
+    teamScorePrompt: (games, scores) => `Een team scoorde deze punten in ${games} wedstrijden: ${scores}.`,
+    askTotalScore: 'Wat was hun totale score?',
+
+    meanLabel: (nums) => `Gemiddelde van ${nums}`,
+    rangeLabel: (nums) => `Spreidingsbreedte van ${nums}`,
+    scoresLabel: (games, scores) => `${games} scores: ${scores}`,
   },
   de: {
     title: 'Statistics Essentials',
@@ -110,6 +161,23 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Fehler: ${n}`,
     instruction: 'Tippe die Aufgaben vom kleinsten zum größten Ergebnis an',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} Runden perfekt`,
+
+    numbersPrompt: (nums) => `Zahlen: ${nums}`,
+    askMean: 'Was ist der Mittelwert (Durchschnitt)?',
+    askMedian: 'Was ist der Median (mittlerer Wert)?',
+    askMode: 'Was ist der Modus (häufigster Wert)?',
+    fruitNames: ['Äpfel', 'Bananen', 'Orangen', 'Trauben'],
+    askRange: 'Was ist die Spannweite (größter minus kleinster Wert)?',
+    askMostPicked: 'Welche Frucht wurde am meisten gepflückt?',
+    askTotalFruit: 'Wie viele Früchte wurden insgesamt gepflückt?',
+    dataPrompt: (data) => `Daten: ${data}`,
+    askOutlier: 'Welche Zahl ist der Ausreißer (sehr anders als der Rest)?',
+    teamScorePrompt: (games, scores) => `Eine Mannschaft erzielte diese Punkte in ${games} Spielen: ${scores}.`,
+    askTotalScore: 'Wie hoch war ihre Gesamtpunktzahl?',
+
+    meanLabel: (nums) => `Mittelwert von ${nums}`,
+    rangeLabel: (nums) => `Spannweite von ${nums}`,
+    scoresLabel: (games, scores) => `${games} Punktzahlen: ${scores}`,
   },
   es: {
     title: 'Statistics Essentials',
@@ -137,6 +205,23 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Errores: ${n}`,
     instruction: 'Toca los problemas de menor a mayor resultado',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondas perfectas`,
+
+    numbersPrompt: (nums) => `Números: ${nums}`,
+    askMean: '¿Cuál es la media (el promedio)?',
+    askMedian: '¿Cuál es la mediana (el valor central)?',
+    askMode: '¿Cuál es la moda (el valor más frecuente)?',
+    fruitNames: ['manzanas', 'plátanos', 'naranjas', 'uvas'],
+    askRange: '¿Cuál es el rango (el mayor menos el menor)?',
+    askMostPicked: '¿Qué fruta se recogió más?',
+    askTotalFruit: '¿Cuántas frutas se recogieron en total?',
+    dataPrompt: (data) => `Datos: ${data}`,
+    askOutlier: '¿Cuál número es el valor atípico (muy diferente del resto)?',
+    teamScorePrompt: (games, scores) => `Un equipo anotó estos puntos en ${games} partidos: ${scores}.`,
+    askTotalScore: '¿Cuál fue su puntuación total?',
+
+    meanLabel: (nums) => `Media de ${nums}`,
+    rangeLabel: (nums) => `Rango de ${nums}`,
+    scoresLabel: (games, scores) => `${games} puntuaciones: ${scores}`,
   },
   fr: {
     title: 'Statistics Essentials',
@@ -164,6 +249,23 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `Erreurs : ${n}`,
     instruction: 'Touche les problèmes du plus petit au plus grand résultat',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
+
+    numbersPrompt: (nums) => `Nombres : ${nums}`,
+    askMean: 'Quelle est la moyenne ?',
+    askMedian: 'Quelle est la médiane (valeur du milieu) ?',
+    askMode: 'Quel est le mode (valeur la plus fréquente) ?',
+    fruitNames: ['pommes', 'bananes', 'oranges', 'raisins'],
+    askRange: "Quelle est l'étendue (le plus grand moins le plus petit) ?",
+    askMostPicked: 'Quel fruit a été cueilli le plus ?',
+    askTotalFruit: 'Combien de fruits ont été cueillis au total ?',
+    dataPrompt: (data) => `Données : ${data}`,
+    askOutlier: 'Quel nombre est la valeur aberrante (très différente des autres) ?',
+    teamScorePrompt: (games, scores) => `Une équipe a marqué ces points en ${games} matchs : ${scores}.`,
+    askTotalScore: 'Quel était leur score total ?',
+
+    meanLabel: (nums) => `Moyenne de ${nums}`,
+    rangeLabel: (nums) => `Étendue de ${nums}`,
+    scoresLabel: (games, scores) => `${games} scores : ${scores}`,
   },
   ar: {
     title: 'Statistics Essentials',
@@ -191,6 +293,23 @@ const STRINGS: Record<LangMode, Strings> = {
     mistakes: (n) => `الأخطاء: ${n}`,
     instruction: 'اضغط على المسائل من الأصغر إلى الأكبر إجابةً',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولات مثالية`,
+
+    numbersPrompt: (nums) => `الأرقام: ${nums}`,
+    askMean: 'ما هو المتوسط الحسابي؟',
+    askMedian: 'ما هو الوسيط (القيمة الوسطى)؟',
+    askMode: 'ما هو المنوال (القيمة الأكثر تكرارًا)؟',
+    fruitNames: ['تفاح', 'موز', 'برتقال', 'عنب'],
+    askRange: 'ما هو المدى (الأكبر ناقص الأصغر)؟',
+    askMostPicked: 'أي فاكهة تم قطفها أكثر؟',
+    askTotalFruit: 'كم عدد قطع الفاكهة التي تم قطفها في المجموع؟',
+    dataPrompt: (data) => `البيانات: ${data}`,
+    askOutlier: 'أي رقم هو القيمة الشاذة (مختلف جدًا عن البقية)؟',
+    teamScorePrompt: (games, scores) => `سجّل فريق هذه النقاط في ${games} مباريات: ${scores}.`,
+    askTotalScore: 'ما هي نقاطهم الإجمالية؟',
+
+    meanLabel: (nums) => `متوسط ${nums}`,
+    rangeLabel: (nums) => `مدى ${nums}`,
+    scoresLabel: (games, scores) => `${games} نتائج: ${scores}`,
   },
 };
 

@@ -32,7 +32,7 @@ export class LearnScene extends Phaser.Scene {
     back.setPadding(14, 14, 14, 14);
     back.on('pointerdown', () => this.scene.start('MenuScene'));
 
-    this.add.text(width / 2, headerY, `${this.trick.icon} ${this.trick.title}`, {
+    this.add.text(width / 2, headerY, `${this.trick.icon} ${this.trick.title()}`, {
       fontFamily: FONT,
       fontSize: '26px',
       fontStyle: 'bold',
@@ -49,7 +49,7 @@ export class LearnScene extends Phaser.Scene {
     }).setOrigin(0, 0.5);
     y += height * 0.035;
 
-    this.trick.steps.forEach((step) => {
+    this.trick.steps().forEach((step) => {
       this.add.text(width * 0.1, y, `• ${step}`, {
         fontFamily: FONT,
         fontSize: '18px',
@@ -78,7 +78,7 @@ export class LearnScene extends Phaser.Scene {
       fontStyle: 'bold',
       color: hex(COLORS.accentLight),
     }).setOrigin(0, 0.5);
-    this.add.text(width * 0.12, y + panelH * 0.68, this.trick.example.work.join('   →   '), {
+    this.add.text(width * 0.12, y + panelH * 0.68, this.trick.example.work().join('   →   '), {
       fontFamily: FONT,
       fontSize: '17px',
       color: COLORS.textMuted,

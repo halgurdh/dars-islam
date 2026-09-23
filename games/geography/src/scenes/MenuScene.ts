@@ -1,5 +1,5 @@
 import { COLORS, FONT } from '../theme';
-import { DIFFICULTIES, COUNTRIES, type Country } from '../questions';
+import { DIFFICULTIES, COUNTRIES, countryFor, capitalFor, type Country } from '../questions';
 import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { t } from '../i18n';
 import { createModeMenuScene, matchMode, quizMode, sequenceMode } from '@shared/mode-menu-kit';
@@ -25,16 +25,16 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 function buildMatchItems(): MatchItem[] {
-  return COUNTRIES.map((c) => ({ id: c.id, sideA: c.country, sideB: c.capital }));
+  return COUNTRIES.map((c) => ({ id: c.id, sideA: countryFor(c), sideB: capitalFor(c) }));
 }
 
 function generateQuizQuestion(): QuizQuestion {
   const [correct, ...distractors] = shuffle(COUNTRIES).slice(0, 4);
-  const choices = shuffle([correct, ...distractors].map((c) => c.capital));
+  const choices = shuffle([correct, ...distractors].map((c) => capitalFor(c)));
   return {
-    prompt: correct.country,
+    prompt: countryFor(correct),
     choices,
-    correctIndex: choices.indexOf(correct.capital),
+    correctIndex: choices.indexOf(capitalFor(correct)),
   };
 }
 
@@ -42,7 +42,7 @@ function generateSequenceRound(count: number): () => SequenceItem[] {
   return () => {
     const pool = shuffle(COUNTRIES).slice(0, count) as Country[];
     const sorted = [...pool].sort((a, b) => a.areaKm2 - b.areaKm2);
-    return sorted.map((c) => ({ id: c.id, label: c.country }));
+    return sorted.map((c) => ({ id: c.id, label: countryFor(c) }));
   };
 }
 
@@ -68,7 +68,7 @@ export const MenuScene = createModeMenuScene({
         roundSummary: t().matchRoundSummary,
         nextLevelHint: t().nextLevelHint,
       }),
-      items: buildMatchItems(),
+      items: buildMatchItems,
       difficulties: DIFFICULTIES.map((d) => ({ label: LABELS[d.id], pairs: d.pairs })),
     }),
     quizMode({

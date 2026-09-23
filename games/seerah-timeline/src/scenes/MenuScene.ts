@@ -1,5 +1,5 @@
 import { COLORS, FONT } from '../theme';
-import { DIFFICULTIES, EVENTS, generateRound } from '../questions';
+import { DIFFICULTIES, EVENTS, generateRound, labelFor } from '../questions';
 import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { t } from '../i18n';
 import { createModeMenuScene, matchMode, quizMode, sequenceMode, flashcardMode } from '@shared/mode-menu-kit';
@@ -26,14 +26,14 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 function buildMatchItems(): MatchItem[] {
-  return EVENTS.map((e) => ({ id: e.id, sideA: e.label, sideB: e.era }));
+  return EVENTS.map((e) => ({ id: e.id, sideA: labelFor(e), sideB: e.era }));
 }
 
 function generateQuizQuestion(): QuizQuestion {
   const [correct, ...distractors] = shuffle(EVENTS).slice(0, 4);
   const choices = shuffle([correct, ...distractors].map((e) => e.era));
   return {
-    prompt: correct.label,
+    prompt: labelFor(correct),
     choices,
     correctIndex: choices.indexOf(correct.era),
   };
@@ -48,7 +48,7 @@ function generateQuizQuestion(): QuizQuestion {
 function generateFlashcardDeck(): FlashcardItem[] {
   return EVENTS.map((e) => ({
     id: e.id,
-    primary: e.label,
+    primary: labelFor(e),
     meaning: e.era,
   }));
 }
@@ -56,7 +56,7 @@ function generateFlashcardDeck(): FlashcardItem[] {
 function generateTrueFalseQuestion(): QuizQuestion {
   const tf = trueFalseStatement(
     EVENTS,
-    (e) => e.label,
+    (e) => labelFor(e),
     (e) => e.era,
     (label, era) => t().trueFalseStatement(label, era)
   );
@@ -64,12 +64,12 @@ function generateTrueFalseQuestion(): QuizQuestion {
 }
 
 // No dedicated transliteration field exists for this game's events, so
-// Fill-in-the-Blank masks one letter of the event's own English label
-// instead (e.g. "Born in Makkah" -> "B_rn in Makkah"), with its era shown
-// as context underneath — per the task's guidance for data shapes with no
+// Fill-in-the-Blank masks one letter of the event's own label instead
+// (e.g. "Born in Makkah" -> "B_rn in Makkah"), with its era shown as
+// context underneath — per the task's guidance for data shapes with no
 // romanized name field.
 function generateFillBlankQuestion(): QuizQuestion {
-  return fillBlankWordQuestion(EVENTS, (e) => e.label, (e) => e.era);
+  return fillBlankWordQuestion(EVENTS, (e) => labelFor(e), (e) => e.era);
 }
 
 export const MenuScene = createModeMenuScene({
@@ -116,7 +116,7 @@ export const MenuScene = createModeMenuScene({
         roundSummary: t().matchRoundSummary,
         nextLevelHint: t().nextLevelHint,
       }),
-      items: buildMatchItems(),
+      items: buildMatchItems,
       difficulties: [
         { label: () => t().easy, pairs: 6 },
         { label: () => t().medium, pairs: 8 },

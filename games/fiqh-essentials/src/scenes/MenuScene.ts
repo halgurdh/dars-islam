@@ -1,5 +1,5 @@
 import { COLORS, FONT } from '../theme';
-import { DIFFICULTIES, STEPS, generateRound } from '../questions';
+import { DIFFICULTIES, STEPS, generateRound, labelFor } from '../questions';
 import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { t } from '../i18n';
 import { createModeMenuScene, matchMode, quizMode, sequenceMode, listenMode, flashcardMode } from '@shared/mode-menu-kit';
@@ -27,24 +27,24 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 function buildMatchItems(): MatchItem[] {
-  return STEPS.map((s) => ({ id: s.id, sideA: s.label, sideB: s.term }));
+  return STEPS.map((s) => ({ id: s.id, sideA: labelFor(s), sideB: s.term }));
 }
 
 function generateQuizQuestion(): QuizQuestion {
   const [correct, ...distractors] = shuffle(STEPS).slice(0, 4);
   const choices = shuffle([correct, ...distractors].map((s) => s.term));
   return {
-    prompt: correct.label,
+    prompt: labelFor(correct),
     choices,
     correctIndex: choices.indexOf(correct.term),
   };
 }
 
-// "Listen & Identify": STEPS has no Arabic-script field (only the English
-// `label` and the transliterated `term`), and shared/tts.ts's speak() will
-// refuse to speak Latin-script text with the Arabic voice — so instead of
-// forcing a broken Arabic audio call, this plays the English instruction
-// and has the player identify which Arabic term it refers to.
+// "Listen & Identify" always speaks the English instruction (labelEn, not
+// the localized labelFor()) regardless of the selected language: STEPS has
+// no Arabic-script field, and shared/tts.ts's speak() will refuse to speak
+// non-English text with the English voice — so this plays the fixed English
+// instruction and has the player identify which Arabic term it refers to.
 function generateListenQuestion(): QuizQuestion {
   const [correct, ...distractors] = shuffle(STEPS).slice(0, 4);
   const choices = shuffle([correct, ...distractors].map((s) => s.term));
@@ -52,7 +52,7 @@ function generateListenQuestion(): QuizQuestion {
     prompt: '',
     choices,
     correctIndex: choices.indexOf(correct.term),
-    speak: { text: correct.label, lang: SPEECH_LANG.en },
+    speak: { text: correct.labelEn, lang: SPEECH_LANG.en },
   };
 }
 
@@ -63,7 +63,7 @@ function generateFlashcardDeck(): FlashcardItem[] {
   return STEPS.map((s) => ({
     id: s.id,
     primary: s.term,
-    meaning: s.label,
+    meaning: labelFor(s),
   }));
 }
 
@@ -71,14 +71,14 @@ function generateTrueFalseQuestion(): QuizQuestion {
   const tf = trueFalseStatement(
     STEPS,
     (s) => s.term,
-    (s) => s.label,
+    (s) => labelFor(s),
     (term, label) => t().trueFalseStatement(term, label)
   );
   return toTrueFalseQuestion(tf, t().trueLabel, t().falseLabel);
 }
 
 function generateFillBlankQuestion(): QuizQuestion {
-  return fillBlankWordQuestion(STEPS, (s) => s.label, (s) => s.term);
+  return fillBlankWordQuestion(STEPS, (s) => labelFor(s), (s) => s.term);
 }
 
 export const MenuScene = createModeMenuScene({
@@ -125,7 +125,7 @@ export const MenuScene = createModeMenuScene({
         roundSummary: t().matchRoundSummary,
         nextLevelHint: t().nextLevelHint,
       }),
-      items: buildMatchItems(),
+      items: buildMatchItems,
       difficulties: [
         { label: () => t().easy, pairs: 4 },
         { label: () => t().medium, pairs: 6 },
