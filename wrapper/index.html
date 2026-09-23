@@ -676,12 +676,6 @@
       </div>
     </main>
 
-    <!-- Sponsor Ad Banner (hidden for premium users) -->
-    <div id="adBanner" class="ad-banner" style="display:none">
-      <button id="adBannerClose" class="ad-banner__close" aria-label="Close ad">✕</button>
-      <div id="adBannerContent" class="ad-banner__content"></div>
-    </div>
-
     <!-- Footer -->
     <footer class="hub-footer">
       <div class="footer-inner">
@@ -822,11 +816,9 @@
         })();
       }
 
-      // Donate banner — dismissible, stays dismissed once closed.
-      const DONATE_DISMISS_KEY = 'dars-islam:donate-banner-dismissed';
+      // Donate banner.
       function updateBanner() {
         const banner = document.getElementById('donateBanner');
-        if (!banner || localStorage.getItem(DONATE_DISMISS_KEY)) return;
         banner.hidden = false;
         banner.innerHTML = `
           <div class="premium-banner__inner">
@@ -839,13 +831,8 @@
             </div>
             <div class="premium-banner__ctas">
               <a class="premium-cta" href="https://paypal.me/halgurdh" target="_blank" rel="noopener">Donate now</a>
-              <button class="premium-cta premium-cta--secondary" id="donateBannerClose" type="button">Not now</button>
             </div>
           </div>`;
-        document.getElementById('donateBannerClose').addEventListener('click', () => {
-          localStorage.setItem(DONATE_DISMISS_KEY, '1');
-          banner.hidden = true;
-        });
       }
       updateBanner();
 
