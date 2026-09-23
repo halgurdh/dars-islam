@@ -32,6 +32,17 @@ export function injectBasePath() {
   const basePath = process.env.VITE_BASE_PATH || '/';
   return {
     name: 'inject-base-path',
+    // Also expose the same value to plain TS/JS source (not just HTML) as
+    // a build-time-replaced global — confirmed by testing that Vite does
+    // NOT automatically forward a raw shell/CI env var into
+    // import.meta.env.VITE_BASE_PATH the way it does for .env-file entries,
+    // so code needing the site root (e.g. a shared component linking from
+    // inside a game back to the wrapper's /teacher/ or /parent/ pages) needs
+    // this explicit define instead — see __SITE_BASE_PATH__ usage in
+    // shared/progress-bar.ts.
+    config() {
+      return { define: { __SITE_BASE_PATH__: JSON.stringify(basePath) } };
+    },
     transformIndexHtml(html: string) {
       return html.split('__VITE_BASE_PATH__').join(basePath);
     },

@@ -200,6 +200,12 @@ export class ProgressBar {
   }
 
   private openAuth(): void {
+    // Same site root for the wrapper AND every game (each build gets the
+    // same VITE_BASE_PATH baked in via injectBasePath()'s `define`, unlike
+    // import.meta.env.BASE_URL which differs per game) — used so "Teacher
+    // Dashboard"/"Parent Dashboard" links work correctly from inside a
+    // game page, not just from the wrapper hub.
+    const siteRoot = typeof __SITE_BASE_PATH__ !== 'undefined' ? __SITE_BASE_PATH__ : '/';
     const m = this.openModal(`
       <div class="pb-panel" style="max-width:320px">
         <h2>☁ Sync Progress</h2>
@@ -209,6 +215,11 @@ export class ProgressBar {
         <div id="pbMsg" style="min-height:16px;font-size:12px;margin:6px 0;color:#f60"></div>
         <button id="pbSend">Send Magic Link</button>
         <button id="pbBack" style="opacity:0.65;margin-top:6px">← Back</button>
+        <p class="pb-sub" style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.08)">
+          Registering as a <strong>teacher, mosque, or school</strong>? Use the
+          <a href="${siteRoot}teacher/">Teacher Dashboard</a> instead — it sets up your account automatically.<br>
+          Registering as a <strong>parent</strong>? Use the <a href="${siteRoot}parent/">Parent Dashboard</a>.
+        </p>
       </div>`);
 
     const emailEl = m.querySelector('#pbEmail') as HTMLInputElement;
