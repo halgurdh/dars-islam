@@ -422,6 +422,20 @@ body {
   color: #ff6b8a;
 }
 
+.footer-disclaimer {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 2rem 1.25rem;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.footer-disclaimer a {
+  color: inherit;
+  text-decoration: underline;
+}
+
 .footer-bottom {
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   padding: 1.25rem 2rem;

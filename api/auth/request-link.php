@@ -46,8 +46,8 @@ try {
 $link = SITE_URL . '/api/auth/verify.php?token=' . urlencode($token);
 
 // Send email
-$subject = 'Your darsislam Games sign-in link';
-$message = "Hi!\n\nClick the link below to sign in to darsislam Games:\n\n$link\n\nThis link expires in 1 hour and can only be used once.\n\nIf you didn't request this, ignore this email.\n\ndarsislam Games";
+$subject = 'Your dars-islam Games sign-in link';
+$message = "Hi!\n\nClick the link below to sign in to dars-islam Games:\n\n$link\n\nThis link expires in 1 hour and can only be used once.\n\nIf you didn't request this, ignore this email.\n\ndarsislam Games";
 $sent = send_text_mail($email, $subject, $message);
 if (!$sent) {
     if (defined('AUTH_DEBUG_RETURN_LINK_ON_MAIL_FAIL') && AUTH_DEBUG_RETURN_LINK_ON_MAIL_FAIL) {

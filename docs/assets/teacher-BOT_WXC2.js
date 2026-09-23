@@ -2,7 +2,7 @@ import"./theme-BRE4rC8K.js";import{s as f}from"./sync-SUIhl4Uv.js";import{S as i
 `),n=new Blob([t],{type:"text/csv;charset=utf-8;"}),o=URL.createObjectURL(n),s=document.createElement("a");s.href=o,s.download=a,document.body.appendChild(s),s.click(),s.remove(),URL.revokeObjectURL(o)}const B=new $,m=document.getElementById("app");function r(a){return String(a).replace(/[&<>"']/g,e=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[e])}function p(a){const e=new URLSearchParams(window.location.search);Object.entries(a).forEach(([t,n])=>n===null?e.delete(t):e.set(t,n)),window.history.pushState({},"",`${window.location.pathname}?${e.toString()}`),u()}function L(){m.innerHTML=`
           <div class="card">
             <h2>Sign In Required</h2>
-            <p class="sub">Sign in with the same email you use for darsislam to create or manage a school.</p>
+            <p class="sub">Sign in with the same email you use for dars-islam to create or manage a school.</p>
             <button id="teacherSignIn" style="margin-top:10px">☁ Sign in</button>
           </div>`,document.getElementById("teacherSignIn").addEventListener("click",()=>B.openSignIn())}function _(){m.innerHTML=`
           <div class="two-col">

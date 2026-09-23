@@ -1,4 +1,4 @@
-# darsislam — self-hosting image.
+# dars-islam — self-hosting image.
 #
 # Builds the static site (wrapper hub + all games) and serves it with
 # nginx. The app talks to Supabase directly from the browser (see
@@ -9,10 +9,10 @@
 #   docker build \
 #     --build-arg VITE_SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co \
 #     --build-arg VITE_SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLISHABLE_KEY_HERE \
-#     -t darsislam-games .
+#     -t dars-islam-games .
 #
 # Run:
-#   docker run -p 8080:80 darsislam-games
+#   docker run -p 8080:80 dars-islam-games
 #
 # See docker-compose.yml for the easier .env-file-driven version, and
 # SELF_HOSTING.md for the full walkthrough (including the one-time

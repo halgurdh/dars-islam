@@ -43,9 +43,9 @@ console.log('SSH_PORT:', process.env.SSH_PORT || '(none)');
 console.log('DEPLOY_PASSWORD set:', !!process.env.DEPLOY_PASSWORD, 'value:', _mask(process.env.DEPLOY_PASSWORD));
 console.log('DEPLOY_SSH_KEY set:', !!process.env.DEPLOY_SSH_KEY, 'value:', process.env.DEPLOY_SSH_KEY ? '[present]' : '(none)');
 
-const HOST = process.env.DEPLOY_HOST || 'darsislam';
+const HOST = process.env.DEPLOY_HOST || 'dars-islam';
 const USER = process.env.DEPLOY_USER || process.env.USER || process.env.USERNAME || 'www';
-const PATH_ON_SERVER = process.env.DEPLOY_PATH || '/var/www/darsislam';
+const PATH_ON_SERVER = process.env.DEPLOY_PATH || '/var/www/dars-islam';
 const SSH_PORT = parseInt(process.env.SSH_PORT || '22', 10);
 const PASSWORD = process.env.DEPLOY_PASSWORD || undefined;
 const PRIVATE_KEY = process.env.DEPLOY_SSH_KEY || undefined; // raw key or path

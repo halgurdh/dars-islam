@@ -1,7 +1,7 @@
 Param(
-  [string]$DeployHost = $env:DEPLOY_HOST -or 'darsislam',
+  [string]$DeployHost = $env:DEPLOY_HOST -or 'dars-islam',
   [string]$DeployUser = $env:DEPLOY_USER -or $env:USERNAME,
-  [string]$DeployPath = $env:DEPLOY_PATH -or '/var/www/darsislam',
+  [string]$DeployPath = $env:DEPLOY_PATH -or '/var/www/dars-islam',
   [int]$SshPort = $env:SSH_PORT -or 22,
   [switch]$DryRun
 )

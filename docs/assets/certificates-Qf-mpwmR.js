@@ -17,5 +17,5 @@ import{g as n}from"./sync-SUIhl4Uv.js";const C=[{id:"asma-match",title:"Asma Mat
       <p class="cert__title">Certificate of Achievement</p>
       <h1 class="cert__name">${m(a)}</h1>
       <p class="cert__line">has earned <span class="cert__achievement">${m(t)}</span>${s?`<br><span style="font-size:14px;color:#6b5a42">${m(s)}</span>`:""}</p>
-      <div class="cert__footer"><span>darsislam Games</span><span>${m(e)}</span></div>
+      <div class="cert__footer"><span>dars-islam Games</span><span>${m(e)}</span></div>
     </div>`}function h(a){const t=window.open("","_blank","width=980,height=720");t&&(t.document.write(`<!doctype html><html><head><title>Certificate</title><style>${S}</style></head><body>${a}</body></html>`),t.document.close(),t.focus(),setTimeout(()=>t.print(),300))}function f(){return new Date().toLocaleDateString(void 0,{year:"numeric",month:"long",day:"numeric"})}function E(a){h(_(a.studentName,a.achievement,a.subtitle,f()))}function M(a,t,s){const e=f(),i=a.map(o=>_(o.display_name||"Student",t,s,e)).join("");h(i)}export{C as G,k as S,M as a,E as p};

@@ -33,7 +33,7 @@ function json_error(string $msg, int $status = 400): never {
 }
 
 function server_error(string $publicMsg, string $logMsg): never {
-    error_log('[darsislam api] ' . $logMsg);
+    error_log('[dars-islam api] ' . $logMsg);
     json_error($publicMsg, 500);
 }
 
@@ -72,7 +72,7 @@ function client_ip(): string {
 function rate_limit_or_fail(string $bucket, int $limit, int $windowSeconds, ?string $subject = null): void {
     $subject = $subject !== null && $subject !== '' ? strtolower(trim($subject)) : client_ip();
     $key = hash('sha256', $bucket . '|' . $subject);
-    $dir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'darsislam-rate-limit';
+    $dir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'dars-islam-rate-limit';
     if (!is_dir($dir) && !@mkdir($dir, 0775, true) && !is_dir($dir)) {
         return;
     }
@@ -126,7 +126,7 @@ function body(): array {
 
 function send_text_mail(string $to, string $subject, string $message): bool {
     if (!filter_var(FROM_EMAIL, FILTER_VALIDATE_EMAIL)) {
-        error_log('[darsislam api] Invalid FROM_EMAIL configured: ' . FROM_EMAIL);
+        error_log('[dars-islam api] Invalid FROM_EMAIL configured: ' . FROM_EMAIL);
         return false;
     }
 
