@@ -3,7 +3,8 @@ import { COLORS, ARABIC_FONT, LATIN_FONT, hex } from '../theme';
 import { progress } from '../systems/Progress';
 import { sfx } from '../systems/Sfx';
 import { SALAH_STEPS } from '../data/salah';
-import { getLang, toggleLang, detectDefaultLang } from '../systems/Locale';
+import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
+import { createLanguagePicker } from '@shared/language-picker';
 import { t } from '../i18n';
 
 interface DifficultyOption {
@@ -110,9 +111,8 @@ export class BuilderMenuScene extends Phaser.Scene {
       });
     });
 
-    // Language toggle: English+Arabic <-> Dutch+Arabic
-    this.createButton(width / 2, height * 0.685, 280, 50, t().langToggle, () => {
-      toggleLang();
+    createLanguagePicker(this, width / 2, height * 0.685, COLORS.accent, getLang(), (lang) => {
+      setLang(lang);
       sfx.tap();
       this.scene.restart();
     });

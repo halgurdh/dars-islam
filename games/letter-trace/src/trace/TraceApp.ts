@@ -1,9 +1,10 @@
 import { ARABIC_LETTERS, ENGLISH_LETTERS, NUMBER_LETTERS, TraceLetter } from '../data/letters';
 import { arabicProgress, englishProgress, numbersProgress } from '../systems/Progress';
 import { sfx } from '../systems/Sfx';
-import { getLang, toggleLang, detectDefaultLang } from '../systems/Locale';
+import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { PlayerProgress } from '@shared/player-progress';
 import { ProgressBar } from '@shared/progress-bar';
+import { renderLanguagePickerDom } from '@shared/language-picker-dom';
 import { t } from '../i18n';
 import { TraceCanvas } from './TraceCanvas';
 
@@ -107,7 +108,7 @@ export class TraceApp {
     englishBtn: el<HTMLButtonElement>('alpha-english-btn'),
     numbersBtn: el<HTMLButtonElement>('alpha-numbers-btn'),
     startBtn: el<HTMLButtonElement>('start-btn'),
-    langBtn: el<HTMLButtonElement>('lang-toggle-btn'),
+    langPicker: el<HTMLDivElement>('lang-picker'),
     muteBtn: el<HTMLButtonElement>('mute-toggle-btn'),
     footer: el<HTMLParagraphElement>('menu-footer'),
   };
@@ -222,11 +223,6 @@ export class TraceApp {
       sfx.tap();
       this.startRound();
     });
-    this.menuEls.langBtn.addEventListener('click', () => {
-      toggleLang();
-      sfx.tap();
-      this.renderMenu();
-    });
     this.menuEls.muteBtn.addEventListener('click', () => {
       const muted = sfx.toggleMuted();
       this.menuEls.muteBtn.textContent = muted ? t().soundOff : t().soundOn;
@@ -268,7 +264,11 @@ export class TraceApp {
     this.menuEls.englishBtn.textContent = t().alphabetEnglish;
     this.menuEls.numbersBtn.textContent = t().alphabetNumbers;
     this.menuEls.startBtn.textContent = t().start;
-    this.menuEls.langBtn.textContent = t().langToggle;
+    renderLanguagePickerDom(this.menuEls.langPicker, getLang(), (lang) => {
+      setLang(lang);
+      sfx.tap();
+      this.renderMenu();
+    });
     this.menuEls.muteBtn.textContent = sfx.isMuted() ? t().soundOff : t().soundOn;
     this.menuEls.footer.textContent = t().footer;
 

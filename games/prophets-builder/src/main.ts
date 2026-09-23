@@ -1,4 +1,4 @@
-import { bootQuizGame } from '@shared/quiz-kit';
+import { bootQuizGame, QuizScene } from '@shared/quiz-kit';
 import { MatchScene } from '@shared/match-kit';
 import { SequenceScene } from '@shared/sequence-kit';
 import { FlashcardScene } from '@shared/flashcard-kit';
@@ -12,4 +12,4 @@ import { sfx } from './systems/Sfx';
 // by the time a player reaches a "Hear it" button, it's usually cached.
 sfx.prewarm(SPEECH_LANG.arabic);
 
-bootQuizGame('#140d1c', [new HomeScene(), new BuilderMenuScene(), new BuilderScene(), new MatchScene(), new SequenceScene(), new FlashcardScene()]);
+bootQuizGame('#140d1c', [new HomeScene(), new BuilderMenuScene(), new BuilderScene(), new MatchScene(), new SequenceScene(), new FlashcardScene(), new QuizScene()]);
