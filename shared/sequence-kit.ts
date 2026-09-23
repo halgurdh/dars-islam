@@ -10,6 +10,7 @@ import { ProgressBar } from './progress-bar';
 import type { QuizTheme } from './quiz-kit';
 import { registerActiveGameLocale, unregisterActiveGameLocale } from './active-game-locale';
 import type { LocaleHooks } from './quiz-menu-kit';
+import { createLanguagePicker } from './language-picker';
 
 const progressBar = new ProgressBar();
 
@@ -79,6 +80,7 @@ export class SequenceScene extends Phaser.Scene {
   private mistakesText!: Phaser.GameObjects.Text;
   private instructionText!: Phaser.GameObjects.Text;
   private placedText!: Phaser.GameObjects.Text;
+  private langPicker?: Phaser.GameObjects.Container;
   private correctOrder: SequenceItem[] = [];
   private placedCount = 0;
   private cardViews: { container: Phaser.GameObjects.Container; bg: Phaser.GameObjects.Graphics; item: SequenceItem; placed: boolean }[] = [];
@@ -116,6 +118,7 @@ export class SequenceScene extends Phaser.Scene {
   private static readonly INSTRUCTION_Y_FRAC = 0.335;
   private static readonly PLACED_Y_FRAC = 0.41;
   private static readonly POOL_TOP_FRAC = 0.49;
+  private static readonly LANG_PICKER_Y = SequenceScene.HUD_Y + 65;
 
   private buildHud(): void {
     const { width } = this.scale;
@@ -160,6 +163,24 @@ export class SequenceScene extends Phaser.Scene {
       wordWrap: { width: width * 0.85 },
       lineSpacing: 6,
     }).setOrigin(0.5, 0);
+
+    this.renderLangPicker();
+  }
+
+  private renderLangPicker(): void {
+    if (!this.cfg.locale) return;
+    this.langPicker?.destroy();
+    this.langPicker = createLanguagePicker(
+      this,
+      this.scale.width / 2,
+      SequenceScene.LANG_PICKER_Y,
+      this.cfg.theme.accent,
+      this.cfg.locale.getLang(),
+      (lang) => {
+        this.cfg.locale!.setLang(lang);
+        this.refreshHud();
+      }
+    );
   }
 
   private refreshHud(): void {
@@ -168,6 +189,7 @@ export class SequenceScene extends Phaser.Scene {
     this.mistakesText.setText(strings.mistakes(this.roundMistakes));
     this.menuBtn.setText(strings.menu);
     this.instructionText.setText(strings.instruction);
+    this.renderLangPicker();
   }
 
   private renderRound(): void {

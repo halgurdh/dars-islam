@@ -330,6 +330,14 @@ export const GAME_CARDS: Record<string, Record<LangMode, GameCardStrings>> = {
     fr: { title: 'Explorateur de Mots', desc: 'Apprends des mots et expressions courants dans plusieurs langues' },
     ar: { title: 'مستكشف الكلمات', desc: 'تعلّم الكلمات والعبارات الشائعة بعدة لغات' },
   },
+  'phrase-explorer': {
+    en: { title: 'Phrase Explorer', desc: 'Learn everyday sentences and expressions across several languages' },
+    nl: { title: 'Zinnetjes-ontdekker', desc: 'Leer alledaagse zinnen en uitdrukkingen in verschillende talen' },
+    de: { title: 'Satzentdecker', desc: 'Lerne alltägliche Sätze und Redewendungen in mehreren Sprachen' },
+    es: { title: 'Explorador de Frases', desc: 'Aprende frases y expresiones cotidianas en varios idiomas' },
+    fr: { title: 'Explorateur de Phrases', desc: 'Apprends des phrases et expressions courantes dans plusieurs langues' },
+    ar: { title: 'مستكشف الجمل', desc: 'تعلّم الجمل والتعبيرات اليومية بعدة لغات' },
+  },
 };
 
 export const COMING_SOON: Record<LangMode, GameCardStrings> = {

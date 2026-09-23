@@ -44,6 +44,7 @@ export const GAME_CATALOG: GameCatalogEntry[] = [
   { id: 'precalc-functions',     title: 'Pre-Calc Functions',    icon: '📈' },
   { id: 'digital-literacy',      title: 'Digital Literacy',      icon: '💻' },
   { id: 'word-explorer',         title: 'Word Explorer',         icon: '🗣️' },
+  { id: 'phrase-explorer',       title: 'Phrase Explorer',       icon: '💬' },
 ];
 
 export function gameTitle(gameId: string): string {

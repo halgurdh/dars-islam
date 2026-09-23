@@ -11,6 +11,7 @@ import { ProgressBar } from './progress-bar';
 import { startScreenTimeEnforcement } from './parental-controls';
 import { registerActiveGameLocale, unregisterActiveGameLocale } from './active-game-locale';
 import type { LocaleHooks } from './quiz-menu-kit';
+import { createLanguagePicker } from './language-picker';
 
 const progressBar = new ProgressBar();
 
@@ -113,6 +114,7 @@ export class QuizScene extends Phaser.Scene {
   private scoreText!: Phaser.GameObjects.Text;
   private promptText!: Phaser.GameObjects.Text;
   private subText!: Phaser.GameObjects.Text;
+  private langPicker?: Phaser.GameObjects.Container;
   private choiceViews: {
     container: Phaser.GameObjects.Container;
     bg: Phaser.GameObjects.Graphics;
@@ -166,6 +168,11 @@ export class QuizScene extends Phaser.Scene {
   // its own height, i.e. 0.56 - 0.06 = 0.5) so the countdown bar never
   // overlaps the first row of answer buttons.
   private static readonly TIMER_Y_FRAC = 0.47;
+  // Sits in the gap between the HUD row and the prompt (300 to ~435 at the
+  // fixed 1280 canvas height) — the same in-canvas flag row every menu
+  // screen already shows, so switching language mid-round doesn't require
+  // digging into the floating ProgressBar widget's panel.
+  private static readonly LANG_PICKER_Y = QuizScene.HUD_Y + 65;
 
   private buildHud(): void {
     const { width } = this.scale;
@@ -228,6 +235,27 @@ export class QuizScene extends Phaser.Scene {
       this.timerBarBg.fillRoundedRect(width / 2 - barW / 2, barY - 6, barW, 12, 6);
       this.timerBarFill = this.add.graphics();
     }
+
+    this.renderLangPicker();
+  }
+
+  // Redraws the flag row in place (never a scene.restart(), which would
+  // lose the in-progress round) — called once from buildHud() and again
+  // from refreshHud() so the newly-active flag's highlight updates too.
+  private renderLangPicker(): void {
+    if (!this.cfg.locale) return;
+    this.langPicker?.destroy();
+    this.langPicker = createLanguagePicker(
+      this,
+      this.scale.width / 2,
+      QuizScene.LANG_PICKER_Y,
+      this.cfg.theme.accent,
+      this.cfg.locale.getLang(),
+      (lang) => {
+        this.cfg.locale!.setLang(lang);
+        this.refreshHud();
+      }
+    );
   }
 
   private refreshHud(): void {
@@ -235,6 +263,7 @@ export class QuizScene extends Phaser.Scene {
     this.roundText.setText(strings.round(this.index + 1, this.cfg.totalQuestions));
     this.scoreText.setText(strings.score(this.score));
     this.menuBtn.setText(strings.menu);
+    this.renderLangPicker();
     // "Listen & Identify" mode shows a static tap-to-replay label here
     // instead of per-question text — chrome, not question content, so it
     // refreshes on a language switch like the rest of the HUD.

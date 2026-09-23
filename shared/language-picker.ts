@@ -48,8 +48,9 @@ function drawFlag(g: Phaser.GameObjects.Graphics, lang: LangMode, cx: number, cy
 /**
  * A row of flag buttons for picking the language directly — replaces the
  * old single "toggle to next language" button every game used to duplicate.
- * Stateless: callers re-render (usually via scene.restart()) after onSelect
- * fires, so the newly-active flag just gets its highlight on the next draw.
+ * Returns the container so a caller that can't afford a full scene.restart()
+ * (a gameplay scene mid-round) can destroy() and recreate it in place to
+ * reflect the newly-active flag, instead of restarting like the menu does.
  */
 export function createLanguagePicker(
   scene: Phaser.Scene,
@@ -58,11 +59,12 @@ export function createLanguagePicker(
   activeColor: number,
   currentLang: LangMode,
   onSelect: (lang: LangMode) => void
-): void {
+): Phaser.GameObjects.Container {
   const flagW = 40;
   const flagH = 28;
   const gap = 50;
   const startX = x - ((ORDER.length - 1) * gap) / 2;
+  const container = scene.add.container(0, 0);
 
   ORDER.forEach((lang, i) => {
     const bx = startX + i * gap;
@@ -72,18 +74,23 @@ export function createLanguagePicker(
     drawFlag(g, lang, bx, y, flagW, flagH);
     g.lineStyle(active ? 3 : 1, active ? activeColor : 0xffffff, active ? 1 : 0.25);
     g.strokeRect(bx - flagW / 2, y - flagH / 2, flagW, flagH);
+    container.add(g);
 
     if (lang === 'en' || lang === 'ar') {
-      scene.add.text(bx, y, lang === 'en' ? 'EN' : 'AR', {
+      const label = scene.add.text(bx, y, lang === 'en' ? 'EN' : 'AR', {
         fontFamily: "'Segoe UI', system-ui, sans-serif",
         fontSize: '13px',
         fontStyle: 'bold',
         color: '#ffffff',
       }).setOrigin(0.5);
+      container.add(label);
     }
 
     const hit = scene.add.rectangle(bx, y, flagW + 10, flagH + 10, 0x000000, 0);
     hit.setInteractive({ useHandCursor: true });
     hit.on('pointerdown', () => onSelect(lang));
+    container.add(hit);
   });
+
+  return container;
 }

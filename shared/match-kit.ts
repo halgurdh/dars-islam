@@ -10,6 +10,7 @@ import { PlayerProgress } from './player-progress';
 import { ProgressBar } from './progress-bar';
 import type { QuizTheme } from './quiz-kit';
 import { registerActiveGameLocale, unregisterActiveGameLocale } from './active-game-locale';
+import { createLanguagePicker } from './language-picker';
 import type { LocaleHooks } from './quiz-menu-kit';
 
 const progressBar = new ProgressBar();
@@ -209,6 +210,7 @@ export class MatchScene extends Phaser.Scene {
   private movesText!: Phaser.GameObjects.Text;
   private timerText!: Phaser.GameObjects.Text;
   private overlayShown = false;
+  private langPicker?: Phaser.GameObjects.Container;
 
   constructor(key = 'Match') {
     super(key);
@@ -253,7 +255,12 @@ export class MatchScene extends Phaser.Scene {
   // top corners of the canvas, so in-canvas HUD and board content must stay
   // clear of it — same HUD_TOP convention as asma-match/memory-match.
   private static readonly HUD_TOP = 300;
-  static readonly BOARD_TOP = MatchScene.HUD_TOP + 90;
+  // Bumped from +90 to +135 to leave room for the language picker row
+  // between the timer text and the board; buildBoard()'s cellH is derived
+  // from (boardBottom - boardTop), so tiles just get proportionally a
+  // little shorter rather than overlapping anything.
+  static readonly BOARD_TOP = MatchScene.HUD_TOP + 135;
+  private static readonly LANG_PICKER_Y = MatchScene.HUD_TOP + 95;
   private static readonly AUTO_ADVANCE_MS = 2200;
 
   private buildHud(): void {
@@ -292,6 +299,24 @@ export class MatchScene extends Phaser.Scene {
       fontSize: '14px',
       color: theme.textMuted,
     }).setOrigin(0.5);
+
+    this.renderLangPicker();
+  }
+
+  private renderLangPicker(): void {
+    if (!this.cfg.locale) return;
+    this.langPicker?.destroy();
+    this.langPicker = createLanguagePicker(
+      this,
+      this.scale.width / 2,
+      MatchScene.LANG_PICKER_Y,
+      this.cfg.theme.accent,
+      this.cfg.locale.getLang(),
+      (lang) => {
+        this.cfg.locale!.setLang(lang);
+        this.refreshHud();
+      }
+    );
   }
 
   // Safe to call mid-round: only touches independent HUD text objects, never
@@ -301,6 +326,7 @@ export class MatchScene extends Phaser.Scene {
     const strings = this.cfg.strings();
     this.menuBtn.setText(strings.menu);
     this.movesText.setText(strings.moves(this.moves));
+    this.renderLangPicker();
   }
 
   private pickItems(): MatchItem[] {
