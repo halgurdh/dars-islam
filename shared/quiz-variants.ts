@@ -74,12 +74,15 @@ export function fillBlankQuestion<T>(
  *  text where blanking a single letter would be too fine-grained to be a
  *  meaningful guess. Only considers words with 4+ letters, so the blank is
  *  never a trivial connector like "a"/"of"/"is"/"the". Returns null if no word in
- *  the text qualifies (e.g. a single very short word). */
+ *  the text qualifies (e.g. a single very short word). `\p{L}` (Unicode
+ *  letter class, not `a-zA-Z`) so this works on Arabic text too — without
+ *  it, every word in an Arabic string strips down to 0 length and nothing
+ *  is ever blankable. */
 export function blankOneWord(text: string): { prompt: string; correctWord: string } | null {
   const words = text.split(/\s+/);
   const candidates = words
     .map((w, i) => ({ w, i }))
-    .filter(({ w }) => w.replace(/[^a-zA-Z']/g, '').length >= 4);
+    .filter(({ w }) => w.replace(/[^\p{L}']/gu, '').length >= 4);
   if (candidates.length === 0) return null;
   const { w, i } = candidates[randInt(0, candidates.length - 1)];
   const blankedWords = [...words];
