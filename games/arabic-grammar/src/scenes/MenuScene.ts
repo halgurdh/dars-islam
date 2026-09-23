@@ -2,9 +2,11 @@ import { COLORS, ARABIC_FONT } from '../theme';
 import { DIFFICULTIES, ITEMS } from '../questions';
 import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { t } from '../i18n';
-import { createModeMenuScene, matchMode, quizMode, sequenceMode } from '@shared/mode-menu-kit';
+import { createModeMenuScene, matchMode, quizMode, sequenceMode, flashcardMode } from '@shared/mode-menu-kit';
 import type { QuizQuestion } from '@shared/quiz-kit';
 import type { SequenceItem } from '@shared/sequence-kit';
+import type { FlashcardItem } from '@shared/flashcard-kit';
+import { trueFalseStatement, toTrueFalseQuestion } from '@shared/quiz-variants';
 
 const GAME_ID = 'arabic-grammar';
 
@@ -42,6 +44,15 @@ function generateSequenceRound(count: number): () => SequenceItem[] {
     const sorted = [...pool].sort((a, b) => a.sideA.localeCompare(b.sideA, 'ar'));
     return sorted.map((it) => ({ id: it.id, label: it.sideA }));
   };
+}
+
+function generateTrueFalseQuestion(): QuizQuestion {
+  const tf = trueFalseStatement(ITEMS, (it) => it.sideA, (it) => it.sideB, (singular, plural) => t().trueFalseStatement(singular, plural));
+  return toTrueFalseQuestion(tf, t().trueLabel, t().falseLabel);
+}
+
+function generateFlashcardDeck(): FlashcardItem[] {
+  return ITEMS.map((it) => ({ id: it.id, primary: it.sideA, meaning: it.sideB }));
 }
 
 export const MenuScene = createModeMenuScene({
@@ -110,6 +121,49 @@ export const MenuScene = createModeMenuScene({
         { label: () => t().easy, totalRounds: 3, generateRound: generateSequenceRound(3) },
         { label: () => t().medium, totalRounds: 3, generateRound: generateSequenceRound(4) },
         { label: () => t().hard, totalRounds: 3, generateRound: generateSequenceRound(5) },
+      ],
+    }),
+    quizMode({
+      id: 'truefalse',
+      label: () => t().modeTrueFalse,
+      icon: '✓✗',
+      gameId: GAME_ID,
+      theme: COLORS,
+      fontFamily: ARABIC_FONT,
+      strings: () => ({
+        round: t().round,
+        score: t().score,
+        menu: t().menu,
+        wellDone: t().wellDone,
+        roundSummary: t().quizRoundSummary,
+        playAgain: t().playAgain,
+        backToMenu: t().menu,
+      }),
+      difficulties: [
+        { label: () => t().easy, totalQuestions: 4, generateQuestion: generateTrueFalseQuestion },
+        { label: () => t().medium, totalQuestions: 6, generateQuestion: generateTrueFalseQuestion },
+        { label: () => t().hard, totalQuestions: 8, generateQuestion: generateTrueFalseQuestion },
+      ],
+    }),
+    flashcardMode({
+      label: () => t().modeFlashcard,
+      icon: '🗂️',
+      gameId: GAME_ID,
+      theme: COLORS,
+      fontFamily: ARABIC_FONT,
+      strings: () => ({
+        menu: t().menu,
+        progress: t().flashcardProgress,
+        hear: t().hear,
+        knowIt: t().flashcardKnowIt,
+        stillLearning: t().flashcardStillLearning,
+        wellDone: t().wellDone,
+        roundSummary: t().flashcardRoundSummary,
+        playAgain: t().playAgain,
+        backToMenu: t().menu,
+      }),
+      difficulties: [
+        { label: () => t().hard, cards: generateFlashcardDeck },
       ],
     }),
   ],

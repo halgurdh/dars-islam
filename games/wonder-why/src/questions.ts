@@ -1,7 +1,10 @@
 import type { QuizQuestion } from '@shared/quiz-kit';
 import type { MatchItem } from '@shared/match-kit';
 import type { SequenceItem } from '@shared/sequence-kit';
+import type { FlashcardItem } from '@shared/flashcard-kit';
+import { toTrueFalseQuestion, fillBlankWordQuestion } from '@shared/quiz-variants';
 import { getLang } from './systems/Locale';
+import { t } from './i18n';
 
 export const TOTAL_QUESTIONS = 10;
 
@@ -237,4 +240,29 @@ export function generateSequenceRound(count: number): SequenceItem[] {
     .slice(0, n)
     .sort((a, b) => answerFor(a).length - answerFor(b).length)
     .map((fact, i) => ({ id: i, label: answerFor(fact) }));
+}
+
+// True/False: uses wrongFor()'s hand-picked distractors as the "false"
+// answer instead of a generic random mismatch — a random unrelated fact's
+// answer would rarely feel like a believable answer to this question, but
+// these curated wrong answers were written to be.
+export function generateTrueFalseQuestion(): QuizQuestion {
+  const fact = FACTS[Math.floor(Math.random() * FACTS.length)];
+  const isTrue = Math.random() < 0.5;
+  const shown = isTrue ? answerFor(fact) : wrongFor(fact)[Math.floor(Math.random() * 3)];
+  return toTrueFalseQuestion(
+    { statement: t().trueFalseStatement(promptFor(fact).replace(/\n/g, ' '), shown), isTrue },
+    t().trueLabel,
+    t().falseLabel
+  );
+}
+
+export function generateFillBlankQuestion(): QuizQuestion {
+  return fillBlankWordQuestion(FACTS, answerFor, promptFor);
+}
+
+// Synthetic ids from array index — FACTS never reorders at runtime, so
+// index is stable across a session even though the source data has no id.
+export function generateFlashcardDeck(): FlashcardItem[] {
+  return FACTS.map((fact, i) => ({ id: i, primary: promptFor(fact), meaning: answerFor(fact) }));
 }

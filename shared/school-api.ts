@@ -148,6 +148,11 @@ export const SchoolApi = {
 
   async joinSchool(inviteCode: string): Promise<{ id: string; name: string }> {
     const supabase = getSupabase();
+    try {
+      await supabase.rpc('record_code_attempt', { p_rpc_name: 'join_school' });
+    } catch {
+      // best-effort; a failure here shouldn't block the join attempt itself
+    }
     const { data, error } = await supabase.rpc('join_school', { p_invite_code: inviteCode });
     if (error) throw error;
     return { id: data.id, name: data.name };

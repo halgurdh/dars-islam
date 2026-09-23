@@ -28,7 +28,11 @@ export interface ParentalControls {
 export const ParentApi = {
   async linkChild(familyCode: string): Promise<void> {
     const supabase = getSupabase();
-    await supabase.rpc('record_code_attempt', { p_rpc_name: 'link_parent' }).catch(() => {});
+    try {
+      await supabase.rpc('record_code_attempt', { p_rpc_name: 'link_parent' });
+    } catch {
+      // best-effort; a failure here shouldn't block the link attempt itself
+    }
     const { error } = await supabase.rpc('link_parent', { p_family_code: familyCode });
     if (error) throw error;
   },

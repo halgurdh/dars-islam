@@ -1,5 +1,5 @@
 import { COLORS, FONT } from '../theme';
-import { DIFFICULTIES, PHRASES, type PhraseItem } from '../questions';
+import { DIFFICULTIES, PHRASES, meaningFor, type PhraseItem } from '../questions';
 import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { t } from '../i18n';
 import { createModeMenuScene, matchMode, quizMode, sequenceMode, flashcardMode } from '@shared/mode-menu-kit';
@@ -27,16 +27,16 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 function buildMatchItems(): MatchItem[] {
-  return PHRASES.map((p) => ({ id: p.id, sideA: p.phrase, sideB: p.meaning }));
+  return PHRASES.map((p) => ({ id: p.id, sideA: p.phrase, sideB: meaningFor(p) }));
 }
 
 function generateQuizQuestion(): QuizQuestion {
   const [correct, ...distractors] = shuffle(PHRASES).slice(0, 4);
-  const choices = shuffle([correct, ...distractors].map((p) => p.meaning));
+  const choices = shuffle([correct, ...distractors].map((p) => meaningFor(p)));
   return {
     prompt: correct.phrase,
     choices,
-    correctIndex: choices.indexOf(correct.meaning),
+    correctIndex: choices.indexOf(meaningFor(correct)),
   };
 }
 
@@ -44,21 +44,21 @@ function generateSequenceRound(count: number): () => SequenceItem[] {
   return () => {
     const pool = shuffle(PHRASES).slice(0, count) as PhraseItem[];
     const sorted = [...pool].sort((a, b) => a.rank - b.rank);
-    return sorted.map((p) => ({ id: p.id, label: p.meaning }));
+    return sorted.map((p) => ({ id: p.id, label: meaningFor(p) }));
   };
 }
 
 function generateTrueFalseQuestion(): QuizQuestion {
-  const tf = trueFalseStatement(PHRASES, (p) => p.phrase, (p) => p.meaning, (phrase, meaning) => t().trueFalseStatement(phrase, meaning));
+  const tf = trueFalseStatement(PHRASES, (p) => p.phrase, meaningFor, (phrase, meaning) => t().trueFalseStatement(phrase, meaning));
   return toTrueFalseQuestion(tf, t().trueLabel, t().falseLabel);
 }
 
 function generateFillBlankQuestion(): QuizQuestion {
-  return fillBlankWordQuestion(PHRASES, (p) => p.meaning, (p) => p.phrase);
+  return fillBlankWordQuestion(PHRASES, meaningFor, (p) => p.phrase);
 }
 
 function generateFlashcardDeck(): FlashcardItem[] {
-  return PHRASES.map((p) => ({ id: p.id, primary: p.phrase, meaning: p.meaning }));
+  return PHRASES.map((p) => ({ id: p.id, primary: p.phrase, meaning: meaningFor(p) }));
 }
 
 export const MenuScene = createModeMenuScene({

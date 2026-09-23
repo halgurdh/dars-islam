@@ -1,5 +1,5 @@
 import { COLORS, FONT } from '../theme';
-import { DIFFICULTIES, VOCAB, type VocabItem } from '../questions';
+import { DIFFICULTIES, VOCAB, meaningFor, type VocabItem } from '../questions';
 import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { t } from '../i18n';
 import { createModeMenuScene, matchMode, quizMode, sequenceMode, flashcardMode } from '@shared/mode-menu-kit';
@@ -27,16 +27,16 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 function buildMatchItems(): MatchItem[] {
-  return VOCAB.map((v) => ({ id: v.id, sideA: v.word, sideB: v.meaning }));
+  return VOCAB.map((v) => ({ id: v.id, sideA: v.word, sideB: meaningFor(v) }));
 }
 
 function generateQuizQuestion(): QuizQuestion {
   const [correct, ...distractors] = shuffle(VOCAB).slice(0, 4);
-  const choices = shuffle([correct, ...distractors].map((v) => v.meaning));
+  const choices = shuffle([correct, ...distractors].map((v) => meaningFor(v)));
   return {
     prompt: correct.word,
     choices,
-    correctIndex: choices.indexOf(correct.meaning),
+    correctIndex: choices.indexOf(meaningFor(correct)),
   };
 }
 
@@ -44,21 +44,21 @@ function generateSequenceRound(count: number): () => SequenceItem[] {
   return () => {
     const pool = shuffle(VOCAB).slice(0, count) as VocabItem[];
     const sorted = [...pool].sort((a, b) => a.rank - b.rank);
-    return sorted.map((v) => ({ id: v.id, label: v.meaning }));
+    return sorted.map((v) => ({ id: v.id, label: meaningFor(v) }));
   };
 }
 
 function generateTrueFalseQuestion(): QuizQuestion {
-  const tf = trueFalseStatement(VOCAB, (v) => v.word, (v) => v.meaning, (word, meaning) => t().trueFalseStatement(word, meaning));
+  const tf = trueFalseStatement(VOCAB, (v) => v.word, meaningFor, (word, meaning) => t().trueFalseStatement(word, meaning));
   return toTrueFalseQuestion(tf, t().trueLabel, t().falseLabel);
 }
 
 function generateFillBlankQuestion(): QuizQuestion {
-  return fillBlankWordQuestion(VOCAB, (v) => v.meaning, (v) => v.word);
+  return fillBlankWordQuestion(VOCAB, meaningFor, (v) => v.word);
 }
 
 function generateFlashcardDeck(): FlashcardItem[] {
-  return VOCAB.map((v) => ({ id: v.id, primary: v.word, meaning: v.meaning }));
+  return VOCAB.map((v) => ({ id: v.id, primary: v.word, meaning: meaningFor(v) }));
 }
 
 export const MenuScene = createModeMenuScene({

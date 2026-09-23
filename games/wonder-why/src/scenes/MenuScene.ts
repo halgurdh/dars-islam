@@ -1,8 +1,16 @@
 import { COLORS, FONT } from '../theme';
-import { TOTAL_QUESTIONS, makeRunGenerator, generateMatchItems, generateSequenceRound } from '../questions';
+import {
+  TOTAL_QUESTIONS,
+  makeRunGenerator,
+  generateMatchItems,
+  generateSequenceRound,
+  generateTrueFalseQuestion,
+  generateFillBlankQuestion,
+  generateFlashcardDeck,
+} from '../questions';
 import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { t } from '../i18n';
-import { createModeMenuScene, quizMode, sequenceMode, type GameMode } from '@shared/mode-menu-kit';
+import { createModeMenuScene, quizMode, sequenceMode, flashcardMode, type GameMode } from '@shared/mode-menu-kit';
 import { getMatchSfx } from '@shared/match-kit';
 
 const GAME_ID = 'wonder-why';
@@ -86,6 +94,67 @@ export const MenuScene = createModeMenuScene({
       }),
       difficulties: [
         { label: () => t().start, totalRounds: 4, generateRound: () => generateSequenceRound(SEQUENCE_COUNT) },
+      ],
+    }),
+    quizMode({
+      id: 'truefalse',
+      label: () => t().modeTrueFalse,
+      icon: '✓✗',
+      gameId: GAME_ID,
+      theme: COLORS,
+      fontFamily: FONT,
+      strings: () => ({
+        round: t().round,
+        score: t().score,
+        menu: t().menu,
+        wellDone: t().wellDone,
+        roundSummary: t().roundSummary,
+        playAgain: t().playAgain,
+        backToMenu: t().backToMenu,
+      }),
+      difficulties: [
+        { label: () => t().start, totalQuestions: TOTAL_QUESTIONS, generateQuestion: generateTrueFalseQuestion },
+      ],
+    }),
+    quizMode({
+      id: 'fillblank',
+      label: () => t().modeFillBlank,
+      icon: '✏️',
+      gameId: GAME_ID,
+      theme: COLORS,
+      fontFamily: FONT,
+      strings: () => ({
+        round: t().round,
+        score: t().score,
+        menu: t().menu,
+        wellDone: t().wellDone,
+        roundSummary: t().roundSummary,
+        playAgain: t().playAgain,
+        backToMenu: t().backToMenu,
+      }),
+      difficulties: [
+        { label: () => t().start, totalQuestions: TOTAL_QUESTIONS, generateQuestion: generateFillBlankQuestion },
+      ],
+    }),
+    flashcardMode({
+      label: () => t().modeFlashcard,
+      icon: '🗂️',
+      gameId: GAME_ID,
+      theme: COLORS,
+      fontFamily: FONT,
+      strings: () => ({
+        menu: t().menu,
+        progress: t().flashcardProgress,
+        hear: t().hear,
+        knowIt: t().flashcardKnowIt,
+        stillLearning: t().flashcardStillLearning,
+        wellDone: t().wellDone,
+        roundSummary: t().flashcardRoundSummary,
+        playAgain: t().playAgain,
+        backToMenu: t().backToMenu,
+      }),
+      difficulties: [
+        { label: () => t().start, cards: generateFlashcardDeck },
       ],
     }),
   ],

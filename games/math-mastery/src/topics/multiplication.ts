@@ -6,11 +6,13 @@ import { buildNumericChoices, randInt } from '../choices';
 export const TOTAL_QUESTIONS = 10;
 
 // Escalates within a single run: warm up on 2-digit×2-digit, then a
-// 3-digit×1-digit stretch, then the hardest combination, 3-digit×2-digit.
+// 3-digit×1-digit stretch, then 3-digit×2-digit, finishing on the hardest
+// combination, 3-digit×3-digit.
 function pickFactors(index: number): { a: number; b: number } {
-  if (index < 4) return { a: randInt(10, 99), b: randInt(10, 99) };
-  if (index < 8) return { a: randInt(100, 999), b: randInt(2, 9) };
-  return { a: randInt(100, 999), b: randInt(10, 99) };
+  if (index < 3) return { a: randInt(10, 99), b: randInt(10, 99) };
+  if (index < 6) return { a: randInt(100, 999), b: randInt(2, 9) };
+  if (index < 8) return { a: randInt(100, 999), b: randInt(10, 99) };
+  return { a: randInt(100, 999), b: randInt(100, 999) };
 }
 
 export function generateQuestion(index: number): QuizQuestion {

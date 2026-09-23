@@ -1,4 +1,4 @@
-# dars-islam — Free Islamic Studies & Education Games for Kids
+# dars-islam — Free Islamic Education Games for Kids
 
 🌐 **Read this in:** [English](README.md) · [Nederlands](README.nl.md) · [Deutsch](README.de.md) · [Español](README.es.md) · [Français](README.fr.md) · [العربية](README.ar.md)
 
@@ -6,18 +6,18 @@
 
 ![Games](https://img.shields.io/badge/games-40%2B-blue) ![Languages](https://img.shields.io/badge/UI%20languages-6-green) ![Built with](https://img.shields.io/badge/built%20with-Phaser%20%2B%20TypeScript-orange) ![PWA](https://img.shields.io/badge/installable-PWA-purple) ![Ad-free](https://img.shields.io/badge/ads-none-brightgreen)
 
-A free, open-source, ad-free platform of 40+ small educational browser games ([Phaser](https://phaser.io)/TypeScript, installable as [Progressive Web Apps](https://web.dev/progressive-web-apps/)), for kids learning **Islamic studies, Quran, Arabic alphabet, Islamic history, duas, and the 99 names of Allah**, alongside core school subjects — **math, geography, science, language arts, world history, and language learning (Dutch, German, Spanish, French, Arabic)**. Built for **homeschool, madrasa, Islamic school, and general K-12 classroom** use, with school-friendly accounts for students, teachers, and parents. Available in 6 UI languages: English, Dutch, German, Spanish, French, and Arabic.
+**dars-islam is a free, open-source Islamic education platform** — 40+ small educational browser games ([Phaser](https://phaser.io)/TypeScript, installable as [Progressive Web Apps](https://web.dev/progressive-web-apps/)) for kids learning **Islamic studies, Quran, Arabic alphabet, Islamic history, duas, and the 99 names of Allah**, alongside core school subjects — **math, geography, science, language arts, world history, and language learning (Dutch, German, Spanish, French, Arabic)**. Built for **Islamic education at home, in a madrasa, weekend Islamic school, or a general K-12 classroom**, with school-friendly accounts for students, teachers, and parents. Ad-free, no tracking, available in 6 UI languages: English, Dutch, German, Spanish, French, and Arabic.
 
 💛 **Support this project:** [paypal.me/halgurdh](https://paypal.me/halgurdh) — this is free and ad-free by choice; donations help keep it that way.
 
 ### 📚 Subjects & games
 
-- **Islamic Studies** — Asma ul-Husna (99 Names), Fiqh Essentials, Salah Builder, Duas Builder, Pillars of Islam, Seerah Timeline, Juz' Amma Match, Huruf (Arabic alphabet) Builder, Months Builder, Prophets Builder
+- **Islamic Education** — Asma ul-Husna (99 Names of Allah), Fiqh Essentials, Salah Builder, Duas Builder, Pillars of Islam, Seerah Timeline (Prophet's biography), Juz' Amma Match (Quran memorization), Huruf (Arabic alphabet) Builder, Islamic Months Builder, Prophets Builder
 - **Arabic & Language Learning** — Arabic Grammar, Letter Trace, Word Explorer, Phrase Explorer (everyday phrases in Dutch/German/Spanish/French/Arabic)
 - **Math** — Number Basics, Algebra, Geometry, Trigonometry, Pre-Calculus, Statistics & Probability, Times Table Dojo, Mental Math Sprint, Pattern Play
 - **General & Science** — Geography, World History, Civics & Community, Earth & Space Science, Health & the Body, Digital Literacy, World Cultures, Language Arts
 
-Every game supports multiple modes where applicable (Match, Quiz, Sequence, True/False, Fill-in-the-Blank, Listen & Identify, Flashcard Review), so the same content can be practiced several ways.
+Every game supports multiple modes where applicable (Match, Quiz, Sequence, True/False, Fill-in-the-Blank, Listen & Identify, Flashcard Review), so the same content can be practiced several ways — useful for Islamic education specifically, where recall (memorizing duas, the 99 names, Quran order) matters as much as comprehension.
 
 Everything today runs entirely on free tiers, but if this grows, the likely costs would be:
 - **Supabase** — the free tier covers a small/medium userbase; a lot of classes signing up at once could need the Pro plan (~$25/month) for more database storage, auth users, and bandwidth.

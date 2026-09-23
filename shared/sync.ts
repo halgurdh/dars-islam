@@ -123,7 +123,11 @@ class SyncManager {
       if (error) throw error;
     }
 
-    await supabase.rpc('record_code_attempt', { p_rpc_name: 'join_class' }).catch(() => {});
+    try {
+      await supabase.rpc('record_code_attempt', { p_rpc_name: 'join_class' });
+    } catch {
+      // best-effort; a failure here shouldn't block the join attempt itself
+    }
 
     const { data, error } = await supabase.rpc('join_class', {
       p_join_code: joinCode,
