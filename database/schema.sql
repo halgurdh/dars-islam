@@ -1,5 +1,5 @@
 -- ─────────────────────────────────────────────────────────────────────────────
--- darsislam.Games — MySQL schema
+-- dars-islam — MySQL schema
 -- Run in: Strato control panel → phpMyAdmin → SQL tab → paste & run
 -- Requires MySQL 5.7.8+ or MariaDB 10.2+ (JSON column support)
 -- ─────────────────────────────────────────────────────────────────────────────

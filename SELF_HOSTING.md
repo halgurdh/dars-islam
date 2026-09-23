@@ -1,4 +1,4 @@
-# Self-hosting darsislam.Games
+# Self-hosting dars-islam
 
 This is a fully open-source, static frontend (a Vite-built multi-page site: a
 wrapper hub + ~40 standalone Phaser/DOM games, each installable as its own
@@ -102,9 +102,9 @@ Open `http://localhost:8080`.
 docker build \
   --build-arg VITE_SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co \
   --build-arg VITE_SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLISHABLE_KEY_HERE \
-  -t darsislam-games .
+  -t dars-islam-games .
 
-docker run -d -p 80:80 --restart unless-stopped darsislam-games
+docker run -d -p 80:80 --restart unless-stopped dars-islam-games
 ```
 
 Because `VITE_SUPABASE_URL`/`VITE_SUPABASE_PUBLISHABLE_KEY` are baked into

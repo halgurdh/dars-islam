@@ -8,7 +8,7 @@ import { sync } from './sync';
 import { getSupabase } from './supabase-client';
 
 const TICK_MS = 30_000;
-const STORAGE_PREFIX = 'darsislam:screen-time:';
+const STORAGE_PREFIX = 'dars-islam:screen-time:';
 
 interface Controls {
   daily_time_limit_minutes: number | null;

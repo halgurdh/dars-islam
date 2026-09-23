@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0c0f0a" />
-    <title>My Dashboard · darsislam.Games</title>
-    <link rel="icon" type="image/png" href="__VITE_BASE_PATH__games/board-rush/assets/icons/icon-512.png" />
+    <title>My Dashboard · dars-islam</title>
+    <link rel="icon" type="image/png" href="__VITE_BASE_PATH__games/asma-match/assets/icons/icon-512.png" />
     <style>
       body { display: flex; flex-direction: column; align-items: center; }
 
@@ -117,7 +117,7 @@
   </head>
   <body>
     <header class="site-header">
-      <a href="__VITE_BASE_PATH__" class="site-header__brand">darsislam.Games</a>
+      <a href="__VITE_BASE_PATH__" class="site-header__brand">dars-islam</a>
       <a href="__VITE_BASE_PATH__" class="site-header__back">← Back to games</a>
     </header>
 
@@ -231,7 +231,7 @@
 
       function renderWelcomeSection(standing) {
         const section = document.getElementById('welcomeSection');
-        const dismissKey = `darsislam:welcome-dismissed:${standing.school_name}`;
+        const dismissKey = `dars-islam:welcome-dismissed:${standing.school_name}`;
         if (!standing.welcome_message || localStorage.getItem(dismissKey)) { section.hidden = true; return; }
         const orgIcon = { mosque: '🕌', homeschool: '🏡', other: '📚' }[standing.org_type] ?? '🏫';
         section.hidden = false;

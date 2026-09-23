@@ -8,7 +8,7 @@
  */
 import { BADGES, evaluateNewBadges, type Badge, type BadgeId, type ProgressStats } from './badges';
 
-const STORE_KEY = 'darsislam:player-progress';
+const STORE_KEY = 'dars-islam:player-progress';
 
 interface ProgressData {
   xp: number;

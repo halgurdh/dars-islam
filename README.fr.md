@@ -67,7 +67,7 @@ docker compose up --build
 # ouvrez http://localhost:8080
 ```
 
-Ou sans compose : `docker build --build-arg VITE_SUPABASE_URL=... --build-arg VITE_SUPABASE_PUBLISHABLE_KEY=... -t darsislam-games .` puis `docker run -p 8080:80 darsislam-games`. Voir [SELF_HOSTING.md](SELF_HOSTING.md) pour les détails (ces valeurs sont intégrées au moment du build, donc les modifier implique de reconstruire l'image).
+Ou sans compose : `docker build --build-arg VITE_SUPABASE_URL=... --build-arg VITE_SUPABASE_PUBLISHABLE_KEY=... -t dars-islam-games .` puis `docker run -p 8080:80 dars-islam-games`. Voir [SELF_HOSTING.md](SELF_HOSTING.md) pour les détails (ces valeurs sont intégrées au moment du build, donc les modifier implique de reconstruire l'image).
 
 Structure du dépôt :
 - `wrapper/` — le site hub public (grille de jeux, connexion, tableaux de bord)

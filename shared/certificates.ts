@@ -28,7 +28,7 @@ function certificateHtml(studentName: string, achievement: string, subtitle: str
       <p class="cert__title">Certificate of Achievement</p>
       <h1 class="cert__name">${escapeHtml(studentName)}</h1>
       <p class="cert__line">has earned <span class="cert__achievement">${escapeHtml(achievement)}</span>${subtitle ? `<br><span style="font-size:14px;color:#6b5a42">${escapeHtml(subtitle)}</span>` : ''}</p>
-      <div class="cert__footer"><span>darsislam Games</span><span>${escapeHtml(date)}</span></div>
+      <div class="cert__footer"><span>dars-islam</span><span>${escapeHtml(date)}</span></div>
     </div>`;
 }
 

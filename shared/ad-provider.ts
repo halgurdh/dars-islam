@@ -41,9 +41,9 @@ function pickBrand(): BrandAd {
 }
 
 const _fallback: BrandAd = {
-  name:    'darsislam Games',
-  tagline: 'Casual games everyone loves',
-  url:     'https://darsislam.games',
+  name:    'dars-islam',
+  tagline: 'Free educational games for kids',
+  url:     'https://halgurdh.github.io/dars-islam/',
   bg:      'linear-gradient(135deg,#0c0f0a,#1a2a14)',
   fg:      '#f2cc1a',
 };
@@ -51,7 +51,7 @@ const _fallback: BrandAd = {
 /** Renders a brand sponsor card into `container`. */
 export function injectAd(container: HTMLElement): void {
   const brand  = pickBrand();
-  const utmUrl = `${brand.url}?utm_source=darsislam&utm_medium=rewarded_ad&utm_campaign=game`;
+  const utmUrl = `${brand.url}?utm_source=dars-islam&utm_medium=rewarded_ad&utm_campaign=game`;
   const host   = new URL(brand.url).hostname;
 
   container.style.cssText = `

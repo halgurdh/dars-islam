@@ -11,12 +11,12 @@
  *   const coins = await ArcadeStore.getCoins();
  */
 
-const STORE_KEY = 'darsislam:arcade-store';
+const STORE_KEY = 'dars-islam:arcade-store';
 
 const DEFAULT_CARD_BACK = 'cardBack_blue1';
 
 // Set this to match the token in your Stripe Payment Link success URL.
-// In Stripe dashboard: Success URL = https://darsislam.games/?pt=YOUR_SECRET_TOKEN
+// In Stripe dashboard: Success URL = https://halgurdh.github.io/dars-islam/?pt=YOUR_SECRET_TOKEN
 // Replace the placeholder below with your actual token before going live.
 export const PREMIUM_TOKEN = 'mt_premium_2025_change_me';
 

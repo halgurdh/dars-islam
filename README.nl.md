@@ -67,7 +67,7 @@ docker compose up --build
 # open http://localhost:8080
 ```
 
-Of zonder compose: `docker build --build-arg VITE_SUPABASE_URL=... --build-arg VITE_SUPABASE_PUBLISHABLE_KEY=... -t darsislam-games .` en dan `docker run -p 8080:80 darsislam-games`. Zie [SELF_HOSTING.md](SELF_HOSTING.md) voor details (deze waarden worden tijdens het bouwen vastgelegd, dus wijzigen betekent de image opnieuw bouwen).
+Of zonder compose: `docker build --build-arg VITE_SUPABASE_URL=... --build-arg VITE_SUPABASE_PUBLISHABLE_KEY=... -t dars-islam-games .` en dan `docker run -p 8080:80 dars-islam-games`. Zie [SELF_HOSTING.md](SELF_HOSTING.md) voor details (deze waarden worden tijdens het bouwen vastgelegd, dus wijzigen betekent de image opnieuw bouwen).
 
 Mappenstructuur:
 - `wrapper/` — de publieke hub-site (spelraster, inloggen, dashboards)

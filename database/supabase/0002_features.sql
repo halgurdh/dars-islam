@@ -1,5 +1,5 @@
 -- ─────────────────────────────────────────────────────────────────────────────
--- darsislam.Games — Supabase schema, part 2
+-- dars-islam — Supabase schema, part 2
 -- Run in: Supabase Dashboard → SQL Editor, AFTER 0001_init.sql
 --
 -- Additive only — no existing column/table is changed or dropped. Adds:

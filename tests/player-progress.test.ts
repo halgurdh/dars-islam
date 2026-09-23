@@ -62,21 +62,21 @@ section('Daily streak');
   // Simulate "yesterday" by rewriting the stored lastPlayedDate directly —
   // the module doesn't expose todayStr/yesterdayStr, so we replicate that
   // date math here to backdate the record by exactly one day.
-  const raw = JSON.parse((globalThis as any).localStorage.getItem('darsislam:player-progress'));
+  const raw = JSON.parse((globalThis as any).localStorage.getItem('dars-islam:player-progress'));
   const d = new Date();
   d.setDate(d.getDate() - 1);
   raw.lastPlayedDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  (globalThis as any).localStorage.setItem('darsislam:player-progress', JSON.stringify(raw));
+  (globalThis as any).localStorage.setItem('dars-islam:player-progress', JSON.stringify(raw));
 
   const nextDay = PlayerProgress.recordCompletion({ gameId: 'salah-builder', itemsCompleted: 1 });
   check(nextDay.dailyStreak === 2 && nextDay.streakExtended, 'playing the day after extends the streak to 2');
 
   // Skip two days entirely — streak should reset to 1, not stay broken at 0.
-  const raw2 = JSON.parse((globalThis as any).localStorage.getItem('darsislam:player-progress'));
+  const raw2 = JSON.parse((globalThis as any).localStorage.getItem('dars-islam:player-progress'));
   const old = new Date();
   old.setDate(old.getDate() - 5);
   raw2.lastPlayedDate = `${old.getFullYear()}-${String(old.getMonth() + 1).padStart(2, '0')}-${String(old.getDate()).padStart(2, '0')}`;
-  (globalThis as any).localStorage.setItem('darsislam:player-progress', JSON.stringify(raw2));
+  (globalThis as any).localStorage.setItem('dars-islam:player-progress', JSON.stringify(raw2));
 
   const afterGap = PlayerProgress.recordCompletion({ gameId: 'salah-builder', itemsCompleted: 1 });
   check(afterGap.dailyStreak === 1, 'a gap in play resets the streak to 1, not 0');

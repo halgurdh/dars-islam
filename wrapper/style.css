@@ -336,17 +336,6 @@ body {
   flex: 1;
 }
 
-.game-card__install-badge {
-  display: inline-block;
-  margin-top: 0.75rem;
-  padding: 0.3rem 0.8rem;
-  background: rgba(255, 0, 85, 0.15);
-  border: 1px solid rgba(255, 0, 85, 0.3);
-  border-radius: 6px;
-  font-size: 0.8rem;
-  color: #ff6b8a;
-  align-self: flex-start;
-}
 
 .game-card--coming-soon {
   cursor: default;

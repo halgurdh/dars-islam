@@ -1,5 +1,5 @@
 -- ─────────────────────────────────────────────────────────────────────────────
--- darsislam.Games — Supabase (Postgres) schema
+-- dars-islam — Supabase (Postgres) schema
 -- Run in: Supabase Dashboard → SQL Editor (or `supabase db push`)
 --
 -- Replaces the PHP/MySQL backend (see database/schema.sql for the original)

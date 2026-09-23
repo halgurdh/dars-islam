@@ -66,7 +66,7 @@ docker compose up --build
 # افتح http://localhost:8080
 ```
 
-أو بدون compose: `docker build --build-arg VITE_SUPABASE_URL=... --build-arg VITE_SUPABASE_PUBLISHABLE_KEY=... -t darsislam-games .` ثم `docker run -p 8080:80 darsislam-games`. راجع [SELF_HOSTING.md](SELF_HOSTING.md) للتفاصيل (يتم تضمين هذه القيم وقت البناء، لذا تغييرها يعني إعادة بناء الصورة).
+أو بدون compose: `docker build --build-arg VITE_SUPABASE_URL=... --build-arg VITE_SUPABASE_PUBLISHABLE_KEY=... -t dars-islam-games .` ثم `docker run -p 8080:80 dars-islam-games`. راجع [SELF_HOSTING.md](SELF_HOSTING.md) للتفاصيل (يتم تضمين هذه القيم وقت البناء، لذا تغييرها يعني إعادة بناء الصورة).
 
 هيكل المستودع:
 - `wrapper/` — موقع المركز العام (شبكة الألعاب، تسجيل الدخول، لوحات التحكم)
