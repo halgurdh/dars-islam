@@ -62,6 +62,8 @@
       </div>
     </section>
 
+    <div id="donateBanner" class="premium-banner" hidden></div>
+
     <!-- Game Grid -->
     <header id="all_games" class="hub-header">
       <h2 class="hub-title">Choose a Game</h2>
@@ -818,23 +820,30 @@
         })();
       }
 
-      // Reflect premium status in the banner
+      // Donate banner — dismissible, stays dismissed once closed.
+      const DONATE_DISMISS_KEY = 'dars-islam:donate-banner-dismissed';
       function updateBanner() {
-        const prem = ArcadeStore.getPremium();
-        const banner = document.getElementById('premiumBanner');
-        if (!banner) return;
-        if (prem.active) {
-          const until = prem.until ? new Date(prem.until).toLocaleDateString() : '—';
-          banner.innerHTML = `
-            <div class="premium-banner__inner premium-banner__inner--active">
-              <span class="premium-crown">👑</span>
-              <div>
-                <strong>You have Premium!</strong>
-                <span>Dragon card backs unlocked · Expires ${until}</span>
+        const banner = document.getElementById('donateBanner');
+        if (!banner || localStorage.getItem(DONATE_DISMISS_KEY)) return;
+        banner.hidden = false;
+        banner.innerHTML = `
+          <div class="premium-banner__inner">
+            <div class="premium-banner__left">
+              <span class="premium-crown">💛</span>
+              <div class="premium-banner__copy">
+                <strong>This is free and ad-free by choice.</strong>
+                <span>If your family gets value from it, a donation helps keep it that way.</span>
               </div>
-              <span class="premium-coins">🪙 ${ArcadeStore.getCoins()} coins</span>
-            </div>`;
-        }
+            </div>
+            <div class="premium-banner__ctas">
+              <a class="premium-cta" href="https://paypal.me/halgurdh" target="_blank" rel="noopener">Donate now</a>
+              <button class="premium-cta premium-cta--secondary" id="donateBannerClose" type="button">Not now</button>
+            </div>
+          </div>`;
+        document.getElementById('donateBannerClose').addEventListener('click', () => {
+          localStorage.setItem(DONATE_DISMISS_KEY, '1');
+          banner.hidden = true;
+        });
       }
       updateBanner();
 
