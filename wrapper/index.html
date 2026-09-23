@@ -571,7 +571,7 @@
         </div>
         <div class="game-card__body">
           <h2 class="game-card__title">Seerah Timeline</h2>
-          <p class="game-card__desc">Key events in the life of Prophet Muhammad ﷺ</p>
+          <p class="game-card__desc">Key events in the life of Prophet Muhammad (peace be upon him)</p>
         </div>
       </a>
 
@@ -722,6 +722,7 @@
       import { ProgressBar } from '@shared/progress-bar';
       import { renderLanguagePickerDom } from '@shared/language-picker-dom';
       import { t, STRINGS } from './i18n';
+      import { GAME_CARDS, COMING_SOON } from './game-catalog-i18n';
       import { getLang, setLang, detectDefaultLang } from './systems/Locale';
       const progressBar = new ProgressBar();
 
@@ -751,6 +752,24 @@
         setText('catEarly', s.catEarly);
         setText('catGeneral', s.catGeneral);
         setText('noResultsMsg', s.searchNoResults);
+        const lang = getLang();
+        document.querySelectorAll('.game-card[data-game]').forEach((card) => {
+          const slug = card.getAttribute('data-game');
+          const strings = (GAME_CARDS[slug] ?? {})[lang];
+          if (!strings) return;
+          const titleEl = card.querySelector('.game-card__title');
+          const descEl = card.querySelector('.game-card__desc');
+          if (titleEl) titleEl.textContent = strings.title;
+          if (descEl) descEl.textContent = strings.desc;
+        });
+        const comingSoon = document.querySelector('.game-card--coming-soon');
+        if (comingSoon) {
+          const cs = COMING_SOON[lang];
+          const titleEl = comingSoon.querySelector('.game-card__title');
+          const descEl = comingSoon.querySelector('.game-card__desc');
+          if (titleEl) titleEl.textContent = cs.title;
+          if (descEl) descEl.textContent = cs.desc;
+        }
         const searchInput = document.getElementById('gameSearch');
         if (searchInput) searchInput.setAttribute('placeholder', s.searchPlaceholder);
         setText('footerTagline', s.footerTagline);
