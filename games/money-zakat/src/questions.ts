@@ -91,9 +91,14 @@ function mediumQuestion(): QuizQuestion {
 
 // Hard: zakat on savings — the standard simplified rule taught to
 // beginners is 2.5% of savings held for a full lunar year (above the
-// nisab threshold). Amounts are chosen so 2.5% always comes out whole.
+// nisab threshold). Amounts are chosen so 2.5% always comes out whole,
+// and the floor is kept comfortably above common modern nisab estimates
+// (silver-standard nisab is typically cited in the $400-500+ range) so
+// every generated example is genuinely above nisab, not just labeled as
+// if it were — the in-game text (t().zakatQuestion) names the nisab
+// concept, but a below-nisab example would still make that text wrong.
 function hardQuestion(): QuizQuestion {
-  const base = randInt(2, 50) * 40; // multiples of 40 make 2.5% a whole number
+  const base = randInt(13, 50) * 40; // $520-$2000, multiples of 40 make 2.5% a whole number
   const correct = (base * 2.5) / 100;
   const { choices, correctIndex } = buildChoices(correct, [correct * 2, Math.round(correct / 2), correct + 5, (base * 5) / 100]);
   return {
@@ -129,7 +134,7 @@ function moneyProblem(difficulty: Difficulty): MoneyProblem {
     const percent = [10, 20, 25, 50][randInt(0, 3)];
     return { label: `${percent}% of $${price}`, value: (price * percent) / 100 };
   }
-  const base = randInt(2, 50) * 40; // multiples of 40 make 2.5% a whole number
+  const base = randInt(13, 50) * 40; // $520-$2000, multiples of 40 make 2.5% a whole number
   return { label: `$${base} saved a year`, value: (base * 2.5) / 100 };
 }
 

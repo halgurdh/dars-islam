@@ -99,7 +99,7 @@ const STRINGS: Record<LangMode, Strings> = {
     discountOff: (price, percent) => `A toy costs $${price} and is ${percent}% off.`,
     salePrice: 'What is the sale price?',
     savedYear: (base) => `Someone has saved $${base} for a full year.`,
-    zakatQuestion: 'Zakat on savings is 2.5%. How much zakat do they owe?',
+    zakatQuestion: "Zakat on savings is 2.5%, once you've saved at least the nisab (minimum amount). How much zakat do they owe?",
   },
   nl: {
     title: 'Money & Zakat Math',
@@ -148,7 +148,7 @@ const STRINGS: Record<LangMode, Strings> = {
     discountOff: (price, percent) => `Een speeltje kost $${price} en heeft ${percent}% korting.`,
     salePrice: 'Wat is de aanbiedingsprijs?',
     savedYear: (base) => `Iemand heeft $${base} een heel jaar lang gespaard.`,
-    zakatQuestion: 'Zakat over spaargeld is 2,5%. Hoeveel zakat is verschuldigd?',
+    zakatQuestion: 'Zakat over spaargeld is 2,5% zodra je minstens de nisab (het minimumbedrag) hebt gespaard. Hoeveel zakat is verschuldigd?',
   },
   de: {
     title: 'Money & Zakat Math',
@@ -197,7 +197,7 @@ const STRINGS: Record<LangMode, Strings> = {
     discountOff: (price, percent) => `Ein Spielzeug kostet $${price} und ist um ${percent}% reduziert.`,
     salePrice: 'Was ist der reduzierte Preis?',
     savedYear: (base) => `Jemand hat $${base} ein ganzes Jahr lang gespart.`,
-    zakatQuestion: 'Zakat auf Ersparnisse beträgt 2,5%. Wie viel Zakat ist fällig?',
+    zakatQuestion: 'Zakat auf Ersparnisse beträgt 2,5%, sobald man mindestens den Nisab (Mindestbetrag) gespart hat. Wie viel Zakat ist fällig?',
   },
   es: {
     title: 'Money & Zakat Math',
@@ -246,7 +246,7 @@ const STRINGS: Record<LangMode, Strings> = {
     discountOff: (price, percent) => `Un juguete cuesta $${price} y tiene un ${percent}% de descuento.`,
     salePrice: '¿Cuál es el precio de oferta?',
     savedYear: (base) => `Alguien ha ahorrado $${base} durante un año completo.`,
-    zakatQuestion: 'El zakat sobre los ahorros es del 2,5%. ¿Cuánto zakat debe pagar?',
+    zakatQuestion: 'El zakat sobre los ahorros es del 2,5% una vez que se ha ahorrado al menos el nisab (monto mínimo). ¿Cuánto zakat debe pagar?',
   },
   fr: {
     title: 'Money & Zakat Math',
@@ -295,7 +295,7 @@ const STRINGS: Record<LangMode, Strings> = {
     discountOff: (price, percent) => `Un jouet coûte $${price} et bénéficie de ${percent}% de réduction.`,
     salePrice: 'Quel est le prix soldé ?',
     savedYear: (base) => `Quelqu'un a économisé $${base} pendant une année complète.`,
-    zakatQuestion: 'La zakat sur l\'épargne est de 2,5 %. Combien de zakat doit-il payer ?',
+    zakatQuestion: "La zakat sur l'épargne est de 2,5 % une fois qu'on a épargné au moins le nisab (montant minimum). Combien de zakat doit-il payer ?",
   },
   ar: {
     title: 'Money & Zakat Math',
@@ -344,7 +344,7 @@ const STRINGS: Record<LangMode, Strings> = {
     discountOff: (price, percent) => `تكلفة لعبة $${price} وعليها خصم ${percent}%.`,
     salePrice: 'ما هو سعر البيع بعد الخصم؟',
     savedYear: (base) => `ادّخر شخص ما $${base} لمدة عام كامل.`,
-    zakatQuestion: 'الزكاة على المدخرات هي 2.5%. كم تبلغ الزكاة الواجبة؟',
+    zakatQuestion: 'الزكاة على المدخرات هي 2.5% بعد أن يبلغ المدخر النصاب (الحد الأدنى). كم تبلغ الزكاة الواجبة؟',
   },
 };
 

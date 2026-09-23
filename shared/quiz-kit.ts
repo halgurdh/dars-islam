@@ -461,13 +461,20 @@ export function bootQuizGame(backgroundColor: string, scenes: Phaser.Scene[]): P
     scale: {
       mode: Phaser.Scale.FIT,
       autoCenter: Phaser.Scale.CENTER_BOTH,
-      // Without this the canvas keeps a fixed 720x1280 pixel buffer and
-      // Scale.FIT just stretches it via CSS to whatever size it's displayed
-      // at — barely visible at normal embedded size, but very visible once
-      // fullscreen (or a large/high-DPI screen) blows that same buffer up
-      // further. Capped at 2 so very high-DPR phones don't 3x/4x the actual
-      // render workload for a gain nobody can see past ~2x anyway.
-      resolution: Math.min(window.devicePixelRatio || 1, 2),
+      // Phaser 3's Scale Manager has no devicePixelRatio/resolution knob (it
+      // was dropped after 3.16 — canvas buffer stays fixed at width/height
+      // above, "resolution" is not a valid ScaleConfig key and is silently
+      // ignored if set, which is what an earlier version of this fix
+      // mistakenly relied on). What actually happens: Scale.FIT stretches
+      // that fixed 720x1280 buffer via CSS to fill the container — fine at
+      // normal embedded size, but once fullscreen blows the CSS size up
+      // past the buffer's own resolution (common on phones, where CSS
+      // size × devicePixelRatio comfortably exceeds 720x1280), the upscale
+      // becomes visibly blurry. `max` caps how large Scale.FIT will ever
+      // stretch the canvas via CSS — beyond this it letterboxes instead of
+      // continuing to stretch, which keeps the image sharp at the cost of
+      // some empty space around it on very large/high-DPI screens.
+      max: { width: 1440, height: 2560 },
     },
     scene: scenes,
   });
