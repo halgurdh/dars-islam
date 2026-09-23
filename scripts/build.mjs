@@ -16,10 +16,11 @@
  *         ...
  */
 
-import { execSync } from 'child_process';
+import { execSync, spawn } from 'child_process';
 import { existsSync, mkdirSync, cpSync, rmSync, readdirSync } from 'fs';
 import { join, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import os from 'os';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -36,6 +37,35 @@ function log(msg) {
 function run(cmd, cwd) {
   log(`Running: ${cmd} (in ${cwd})`);
   execSync(cmd, { cwd, stdio: 'inherit' });
+}
+
+// Async, non-blocking version of run() — lets N builds run concurrently
+// instead of one at a time (each `vite build` is its own subprocess with
+// real Node/Rollup startup cost, and there's nothing shared between one
+// game's build and the next, so this parallelizes for free).
+function runAsync(cmd, cwd) {
+  return new Promise((resolvePromise, reject) => {
+    const [bin, ...args] = cmd.split(' ');
+    const child = spawn(bin, args, { cwd, stdio: 'inherit', shell: true });
+    child.on('exit', (code) => {
+      if (code === 0) resolvePromise();
+      else reject(new Error(`"${cmd}" (in ${cwd}) exited with code ${code}`));
+    });
+    child.on('error', reject);
+  });
+}
+
+// Runs `tasks` (functions returning promises) with at most `concurrency`
+// in flight at once — a minimal worker pool, no extra dependency needed.
+async function runPool(tasks, concurrency) {
+  const queue = [...tasks];
+  const workers = Array.from({ length: Math.min(concurrency, queue.length) }, async () => {
+    while (queue.length) {
+      const task = queue.shift();
+      await task();
+    }
+  });
+  await Promise.all(workers);
 }
 
 // 1. Clean previous build
@@ -55,26 +85,32 @@ if (existsSync(wrapperDist)) {
   rmSync(wrapperDist, { recursive: true, force: true });
 }
 
-// 3. Build each game
+// 3. Build each game — in parallel (bounded by CPU count). These builds
+// are fully independent (each is its own Vite project/subprocess), so
+// running them one at a time was pure wasted wall-clock, especially in CI.
 const games = readdirSync(GAMES_DIR, { withFileTypes: true })
   .filter(d => d.isDirectory())
   .map(d => d.name);
 
-  for (const game of games) {
-    const gameDir = join(GAMES_DIR, game);
-    log(`Building game: ${game}...`);
-    run(`npx vite build --mode ${mode}`, gameDir);
+const CONCURRENCY = Math.max(2, os.cpus().length);
+log(`Building ${games.length} games with concurrency ${CONCURRENCY}...`);
 
-    const gameDist = join(gameDir, isPWA ? 'dist-pwa' : 'dist');
-    if (existsSync(gameDist)) {
-      // Game builds with base path /games/<game-name>/,
-      // so copy into dist/games/<game-name>/
-      const targetDir = join(DIST, 'games', game);
-      mkdirSync(targetDir, { recursive: true });
-      cpSync(gameDist, targetDir, { recursive: true });
-      rmSync(gameDist, { recursive: true, force: true });
-    }
+await runPool(games.map((game) => async () => {
+  const gameDir = join(GAMES_DIR, game);
+  log(`Building game: ${game}...`);
+  await runAsync(`npx vite build --mode ${mode}`, gameDir);
+
+  const gameDist = join(gameDir, isPWA ? 'dist-pwa' : 'dist');
+  if (existsSync(gameDist)) {
+    // Game builds with base path /games/<game-name>/,
+    // so copy into dist/games/<game-name>/
+    const targetDir = join(DIST, 'games', game);
+    mkdirSync(targetDir, { recursive: true });
+    cpSync(gameDist, targetDir, { recursive: true });
+    rmSync(gameDist, { recursive: true, force: true });
   }
+  log(`Finished game: ${game}`);
+}), CONCURRENCY);
 
 // 4. (formerly copied api/ PHP files + database/ SQL schema into dist/ —
 // removed now that the app talks to Supabase directly from the client;

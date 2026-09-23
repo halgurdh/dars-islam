@@ -48,7 +48,7 @@ function available(cmd) {
 
 const HOST = process.env.DEPLOY_HOST || '';
 const USER = process.env.DEPLOY_USER || process.env.USER || process.env.USERNAME || 'www';
-const PATH_ON_SERVER = process.env.DEPLOY_PATH || '/var/www/darsislam.games';
+const PATH_ON_SERVER = process.env.DEPLOY_PATH || '/var/www/darsislam';
 const SSH_PORT = process.env.SSH_PORT || '22';
 const DRY = process.argv.includes('--dry') || process.env.DRY_RUN === '1';
 

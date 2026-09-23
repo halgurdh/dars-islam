@@ -1,4 +1,4 @@
-# darsislam.Games — self-hosting image.
+# darsislam — self-hosting image.
 #
 # Builds the static site (wrapper hub + all games) and serves it with
 # nginx. The app talks to Supabase directly from the browser (see
