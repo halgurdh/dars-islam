@@ -117,13 +117,14 @@
   <body>
     <header class="site-header">
       <a href="__VITE_BASE_PATH__" class="site-header__brand">dars-islam</a>
-      <a href="__VITE_BASE_PATH__" class="site-header__back">← Back to games</a>
+      <div id="langPicker" style="margin:0 8px"></div>
+      <a href="__VITE_BASE_PATH__" class="site-header__back" id="backLink">← Back to games</a>
     </header>
 
     <main class="content">
       <header>
-        <h1>🏫 Teacher Dashboard</h1>
-        <p>Schools, classes and student progress at a glance.</p>
+        <h1 id="pageTitle">🏫 Teacher Dashboard</h1>
+        <p id="pageSub">Schools, classes and student progress at a glance.</p>
       </header>
 
       <div id="app"></div>
@@ -136,8 +137,32 @@
       import { GAME_CATALOG } from '@shared/game-catalog';
       import { summarizeReportCard } from '@shared/report-card';
       import { printClassCertificates } from '@shared/certificates';
+      import { renderLanguagePickerDom } from '@shared/language-picker-dom';
+      import { t } from '../teacher-i18n';
+      import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 
-      const ORG_TYPE_LABELS = { school: '🏫 School', mosque: '🕌 Mosque', homeschool: '🏡 Homeschool', other: '📚 Other' };
+      function orgTypeLabels() {
+        const s = t();
+        return { school: s.orgSchool, mosque: s.orgMosque, homeschool: s.orgHomeschool, other: s.orgOther };
+      }
+
+      function applyStaticI18n() {
+        const s = t();
+        document.getElementById('backLink').textContent = s.backToGames;
+        document.getElementById('pageTitle').textContent = s.title;
+        document.getElementById('pageSub').textContent = s.subtitle;
+      }
+
+      function renderLangPicker() {
+        const container = document.getElementById('langPicker');
+        if (!container) return;
+        renderLanguagePickerDom(container, getLang(), (lang) => {
+          setLang(lang);
+          renderLangPicker();
+          applyStaticI18n();
+          render();
+        });
+      }
 
       function daysSince(dateStr) {
         if (!dateStr) return Infinity;
@@ -169,33 +194,35 @@
       }
 
       function renderSignedOut() {
+        const s = t();
         app.innerHTML = `
           <div class="card">
-            <h2>Sign In Required</h2>
-            <p class="sub">Sign in with the same email you use for dars-islam to create or manage a school.</p>
+            <h2>${s.signInRequiredHeading}</h2>
+            <p class="sub">${s.signInRequiredBody}</p>
             <button id="teacherSignIn" style="margin-top:10px">☁ Sign in</button>
           </div>`;
         document.getElementById('teacherSignIn').addEventListener('click', () => progressBar.openSignIn());
       }
 
       function renderNoSchool() {
+        const s = t();
         app.innerHTML = `
           <div class="two-col">
             <div class="card">
-              <h2>Create a School</h2>
-              <p class="sub">You'll get an invite code to share with other teachers.</p>
+              <h2>${s.createSchoolHeading}</h2>
+              <p class="sub">${s.createSchoolSub}</p>
               <form id="createSchoolForm" class="row" style="margin-top:10px">
-                <input id="schoolName" type="text" maxlength="120" placeholder="School name" />
-                <button type="submit">Create</button>
+                <input id="schoolName" type="text" maxlength="120" placeholder="${s.schoolNamePlaceholder}" />
+                <button type="submit">${s.createBtn}</button>
               </form>
               <p class="form-msg" id="createSchoolMsg"></p>
             </div>
             <div class="card">
-              <h2>Join a School</h2>
-              <p class="sub">Have an invite code from a colleague?</p>
+              <h2>${s.joinSchoolHeading}</h2>
+              <p class="sub">${s.joinSchoolSub}</p>
               <form id="joinSchoolForm" class="row" style="margin-top:10px">
-                <input id="schoolCode" type="text" maxlength="8" placeholder="Invite code" style="text-transform:uppercase" />
-                <button type="submit">Join</button>
+                <input id="schoolCode" type="text" maxlength="8" placeholder="${s.inviteCodePlaceholder}" style="text-transform:uppercase" />
+                <button type="submit">${s.joinBtn}</button>
               </form>
               <p class="form-msg" id="joinSchoolMsg"></p>
             </div>
@@ -206,12 +233,12 @@
           const name = document.getElementById('schoolName').value.trim();
           const msg = document.getElementById('createSchoolMsg');
           if (!name) return;
-          msg.className = 'form-msg'; msg.textContent = 'Creating…';
+          msg.className = 'form-msg'; msg.textContent = t().creating;
           try {
             const school = await SchoolApi.createSchool(name);
             setParams({ school: school.id, class: null });
           } catch {
-            msg.className = 'form-msg form-msg--error'; msg.textContent = 'Could not create the school.';
+            msg.className = 'form-msg form-msg--error'; msg.textContent = t().couldNotCreateSchool;
           }
         });
 
@@ -220,12 +247,12 @@
           const code = document.getElementById('schoolCode').value.trim();
           const msg = document.getElementById('joinSchoolMsg');
           if (!code) return;
-          msg.className = 'form-msg'; msg.textContent = 'Joining…';
+          msg.className = 'form-msg'; msg.textContent = t().joining;
           try {
             const school = await SchoolApi.joinSchool(code);
             setParams({ school: school.id, class: null });
           } catch {
-            msg.className = 'form-msg form-msg--error'; msg.textContent = 'Invite code not found.';
+            msg.className = 'form-msg form-msg--error'; msg.textContent = t().inviteCodeNotFound;
           }
         });
       }
@@ -237,46 +264,48 @@
       }
 
       async function renderSchoolOverview(schools, school) {
+        const s = t();
         app.innerHTML = `
           <div class="card">
             <div class="row" style="justify-content:space-between">
               <h2 style="margin:0">${escapeHtml(school.name)}</h2>
               ${schoolSwitcher(schools, school)}
             </div>
-            <p class="sub">Invite other teachers with code <span class="code-chip">${school.invite_code}</span></p>
+            <p class="sub">${s.inviteTeachersWith} <span class="code-chip">${school.invite_code}</span></p>
             <form id="createClassForm" class="row" style="margin-top:14px">
-              <input id="className" type="text" maxlength="80" placeholder="New class name (e.g. Grade 4B)" />
-              <button type="submit">Create Class</button>
+              <input id="className" type="text" maxlength="80" placeholder="${s.newClassNamePlaceholder}" />
+              <button type="submit">${s.createClassBtn}</button>
             </form>
             <p class="form-msg" id="createClassMsg"></p>
             <div class="class-grid" id="classGrid"></div>
           </div>
-          <div class="card" id="orgSettingsCard"><p class="sub">Loading settings…</p></div>
+          <div class="card" id="orgSettingsCard"><p class="sub">${s.loadingRoster}</p></div>
           <div class="two-col" id="schoolStats"></div>`;
 
         document.getElementById('schoolSwitch')?.addEventListener('change', (e) => setParams({ school: e.target.value, class: null }));
 
         SchoolApi.getSchoolProfile(school.id).then((profile) => {
-          const options = Object.entries(ORG_TYPE_LABELS)
+          const labels = orgTypeLabels();
+          const options = Object.entries(labels)
             .map(([v, label]) => `<option value="${v}" ${profile.org_type === v ? 'selected' : ''}>${label}</option>`).join('');
           document.getElementById('orgSettingsCard').innerHTML = `
-            <h2>⚙️ Organization Settings</h2>
-            <p class="sub">Label your organization and greet students who join — a mosque, homeschool co-op, or club works exactly like a school here.</p>
+            <h2>${t().orgSettingsHeading}</h2>
+            <p class="sub">${t().orgSettingsSub}</p>
             <div class="row" style="margin-top:10px">
               <select id="orgType">${options}</select>
             </div>
-            <textarea id="welcomeMessage" maxlength="300" placeholder="Optional welcome message shown to students when they join (e.g. 'Welcome to Al-Noor Mosque weekend classes!')"
+            <textarea id="welcomeMessage" maxlength="300" placeholder="${t().welcomeMessagePlaceholder}"
               style="width:100%;box-sizing:border-box;margin-top:10px;min-height:64px;background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border-color);border-radius:8px;padding:9px 12px;font-size:0.88rem;font-family:inherit;">${escapeHtml(profile.welcome_message ?? '')}</textarea>
-            <button id="saveOrgSettings" style="margin-top:10px">Save</button>
+            <button id="saveOrgSettings" style="margin-top:10px">${t().saveBtn}</button>
             <p class="form-msg" id="orgSettingsMsg"></p>`;
           document.getElementById('saveOrgSettings').addEventListener('click', async () => {
             const msg = document.getElementById('orgSettingsMsg');
-            msg.className = 'form-msg'; msg.textContent = 'Saving…';
+            msg.className = 'form-msg'; msg.textContent = t().saving;
             try {
               await SchoolApi.updateSchoolProfile(school.id, document.getElementById('orgType').value, document.getElementById('welcomeMessage').value);
-              msg.className = 'form-msg form-msg--ok'; msg.textContent = 'Saved.';
+              msg.className = 'form-msg form-msg--ok'; msg.textContent = t().saved;
             } catch {
-              msg.className = 'form-msg form-msg--error'; msg.textContent = 'Could not save — try again.';
+              msg.className = 'form-msg form-msg--error'; msg.textContent = t().couldNotSave;
             }
           });
         }).catch(() => { document.getElementById('orgSettingsCard').innerHTML = ''; });
@@ -285,10 +314,10 @@
           ? school.classes.map((c) => `
               <a class="class-tile" href="?school=${school.id}&class=${c.id}" data-class="${c.id}">
                 <strong>${escapeHtml(c.name)}</strong>
-                <span>Code <span class="code-chip">${c.join_code}</span></span>
-                <span>${c.student_count} student${c.student_count === 1 ? '' : 's'} · avg ${c.avg_xp} XP</span>
+                <span>${s.codeLabel} <span class="code-chip">${c.join_code}</span></span>
+                <span>${s.studentWord(c.student_count)} · ${s.avgXp(c.avg_xp)}</span>
               </a>`).join('')
-          : '<p class="sub">No classes yet — create one above.</p>';
+          : `<p class="sub">${s.noClassesYet}</p>`;
 
         app.querySelectorAll('.class-tile').forEach((el) => el.addEventListener('click', (e) => {
           e.preventDefault();
@@ -300,36 +329,38 @@
           const name = document.getElementById('className').value.trim();
           const msg = document.getElementById('createClassMsg');
           if (!name) return;
-          msg.className = 'form-msg'; msg.textContent = 'Creating…';
+          msg.className = 'form-msg'; msg.textContent = t().creating;
           try {
             await SchoolApi.createClass(school.id, name);
             render();
           } catch {
-            msg.className = 'form-msg form-msg--error'; msg.textContent = 'Could not create the class.';
+            msg.className = 'form-msg form-msg--error'; msg.textContent = t().couldNotCreateClass;
           }
         });
 
         try {
           const dash = await SchoolApi.schoolDashboard(school.id);
+          const s2 = t();
           const rankedRows = (list, cls) => list.length
             ? list.map((s, i) => `<tr class="${cls}"><td>#${i + 1}</td><td>${escapeHtml(s.display_name)}</td><td>${escapeHtml(s.class_name ?? '')}</td><td>${s.xp} XP</td></tr>`).join('')
-            : '<tr><td colspan="4" class="sub">No students yet</td></tr>';
+            : `<tr><td colspan="4" class="sub">${s2.noStudentsYet}</td></tr>`;
 
           document.getElementById('schoolStats').innerHTML = `
             <div class="card">
-              <h2>🏆 Top Students (School-Wide)</h2>
-              <table><thead><tr><th>#</th><th>Name</th><th>Class</th><th>XP</th></tr></thead>
+              <h2>${s2.topStudentsHeading}</h2>
+              <table><thead><tr><th>${s2.colRank}</th><th>${s2.colName}</th><th>${s2.colClass}</th><th>${s2.colXp}</th></tr></thead>
                 <tbody>${rankedRows(dash.top_students, 'top-row')}</tbody></table>
             </div>
             <div class="card">
-              <h2>🌱 Could Use a Nudge</h2>
-              <table><thead><tr><th>#</th><th>Name</th><th>Class</th><th>XP</th></tr></thead>
+              <h2>${s2.nudgeHeading}</h2>
+              <table><thead><tr><th>${s2.colRank}</th><th>${s2.colName}</th><th>${s2.colClass}</th><th>${s2.colXp}</th></tr></thead>
                 <tbody>${rankedRows(dash.bottom_students, 'bottom-row')}</tbody></table>
             </div>`;
         } catch { /* dashboard stats are a nice-to-have — overview still works without them */ }
       }
 
       async function renderAssignGamesCard(classId) {
+        const s = t();
         const assignments = await SchoolApi.listAssignedGames(classId).catch(() => []);
         const dueById = Object.fromEntries(assignments.map((a) => [a.game_id, a.due_date]));
         const assigned = new Set(assignments.map((a) => a.game_id));
@@ -340,9 +371,9 @@
           ? assignedList.map((g) => `
               <div class="code-chip" data-game-id="${g.id}" style="margin:0 6px 6px 0;display:inline-flex;align-items:center;gap:6px;">
                 <span>${g.icon} ${escapeHtml(g.title)}</span>
-                <input type="date" class="due-date-input" value="${dueById[g.id] ?? ''}" title="Due date (optional — a reminder, not a penalty)" style="font-size:11px;padding:2px 4px;" />
+                <input type="date" class="due-date-input" value="${dueById[g.id] ?? ''}" title="${s.dueDateInputTitle}" style="font-size:11px;padding:2px 4px;" />
               </div>`).join('')
-          : '<p class="sub">No games assigned yet.</p>';
+          : `<p class="sub">${s.noGamesAssigned}</p>`;
 
         const optionsHtml = unassigned.map((g) => `
           <label style="display:flex;align-items:center;gap:6px;font-size:0.85rem;color:var(--text-secondary);">
@@ -351,17 +382,17 @@
 
         return `
           <div class="card">
-            <h2>📌 Assigned Games</h2>
+            <h2>${s.assignedGamesHeading}</h2>
             <div>${assignedHtml}</div>
-            ${assignedList.length ? '<p class="sub" style="margin-top:4px">Optional due date shown as a reminder chip to students — nothing is locked or penalized.</p>' : ''}
+            ${assignedList.length ? `<p class="sub" style="margin-top:4px">${s.dueDateReminderNote}</p>` : ''}
             ${unassigned.length ? `
-              <p class="sub" style="margin-top:14px">Assign more:</p>
+              <p class="sub" style="margin-top:14px">${s.assignMoreLabel}</p>
               <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px;max-height:220px;overflow-y:auto;margin-top:6px;">
                 ${optionsHtml}
               </div>
-              <button id="assignGamesBtn" style="margin-top:12px">Assign Selected</button>
+              <button id="assignGamesBtn" style="margin-top:12px">${s.assignSelectedBtn}</button>
               <p class="form-msg" id="assignGamesMsg"></p>
-            ` : '<p class="sub" style="margin-top:10px">All games are assigned.</p>'}
+            ` : `<p class="sub" style="margin-top:10px">${s.allGamesAssigned}</p>`}
           </div>`;
       }
 
@@ -377,32 +408,33 @@
           const msg = document.getElementById('assignGamesMsg');
           const ids = [...document.querySelectorAll('#app input[type=checkbox]:checked')].map((el) => el.value);
           if (ids.length === 0) return;
-          msg.className = 'form-msg'; msg.textContent = 'Assigning…';
+          msg.className = 'form-msg'; msg.textContent = t().assigning;
           try {
             await Promise.all(ids.map((id) => SchoolApi.assignGame(classId, id)));
             render();
           } catch {
             msg.className = 'form-msg form-msg--error';
-            msg.textContent = 'Could not assign — try again.';
+            msg.textContent = t().couldNotAssign;
           }
         });
       }
 
       function renderAnnouncementsCard(items) {
+        const s = t();
         const list = items.length
           ? items.map((a) => `
               <div class="row" style="justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border-color);">
                 <div><p style="margin:0;font-size:0.88rem;">${escapeHtml(a.message)}</p><p class="sub" style="margin:2px 0 0">${new Date(a.created_at).toLocaleDateString()}</p></div>
                 <button class="ghost" data-delete-announcement="${a.id}" style="padding:4px 8px;font-size:0.75rem;">✕</button>
               </div>`).join('')
-          : '<p class="sub">No announcements yet.</p>';
+          : `<p class="sub">${s.noAnnouncementsYet}</p>`;
         return `
           <div class="card">
-            <h2>📣 Class Announcements</h2>
+            <h2>${s.classAnnouncementsHeading}</h2>
             <div>${list}</div>
             <form id="postAnnouncementForm" class="row" style="margin-top:12px">
-              <input id="announcementText" type="text" maxlength="500" placeholder="Homework, reminders, anything for the class…" />
-              <button type="submit">Post</button>
+              <input id="announcementText" type="text" maxlength="500" placeholder="${s.announcementPlaceholder}" />
+              <button type="submit">${s.postBtn}</button>
             </form>
             <p class="form-msg" id="announcementMsg"></p>
           </div>`;
@@ -414,13 +446,13 @@
           const input = document.getElementById('announcementText');
           const msg = document.getElementById('announcementMsg');
           if (!input.value.trim()) return;
-          msg.className = 'form-msg'; msg.textContent = 'Posting…';
+          msg.className = 'form-msg'; msg.textContent = t().posting;
           try {
             await SchoolApi.postAnnouncement(classId, input.value);
             input.value = '';
             renderClassRosterById(classId);
           } catch {
-            msg.className = 'form-msg form-msg--error'; msg.textContent = 'Could not post — try again.';
+            msg.className = 'form-msg form-msg--error'; msg.textContent = t().couldNotPost;
           }
         });
         document.querySelectorAll('[data-delete-announcement]').forEach((btn) => {
@@ -431,19 +463,20 @@
       }
 
       async function renderAttendanceCard(classId, roster) {
+        const s = t();
         const today = new Date().toISOString().slice(0, 10);
         const present = await SchoolApi.classAttendance(classId, today).catch(() => ({}));
-        const rows = roster.students.map((s) => `
+        const rows = roster.students.map((st) => `
           <label style="display:flex;align-items:center;gap:8px;font-size:0.85rem;padding:4px 0;">
-            <input type="checkbox" value="${s.student_id}" ${present[s.student_id] !== false ? 'checked' : ''} />
-            ${escapeHtml(s.display_name)}
-          </label>`).join('') || '<p class="sub">No students yet.</p>';
+            <input type="checkbox" value="${st.student_id}" ${present[st.student_id] !== false ? 'checked' : ''} />
+            ${escapeHtml(st.display_name)}
+          </label>`).join('') || `<p class="sub">${s.noStudentsYetAttendance}</p>`;
         return `
           <div class="card">
-            <h2>🗓️ Attendance — Today</h2>
-            <p class="sub">Check who's present for today's session. Unchecked = absent for this date only.</p>
+            <h2>${s.attendanceHeading}</h2>
+            <p class="sub">${s.attendanceSub}</p>
             <div style="margin-top:8px">${rows}</div>
-            ${roster.students.length ? '<button id="saveAttendanceBtn" style="margin-top:10px">Save Attendance</button><p class="form-msg" id="attendanceMsg"></p>' : ''}
+            ${roster.students.length ? `<button id="saveAttendanceBtn" style="margin-top:10px">${s.saveAttendanceBtn}</button><p class="form-msg" id="attendanceMsg"></p>` : ''}
           </div>`;
       }
 
@@ -452,12 +485,12 @@
           const card = e.target.closest('.card');
           const ids = [...card.querySelectorAll('input[type=checkbox]:checked')].map((el) => el.value);
           const msg = document.getElementById('attendanceMsg');
-          msg.className = 'form-msg'; msg.textContent = 'Saving…';
+          msg.className = 'form-msg'; msg.textContent = t().saving;
           try {
             await SchoolApi.markAttendance(classId, new Date().toISOString().slice(0, 10), ids);
-            msg.className = 'form-msg form-msg--ok'; msg.textContent = 'Saved.';
+            msg.className = 'form-msg form-msg--ok'; msg.textContent = t().saved;
           } catch {
-            msg.className = 'form-msg form-msg--error'; msg.textContent = 'Could not save — try again.';
+            msg.className = 'form-msg form-msg--error'; msg.textContent = t().couldNotSaveAttendance;
           }
         });
       }
@@ -471,43 +504,44 @@
 
       async function renderClassRoster(schools, school, classSummary) {
         currentSchool = school; currentSchools = schools;
-        app.innerHTML = `<div class="card"><p class="sub">Loading roster…</p></div>`;
+        const s = t();
+        app.innerHTML = `<div class="card"><p class="sub">${s.loadingRoster}</p></div>`;
         try {
           const roster = await SchoolApi.classRoster(classSummary.id);
-          const rows = roster.students.map((s, i) => {
+          const rows = roster.students.map((st, i) => {
             const cls = i < 3 ? 'top-row' : (i >= roster.students.length - 3 && roster.students.length > 3 ? 'bottom-row' : '');
-            const inactive = daysSince(s.last_played_date) >= 3;
+            const inactive = daysSince(st.last_played_date) >= 3;
             return `<tr class="${cls}">
               <td>#${i + 1}</td>
-              <td>${inactive ? '<span title="Hasn\'t played in a few days — might be worth a friendly nudge">👋</span> ' : ''}${escapeHtml(s.display_name)}</td>
-              <td>Lvl ${s.level}</td>
-              <td>🔥 ${s.daily_streak}</td>
-              <td>${s.badge_count} 🏅</td>
-              <td>${s.xp} XP</td>
-              <td style="white-space:nowrap;font-size:0.78rem;">${escapeHtml(summarizeReportCard(s.game_round_counts))}</td>
-              <td>${s.attendance_pct === null ? '—' : s.attendance_pct + '%'}</td>
-              <td><input type="text" class="teacher-note-input" data-student="${s.student_id}" value="${escapeHtml(s.teacher_note ?? '')}" maxlength="500" placeholder="Private note…" style="width:120px;font-size:0.78rem;background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border-color);border-radius:6px;padding:4px 6px;" /></td>
+              <td>${inactive ? `<span title="${s.nudgeTooltip}">👋</span> ` : ''}${escapeHtml(st.display_name)}</td>
+              <td>${s.colLevel} ${st.level}</td>
+              <td>🔥 ${st.daily_streak}</td>
+              <td>${st.badge_count} 🏅</td>
+              <td>${st.xp} XP</td>
+              <td style="white-space:nowrap;font-size:0.78rem;">${escapeHtml(summarizeReportCard(st.game_round_counts))}</td>
+              <td>${st.attendance_pct === null ? '—' : st.attendance_pct + '%'}</td>
+              <td><input type="text" class="teacher-note-input" data-student="${st.student_id}" value="${escapeHtml(st.teacher_note ?? '')}" maxlength="500" placeholder="${s.notePlaceholder}" style="width:120px;font-size:0.78rem;background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border-color);border-radius:6px;padding:4px 6px;" /></td>
             </tr>`;
-          }).join('') || '<tr><td colspan="9" class="sub">No students have joined yet.</td></tr>';
+          }).join('') || `<tr><td colspan="9" class="sub">${s.noStudentsYet}</td></tr>`;
 
           app.innerHTML = `
             <div class="card">
-              <button class="ghost" id="backToSchool">← Back to ${escapeHtml(school.name)}</button>
+              <button class="ghost" id="backToSchool">${s.backToSchool(escapeHtml(school.name))}</button>
               <div class="row" style="justify-content:space-between; margin-top:12px">
                 <h2 style="margin:0">${escapeHtml(roster.class.name)}</h2>
-                <span class="sub">Share code <span class="code-chip">${roster.class.join_code}</span></span>
+                <span class="sub">${s.shareCode} <span class="code-chip">${roster.class.join_code}</span></span>
               </div>
-              <p class="sub">${roster.students.length} students · class average ${roster.avg_xp} XP</p>
+              <p class="sub">${s.rosterSummary(roster.students.length, roster.avg_xp)}</p>
               <div style="overflow-x:auto">
                 <table>
-                  <thead><tr><th>#</th><th>Name</th><th>Level</th><th>Streak</th><th>Badges</th><th>XP</th><th>Report card</th><th>Attend.</th><th>Note</th></tr></thead>
+                  <thead><tr><th>#</th><th>${s.colName}</th><th>${s.colLevel}</th><th>${s.colStreak}</th><th>${s.colBadges}</th><th>${s.colXp}</th><th>${s.colReportCard}</th><th>${s.colAttendance}</th><th>${s.colNote}</th></tr></thead>
                   <tbody>${rows}</tbody>
                 </table>
               </div>
               <div class="row" style="margin-top:12px">
-                <button class="ghost" id="exportCsvBtn">⬇ Export CSV</button>
-                <button class="ghost" id="printReportBtn">🖨 Print Class Report</button>
-                <button class="ghost" id="printCertsBtn">🏅 Print Term Certificates</button>
+                <button class="ghost" id="exportCsvBtn">${s.exportCsvBtn}</button>
+                <button class="ghost" id="printReportBtn">${s.printReportBtn}</button>
+                <button class="ghost" id="printCertsBtn">${s.printCertsBtn}</button>
               </div>
             </div>
             <div id="announcementsHost"></div>
@@ -522,27 +556,27 @@
           });
 
           document.getElementById('exportCsvBtn').addEventListener('click', () => {
-            const header = ['#', 'Name', 'Level', 'Streak', 'Badges', 'XP', 'Report card', 'Attendance %'];
-            const csvRows = [header, ...roster.students.map((s, i) => [
-              i + 1, s.display_name, s.level, s.daily_streak, s.badge_count, s.xp,
-              summarizeReportCard(s.game_round_counts), s.attendance_pct === null ? '' : s.attendance_pct,
+            const header = ['#', s.colName, s.colLevel, s.colStreak, s.colBadges, s.colXp, s.colReportCard, s.colAttendance];
+            const csvRows = [header, ...roster.students.map((st, i) => [
+              i + 1, st.display_name, st.level, st.daily_streak, st.badge_count, st.xp,
+              summarizeReportCard(st.game_round_counts), st.attendance_pct === null ? '' : st.attendance_pct,
             ])];
             downloadCsv(`${roster.class.name.replace(/[^a-z0-9]+/gi, '-')}-roster.csv`, csvRows);
           });
           document.getElementById('printReportBtn').addEventListener('click', () => {
             const win = window.open('', '_blank', 'width=900,height=700');
             if (!win) return;
-            const body = `<h1>${escapeHtml(roster.class.name)}</h1><p>${roster.students.length} students · class average ${roster.avg_xp} XP · ${new Date().toLocaleDateString()}</p>
+            const body = `<h1>${escapeHtml(roster.class.name)}</h1><p>${s.rosterSummary(roster.students.length, roster.avg_xp)} · ${new Date().toLocaleDateString()}</p>
               <table border="1" cellpadding="6" style="border-collapse:collapse;width:100%;font-family:sans-serif">
-                <tr><th>Name</th><th>Level</th><th>XP</th><th>Report card</th><th>Attendance</th></tr>
-                ${roster.students.map((s) => `<tr><td>${escapeHtml(s.display_name)}</td><td>${s.level}</td><td>${s.xp}</td><td>${escapeHtml(summarizeReportCard(s.game_round_counts))}</td><td>${s.attendance_pct === null ? '—' : s.attendance_pct + '%'}</td></tr>`).join('')}
+                <tr><th>${s.colName}</th><th>${s.colLevel}</th><th>${s.colXp}</th><th>${s.colReportCard}</th><th>${s.colAttendance}</th></tr>
+                ${roster.students.map((st) => `<tr><td>${escapeHtml(st.display_name)}</td><td>${st.level}</td><td>${st.xp}</td><td>${escapeHtml(summarizeReportCard(st.game_round_counts))}</td><td>${st.attendance_pct === null ? '—' : st.attendance_pct + '%'}</td></tr>`).join('')}
               </table>`;
-            win.document.write(`<!doctype html><html><head><title>${escapeHtml(roster.class.name)} report</title></head><body>${body}</body></html>`);
+            win.document.write(`<!doctype html><html><head><title>${escapeHtml(roster.class.name)}</title></head><body>${body}</body></html>`);
             win.document.close(); win.focus();
             setTimeout(() => win.print(), 300);
           });
           document.getElementById('printCertsBtn').addEventListener('click', () => {
-            printClassCertificates(roster.students, 'Successful Completion of Term', roster.class.name);
+            printClassCertificates(roster.students, s.certAchievement, roster.class.name);
           });
 
           document.getElementById('announcementsHost').innerHTML = renderAnnouncementsCard(await SchoolApi.listAnnouncements(classSummary.id).catch(() => []));
@@ -554,7 +588,7 @@
           document.getElementById('assignGamesHost').innerHTML = await renderAssignGamesCard(classSummary.id);
           bindAssignGamesCard(classSummary.id);
         } catch {
-          app.innerHTML = `<div class="card"><p class="form-msg form-msg--error">Could not load this class's roster.</p></div>`;
+          app.innerHTML = `<div class="card"><p class="form-msg form-msg--error">${s.couldNotLoadRoster}</p></div>`;
         }
       }
 
@@ -565,7 +599,7 @@
         try {
           ({ schools } = await SchoolApi.listSchools());
         } catch {
-          app.innerHTML = '<div class="card"><p class="form-msg form-msg--error">Could not load your schools.</p></div>';
+          app.innerHTML = `<div class="card"><p class="form-msg form-msg--error">${t().couldNotLoadSchools}</p></div>`;
           return;
         }
         if (schools.length === 0) { renderNoSchool(); return; }
@@ -580,6 +614,10 @@
       }
 
       window.addEventListener('popstate', render);
+
+      renderLangPicker();
+      applyStaticI18n();
+      void detectDefaultLang().then(() => { renderLangPicker(); applyStaticI18n(); render(); });
 
       (async () => {
         try { await sync.init(); } catch { /* not signed in — render() handles that state */ }

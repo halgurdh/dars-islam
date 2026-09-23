@@ -3,6 +3,8 @@ import { PlayerProgress } from './player-progress';
 import { BADGES } from './badges';
 import { sync } from './sync';
 import { getSupabase } from './supabase-client';
+import { t, getLang, setLang, detectDefaultLang } from './progress-bar-i18n';
+import { renderLanguagePickerDom } from './language-picker-dom';
 
 interface LeaderboardEntry { display_name: string; xp: number; level: number; }
 
@@ -31,6 +33,7 @@ export class ProgressBar {
     PlayerProgress.registerSyncCallback(() => sync.scheduleSync());
     this.authUnsub = sync.onAuthChange(() => { if (!this.modal) this.renderBar(); });
     sync.init().then(() => this.renderBar()).catch(() => {});
+    void detectDefaultLang().then(() => { if (!this.modal) this.renderBar(); });
     this.renderBar();
   }
 
@@ -54,9 +57,9 @@ export class ProgressBar {
   }): void {
     this.renderBar();
     const lines = [`+${result.xpAwarded} XP`];
-    if (result.leveledUp) lines.push(`🎉 Level ${result.level}!`);
-    if (result.streakExtended && result.dailyStreak > 1) lines.push(`🔥 ${result.dailyStreak}-day streak`);
-    result.newBadges.forEach((b) => lines.push(`${b.icon} New badge: ${b.name}`));
+    if (result.leveledUp) lines.push(t().toastLevelUp(result.level));
+    if (result.streakExtended && result.dailyStreak > 1) lines.push(t().toastStreak(result.dailyStreak));
+    result.newBadges.forEach((b) => lines.push(`${b.icon} ${t().toastNewBadge(b.name)}`));
 
     const toast = document.createElement('div');
     toast.className = 'pb-toast';
@@ -84,9 +87,9 @@ export class ProgressBar {
 
     this.root.innerHTML = `
       <div class="pb-bar">
-        <button class="pb-toggle" id="pbToggle" title="${this.collapsed ? 'Show progress' : 'Hide progress'}">${chevron}</button>
+        <button class="pb-toggle" id="pbToggle" title="${this.collapsed ? t().showProgress : t().hideProgress}">${chevron}</button>
         ${this.collapsed ? '' : `
-          <button class="pb-btn pb-level" id="pbOpen">⭐ Lvl ${state.level}</button>
+          <button class="pb-btn pb-level" id="pbOpen">⭐ ${t().lvl(state.level)}</button>
           ${state.dailyStreak > 0 ? `<span class="pb-streak">🔥 ${state.dailyStreak}</span>` : ''}
         `}
       </div>`;
@@ -129,39 +132,51 @@ export class ProgressBar {
       </div>`;
     }).join('');
 
+    const siteRoot = typeof __SITE_BASE_PATH__ !== 'undefined' ? __SITE_BASE_PATH__ : '/';
     const m = this.openModal(`
       <div class="pb-panel">
         <div class="pb-tabs">
-          <button class="pb-tab ${tab === 'progress' ? 'pb-tab--on' : ''}" id="pbTabProgress">📈 Progress</button>
-          <button class="pb-tab ${tab === 'leaderboard' ? 'pb-tab--on' : ''}" id="pbTabBoard">🏆 Leaderboard</button>
+          <button class="pb-tab ${tab === 'progress' ? 'pb-tab--on' : ''}" id="pbTabProgress">${t().tabProgress}</button>
+          <button class="pb-tab ${tab === 'leaderboard' ? 'pb-tab--on' : ''}" id="pbTabBoard">${t().tabLeaderboard}</button>
           <button class="pb-close" id="pbClose">✕</button>
         </div>
+        <div id="pbLangPicker" style="margin:2px 0 10px"></div>
         <div id="pbTabContent">
           ${tab === 'progress' ? `
             <div class="pb-level-row">
-              <span class="pb-level-big">⭐ Level ${state.level}</span>
-              <span class="pb-streak-big">🔥 ${state.dailyStreak}-day streak</span>
+              <span class="pb-level-big">⭐ ${t().lvl(state.level)}</span>
+              <span class="pb-streak-big">🔥 ${t().dayStreak(state.dailyStreak)}</span>
             </div>
             <div class="pb-xp-bar"><div class="pb-xp-fill" style="width:${pct}%"></div></div>
-            <p class="pb-sub">${state.xpIntoLevel} / ${state.xpForNextLevel} XP to level ${state.level + 1} · ${state.totalRounds} rounds played</p>
+            <p class="pb-sub">${t().xpToLevel(state.xpIntoLevel, state.xpForNextLevel, state.level + 1, state.totalRounds)}</p>
             <div class="pb-badges-grid">${badgeGrid}</div>
             <div class="pb-name-row">
               <input id="pbName" type="text" maxlength="24"
-                placeholder="${sync.role === 'student' ? 'Your name (visible to your teacher)' : 'Your name on the leaderboard'}"
+                placeholder="${sync.role === 'student' ? t().namePlaceholderStudent : t().namePlaceholderDefault}"
                 value="${escapeHtml(name)}" />
-              <button id="pbNameSave">Save</button>
+              <button id="pbNameSave">${t().save}</button>
             </div>
             ${sync.isLoggedIn
-              ? `<p class="pb-sub">☁ Synced${sync.email ? ` as ${sync.email}` : ''}</p>`
-              : `<button id="pbSignIn" style="margin-top:8px">☁ Sign in to save & join leaderboard</button>`}
+              ? `<p class="pb-sub">${sync.email ? t().syncedAs(sync.email) : t().synced}</p>`
+              : `<button id="pbSignIn" style="margin-top:8px">${t().signInToSave}</button>`}
             <div class="pb-links">
-              <a href="/dashboard/">📊 My Dashboard</a>
-              ${sync.isTeacher ? '<a href="/teacher/">🏫 Teacher Dashboard</a>' : ''}
-              ${sync.isParent ? '<a href="/parent/">👪 Parent Dashboard</a>' : ''}
+              <a href="${siteRoot}dashboard/">${t().linkDashboard}</a>
+              ${sync.isTeacher ? `<a href="${siteRoot}teacher/">${t().linkTeacher}</a>` : ''}
+              ${sync.isParent ? `<a href="${siteRoot}parent/">${t().linkParent}</a>` : ''}
             </div>
-          ` : `<div id="pbBoardList" class="pb-board-list"><p class="pb-sub">Loading…</p></div>`}
+          ` : `<div id="pbBoardList" class="pb-board-list"><p class="pb-sub">${t().loading}</p></div>`}
         </div>
       </div>`);
+
+    const renderLangRow = () => {
+      const container = m.querySelector('#pbLangPicker') as HTMLElement | null;
+      if (!container) return;
+      renderLanguagePickerDom(container, getLang(), (lang) => {
+        setLang(lang);
+        this.openPanel(tab);
+      });
+    };
+    renderLangRow();
 
     m.querySelector('#pbClose')!.addEventListener('click', () => this.closeModal());
     m.querySelector('#pbTabProgress')!.addEventListener('click', () => this.openPanel('progress'));
@@ -184,18 +199,18 @@ export class ProgressBar {
       const { data: entries, error } = await supabase.rpc('public_leaderboard');
       if (error) throw error;
       if (!entries?.length) {
-        list.innerHTML = '<p class="pb-sub">No entries yet — sign in and play to be the first!</p>';
+        list.innerHTML = `<p class="pb-sub">${t().noEntriesYet}</p>`;
         return;
       }
       list.innerHTML = (entries as LeaderboardEntry[]).map((e, i) => `
         <div class="pb-board-row">
           <span class="pb-board-rank">#${i + 1}</span>
           <span class="pb-board-name">${escapeHtml(e.display_name)}</span>
-          <span class="pb-board-level">Lvl ${e.level}</span>
+          <span class="pb-board-level">${t().lvl(e.level)}</span>
           <span class="pb-board-xp">${e.xp} XP</span>
         </div>`).join('');
     } catch {
-      list.innerHTML = '<p class="pb-sub">Couldn’t load the leaderboard — try again later.</p>';
+      list.innerHTML = `<p class="pb-sub">${t().leaderboardError}</p>`;
     }
   }
 
@@ -206,21 +221,32 @@ export class ProgressBar {
     // Dashboard"/"Parent Dashboard" links work correctly from inside a
     // game page, not just from the wrapper hub.
     const siteRoot = typeof __SITE_BASE_PATH__ !== 'undefined' ? __SITE_BASE_PATH__ : '/';
+    const s = t();
     const m = this.openModal(`
       <div class="pb-panel" style="max-width:320px">
-        <h2>☁ Sync Progress</h2>
-        <p class="pb-sub">Enter your email — we'll send a magic link. No password needed.</p>
-        <input id="pbEmail" type="email" placeholder="you@example.com"
+        <h2>${s.syncProgressTitle}</h2>
+        <div id="pbLangPicker" style="margin:8px 0"></div>
+        <p class="pb-sub">${s.syncProgressBody}</p>
+        <input id="pbEmail" type="email" placeholder="${s.emailPlaceholder}"
           style="width:100%;box-sizing:border-box;margin-top:8px" autocomplete="email" />
         <div id="pbMsg" style="min-height:16px;font-size:12px;margin:6px 0;color:#f60"></div>
-        <button id="pbSend">Send Magic Link</button>
-        <button id="pbBack" style="opacity:0.65;margin-top:6px">← Back</button>
+        <button id="pbSend">${s.sendMagicLink}</button>
+        <button id="pbBack" style="opacity:0.65;margin-top:6px">${s.back}</button>
         <p class="pb-sub" style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.08)">
-          Registering as a <strong>teacher, mosque, or school</strong>? Use the
-          <a href="${siteRoot}teacher/">Teacher Dashboard</a> instead — it sets up your account automatically.<br>
-          Registering as a <strong>parent</strong>? Use the <a href="${siteRoot}parent/">Parent Dashboard</a>.
+          ${s.registerTeacherIntro} <strong>${s.registerTeacherStrong}</strong>?
+          <a href="${siteRoot}teacher/">${s.registerTeacherLink}</a> ${s.registerTeacherOutro}<br>
+          ${s.registerParentIntro} <strong>${s.registerParentStrong}</strong>?
+          <a href="${siteRoot}parent/">${s.registerParentLink}</a>.
         </p>
       </div>`);
+
+    const langContainer = m.querySelector('#pbLangPicker') as HTMLElement | null;
+    if (langContainer) {
+      renderLanguagePickerDom(langContainer, getLang(), (lang) => {
+        setLang(lang);
+        this.openAuth();
+      });
+    }
 
     const emailEl = m.querySelector('#pbEmail') as HTMLInputElement;
     const msgEl   = m.querySelector('#pbMsg')   as HTMLElement;
@@ -229,21 +255,21 @@ export class ProgressBar {
     m.querySelector('#pbBack')!.addEventListener('click', () => this.openPanel());
     sendBtn.addEventListener('click', async () => {
       const email = emailEl.value.trim();
-      if (!email) { msgEl.textContent = 'Please enter your email.'; return; }
-      sendBtn.disabled = true; msgEl.textContent = 'Sending…';
+      if (!email) { msgEl.textContent = t().enterEmailFirst; return; }
+      sendBtn.disabled = true; msgEl.textContent = t().sending;
       try {
         await sync.signIn(email);
         m.innerHTML = `
           <div class="pb-panel" style="max-width:320px">
-            <h2>✉ Check your email!</h2>
-            <p class="pb-sub">Link sent to <strong>${email}</strong>. Click it to sign in.</p>
-            <button id="pbDone" style="margin-top:14px">← Back</button>
+            <h2>${t().checkEmailTitle}</h2>
+            <p class="pb-sub">${t().linkSentTo(escapeHtml(email))}</p>
+            <button id="pbDone" style="margin-top:14px">${t().back}</button>
           </div>`;
         m.querySelector('#pbDone')!.addEventListener('click', () => this.closeModal());
       } catch {
         sendBtn.disabled = false;
         msgEl.style.color = '#e54040';
-        msgEl.textContent = 'Could not send — try again.';
+        msgEl.textContent = t().sendFailed;
       }
     });
   }

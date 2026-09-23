@@ -25,10 +25,11 @@
     <!-- Account / dashboards nav -->
     <nav class="site-nav">
       <div class="site-nav__links">
-        <a href="__VITE_BASE_PATH__dashboard/" class="site-nav__link">📊 My Dashboard</a>
+        <a href="__VITE_BASE_PATH__dashboard/" class="site-nav__link" id="navDashboardLink">📊 My Dashboard</a>
         <a href="__VITE_BASE_PATH__teacher/" class="site-nav__link" id="navTeacherLink" hidden>🏫 Teacher Dashboard</a>
         <a href="__VITE_BASE_PATH__parent/" class="site-nav__link" id="navParentLink" hidden>👪 Parent Dashboard</a>
       </div>
+      <div id="langPicker" style="margin:0 8px"></div>
       <div id="authChip" class="site-nav__auth">
         <button id="authSignIn" class="site-nav__btn">☁ Sign in</button>
       </div>
@@ -38,42 +39,41 @@
         <div class="hero-feature">
           <span class="hero-feature__icon">💛</span>
           <div>
-            <strong>FREE & AD-FREE</strong>
-            <span>No cost, no ads — donations are optional.</span>
+            <strong id="heroFreeTitle">FREE & AD-FREE</strong>
+            <span id="heroFreeDesc">No cost, no ads — donations are optional.</span>
           </div>
           <span class="hero-feature__icon">👨‍👩‍👧‍👦</span>
           <div>
-            <strong>FOR SCHOOLS & FAMILIES</strong>
-            <span>Built for students, teachers, parents, and mosques.</span>
+            <strong id="heroForTitle">FOR SCHOOLS & FAMILIES</strong>
+            <span id="heroForDesc">Built for students, teachers, parents, and mosques.</span>
           </div>
         </div>
         <div class="hero-feature">
           <span class="hero-feature__icon">🕌</span>
           <div>
-            <strong>ISLAMIC STUDIES + MORE</strong>
-            <span>Quran, duas, Arabic, plus math, science and other school subjects.</span>
+            <strong id="heroIslamicTitle">ISLAMIC STUDIES + MORE</strong>
+            <span id="heroIslamicDesc">Quran, duas, Arabic, plus math, science and other school subjects.</span>
           </div>
           <span class="hero-feature__icon">🌍</span>
           <div>
-            <strong>Multiple Device Sync</strong>
-            <span>Play on any device and pick up right where you left off.</span>
+            <strong id="heroSyncTitle">Multiple Device Sync</strong>
+            <span id="heroSyncDesc">Play on any device and pick up right where you left off.</span>
           </div>
         </div>
       </div>
-    </section>
 
     <div id="donateBanner" class="premium-banner" hidden></div>
 
     <!-- Game Grid -->
     <header id="all_games" class="hub-header">
-      <h2 class="hub-title">Choose a Game</h2>
-      <p class="hub-subtitle">Free to play, no account needed.</p>
+      <h2 class="hub-title" id="chooseGameTitle">Choose a Game</h2>
+      <p class="hub-subtitle" id="chooseGameSub">Free to play, no account needed.</p>
       <div class="category-filter" id="categoryFilter" role="tablist" aria-label="Filter games by category">
-        <button class="category-filter__btn is-active" data-category-filter="all">All Games</button>
-        <button class="category-filter__btn" data-category-filter="islamic">🕌 Islamic Studies</button>
-        <button class="category-filter__btn" data-category-filter="math">🔢 Math</button>
-        <button class="category-filter__btn" data-category-filter="learning">🧸 Early Learning</button>
-        <button class="category-filter__btn" data-category-filter="general">🌍 General Subjects</button>
+        <button class="category-filter__btn is-active" data-category-filter="all" id="catAll">All Games</button>
+        <button class="category-filter__btn" data-category-filter="islamic" id="catIslamic">🕌 Islamic Studies</button>
+        <button class="category-filter__btn" data-category-filter="math" id="catMath">🔢 Math</button>
+        <button class="category-filter__btn" data-category-filter="learning" id="catEarly">🧸 Early Learning</button>
+        <button class="category-filter__btn" data-category-filter="general" id="catGeneral">🌍 General Subjects</button>
       </div>
     </header>
 
@@ -684,27 +684,27 @@
             <img src="__VITE_BASE_PATH__games/asma-match/assets/icons/icon-512.png" alt="dars-islam logo" class="footer-logo__img" />
             <span>dars-islam</span>
           </div>
-          <p>Free educational games for Islamic studies and general school subjects.</p>
+          <p id="footerTagline">Free educational games for Islamic studies and general school subjects.</p>
         </div>
         <div class="footer-column">
-          <h4>Studio</h4>
-          <a href="mailto:halgurdh@gmail.com">Contact</a>
-          <a href="https://github.com/halgurdh/dars-islam" target="_blank" rel="noopener">Source Code</a>
+          <h4 id="footerStudio">Studio</h4>
+          <a href="mailto:halgurdh@gmail.com" id="footerContact">Contact</a>
+          <a href="https://github.com/halgurdh/dars-islam" target="_blank" rel="noopener" id="footerSource">Source Code</a>
         </div>
         <div class="footer-column">
-          <h4>Legal</h4>
-          <a href="__VITE_BASE_PATH__terms">Terms of Service</a>
-          <a href="__VITE_BASE_PATH__privacy">Privacy Policy</a>
+          <h4 id="footerLegal">Legal</h4>
+          <a href="__VITE_BASE_PATH__terms" id="footerTerms">Terms of Service</a>
+          <a href="__VITE_BASE_PATH__privacy" id="footerPrivacy">Privacy Policy</a>
         </div>
         <div class="footer-column">
-          <h4>Support this project</h4>
-          <a href="https://paypal.me/halgurdh" target="_blank" rel="noopener">💛 Donate via PayPal</a>
+          <h4 id="footerSupportHeading">Support this project</h4>
+          <a href="https://paypal.me/halgurdh" target="_blank" rel="noopener" id="footerDonate">💛 Donate via PayPal</a>
         </div>
       </div>
-      <p class="footer-disclaimer">⚠️ Built with AI assistance — not professionally audited, and Islamic content has not been reviewed by a qualified scholar. Verify anything important independently. See <a href="__VITE_BASE_PATH__terms">Terms</a> for details.</p>
+      <p class="footer-disclaimer"><span id="footerDisclaimerText">⚠️ Built with AI assistance — not professionally audited, and Islamic content has not been reviewed by a qualified scholar. However, all the information is fetched from reliable sources such as quran.com, sunnah.com and islamqa.info/en. Verify anything important independently. See</span> <a href="__VITE_BASE_PATH__terms" id="footerDisclaimerLink">Terms</a>.</p>
       <div class="footer-bottom">
-        <p>PLAY MORE. SMILE MORE.</p>
-        <p>All rights reserved © 2018–<span id="year"></span> dars-islam.</p>
+        <p id="footerPlayMore">PLAY MORE. SMILE MORE.</p>
+        <p><span id="footerRights">All rights reserved</span> © 2018–<span id="year"></span> dars-islam.</p>
         <script>document.getElementById("year").innerHTML = new Date().getFullYear();</script>
       </div>
     </footer>
@@ -717,7 +717,60 @@
       import { getSupabase } from '@shared/supabase-client';
       import { BRAND_ADS } from '@shared/ad-provider';
       import { ProgressBar } from '@shared/progress-bar';
+      import { renderLanguagePickerDom } from '@shared/language-picker-dom';
+      import { t, STRINGS } from './i18n';
+      import { getLang, setLang, detectDefaultLang } from './systems/Locale';
       const progressBar = new ProgressBar();
+
+      // Applies the current language to every static/translatable element on
+      // the page. Called on load and again whenever the language changes —
+      // dynamically-rendered bits (auth chip, donate banner) re-render
+      // themselves separately since they already have their own render fns.
+      function applyI18n() {
+        const s = t();
+        const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+        setText('navDashboardLink', s.navDashboard);
+        setText('heroFreeTitle', s.heroFreeTitle);
+        setText('heroFreeDesc', s.heroFreeDesc);
+        setText('heroForTitle', s.heroForTitle);
+        setText('heroForDesc', s.heroForDesc);
+        setText('heroIslamicTitle', s.heroIslamicTitle);
+        setText('heroIslamicDesc', s.heroIslamicDesc);
+        setText('heroSyncTitle', s.heroSyncTitle);
+        setText('heroSyncDesc', s.heroSyncDesc);
+        setText('chooseGameTitle', s.chooseGame);
+        setText('chooseGameSub', s.chooseGameSub);
+        setText('catAll', s.catAll);
+        setText('catIslamic', s.catIslamic);
+        setText('catMath', s.catMath);
+        setText('catEarly', s.catEarly);
+        setText('catGeneral', s.catGeneral);
+        setText('footerTagline', s.footerTagline);
+        setText('footerStudio', s.footerStudio);
+        setText('footerContact', s.footerContact);
+        setText('footerSource', s.footerSource);
+        setText('footerLegal', s.footerLegal);
+        setText('footerTerms', s.footerTerms);
+        setText('footerPrivacy', s.footerPrivacy);
+        setText('footerSupportHeading', s.footerSupportHeading);
+        setText('footerDonate', s.footerDonate);
+        setText('footerDisclaimerText', s.footerDisclaimer);
+        setText('footerDisclaimerLink', s.footerDisclaimerLink);
+        setText('footerPlayMore', s.footerPlayMore);
+        setText('footerRights', s.footerRights);
+        renderAuthChip();
+        updateBanner();
+      }
+
+      function renderLangPicker() {
+        const container = document.getElementById('langPicker');
+        if (!container) return;
+        renderLanguagePickerDom(container, getLang(), (lang) => {
+          setLang(lang);
+          renderLangPicker();
+          applyI18n();
+        });
+      }
 
       // Single sign-in entry point for the whole hub — shows email + sign
       // out once logged in, and reveals the Teacher Dashboard link for
@@ -731,14 +784,14 @@
         if (!chip) return;
         if (sync.isLoggedIn) {
           chip.innerHTML = `
-            <span class="site-nav__email">☁ ${sync.email ?? 'Signed in'}</span>
-            <button id="authSignOut" class="site-nav__btn site-nav__btn--ghost">Sign out</button>`;
+            <span class="site-nav__email">☁ ${sync.email ?? t().signedIn}</span>
+            <button id="authSignOut" class="site-nav__btn site-nav__btn--ghost">${t().signOut}</button>`;
           chip.querySelector('#authSignOut')?.addEventListener('click', async () => {
             await sync.signOut();
             renderAuthChip();
           });
         } else {
-          chip.innerHTML = `<button id="authSignIn" class="site-nav__btn">☁ Sign in</button>`;
+          chip.innerHTML = `<button id="authSignIn" class="site-nav__btn">${t().signIn}</button>`;
           chip.querySelector('#authSignIn')?.addEventListener('click', () => progressBar.openSignIn());
         }
       }
@@ -775,6 +828,12 @@
         try { saved = localStorage.getItem(STORE_KEY) || 'all'; } catch {}
         if (buttons.some((btn) => btn.dataset.categoryFilter === saved)) applyFilter(saved);
       })();
+
+      // Language: render the flag picker immediately, then apply translations
+      // and (once) auto-detect a default language for first-time visitors.
+      renderLangPicker();
+      applyI18n();
+      void detectDefaultLang().then(() => { renderLangPicker(); applyI18n(); });
 
       (async () => {
       // Init sync / auth — wrapped so a failing API never blocks ads or UI
@@ -817,22 +876,30 @@
       }
 
       // Donate banner.
+      const DONATE_DISMISS_KEY = 'dars-islam:donate-banner-dismissed';
       function updateBanner() {
         const banner = document.getElementById('donateBanner');
+        if (!banner || localStorage.getItem(DONATE_DISMISS_KEY)) { if (banner) banner.hidden = true; return; }
+        const s = t();
         banner.hidden = false;
         banner.innerHTML = `
           <div class="premium-banner__inner">
             <div class="premium-banner__left">
               <span class="premium-crown">💛</span>
               <div class="premium-banner__copy">
-                <strong>This is free and ad-free by choice.</strong>
-                <span>If your family gets value from it, a donation helps keep it that way.</span>
+                <strong>${s.donateTitle}</strong>
+                <span>${s.donateBody}</span>
               </div>
             </div>
             <div class="premium-banner__ctas">
-              <a class="premium-cta" href="https://paypal.me/halgurdh" target="_blank" rel="noopener">Donate now</a>
+              <a class="premium-cta" href="https://paypal.me/halgurdh" target="_blank" rel="noopener">${s.donateBtn}</a>
+              <button class="premium-cta premium-cta--secondary" id="donateBannerClose" type="button">${s.donateNotNow}</button>
             </div>
           </div>`;
+        document.getElementById('donateBannerClose').addEventListener('click', () => {
+          localStorage.setItem(DONATE_DISMISS_KEY, '1');
+          banner.hidden = true;
+        });
       }
       updateBanner();
 

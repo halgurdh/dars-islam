@@ -118,13 +118,14 @@
   <body>
     <header class="site-header">
       <a href="__VITE_BASE_PATH__" class="site-header__brand">dars-islam</a>
-      <a href="__VITE_BASE_PATH__" class="site-header__back">← Back to games</a>
+      <div id="langPicker" style="margin:0 8px"></div>
+      <a href="__VITE_BASE_PATH__" class="site-header__back" id="backLink">← Back to games</a>
     </header>
 
     <main class="content">
       <header>
-        <h1>📊 My Dashboard</h1>
-        <p>Your progress across every game — just for you.</p>
+        <h1 id="dashTitle">📊 My Dashboard</h1>
+        <p id="dashSub">Your progress across every game — just for you.</p>
       </header>
 
       <section id="welcomeSection" class="card class-card" hidden></section>
@@ -138,7 +139,7 @@
       <section id="announcementsSection" class="card class-card" hidden></section>
 
       <section class="card">
-        <h2>Level &amp; Streak</h2>
+        <h2 id="levelStreakHeading">Level &amp; Streak</h2>
         <div class="level-row">
           <span class="level-big" id="levelText">⭐ Level 1</span>
           <span class="streak-big" id="streakText">🔥 0-day streak</span>
@@ -148,15 +149,15 @@
       </section>
 
       <section class="card">
-        <h2>Badges</h2>
+        <h2 id="badgesHeading">Badges</h2>
         <div class="badges-grid" id="badgesGrid"></div>
       </section>
 
       <section class="card">
-        <h2>Report Card</h2>
-        <p class="sub" style="margin-top:0">A friendly read on how much you've practiced each game — there's no failing grade, just keep going!</p>
+        <h2 id="reportCardHeading">Report Card</h2>
+        <p class="sub" id="reportCardSub" style="margin-top:0"></p>
         <table class="report-table">
-          <thead><tr><th>Game</th><th>Rounds</th><th>Grade</th><th></th></tr></thead>
+          <thead><tr><th id="reportTableGame">Game</th><th id="reportTableRounds">Rounds</th><th id="reportTableGrade">Grade</th><th></th></tr></thead>
           <tbody id="reportBody"></tbody>
         </table>
       </section>
@@ -171,17 +172,54 @@
       import { getSupabase } from '@shared/supabase-client';
       import { printCertificate } from '@shared/certificates';
       import { ArcadeStore } from '@shared/arcade-store';
+      import { renderLanguagePickerDom } from '@shared/language-picker-dom';
+      import { t } from '../dashboard-i18n';
+      import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 
       let myClassId = null;
 
+      function applyStaticI18n() {
+        const s = t();
+        document.getElementById('backLink').textContent = s.backToGames;
+        document.getElementById('dashTitle').textContent = s.dashboardTitle;
+        document.getElementById('dashSub').textContent = s.dashboardSub;
+        document.getElementById('levelStreakHeading').textContent = s.levelStreakHeading;
+        document.getElementById('badgesHeading').textContent = s.badgesHeading;
+        document.getElementById('reportCardHeading').textContent = s.reportCardHeading;
+        document.getElementById('reportCardSub').textContent = s.reportCardSub;
+        document.getElementById('reportTableGame').textContent = s.reportTableGame;
+        document.getElementById('reportTableRounds').textContent = s.reportTableRounds;
+        document.getElementById('reportTableGrade').textContent = s.reportTableGrade;
+      }
+
+      function renderLangPicker() {
+        const container = document.getElementById('langPicker');
+        if (!container) return;
+        renderLanguagePickerDom(container, getLang(), (lang) => {
+          setLang(lang);
+          renderLangPicker();
+          renderAll();
+        });
+      }
+
+      async function renderAll() {
+        applyStaticI18n();
+        renderProgress();
+        await renderClassSection();
+        await renderFamilyCodeCard();
+        await renderAssignedSection();
+        await renderAnnouncementsSection();
+      }
+
       function renderProgress() {
+        const s = t();
         const state = PlayerProgress.getState();
         const pct = Math.round((state.xpIntoLevel / Math.max(1, state.xpForNextLevel)) * 100);
-        document.getElementById('levelText').textContent = `⭐ Level ${state.level}`;
-        document.getElementById('streakText').textContent = `🔥 ${state.dailyStreak}-day streak`;
+        document.getElementById('levelText').textContent = s.levelText(state.level);
+        document.getElementById('streakText').textContent = s.streakText(state.dailyStreak);
         document.getElementById('xpFill').style.width = `${pct}%`;
         document.getElementById('xpSub').textContent =
-          `${state.xpIntoLevel} / ${state.xpForNextLevel} XP to level ${state.level + 1} · ${state.totalRounds} rounds played total`;
+          s.xpSub(state.xpIntoLevel, state.xpForNextLevel, state.level + 1, state.totalRounds);
 
         const owned = new Set(state.badges.map((b) => b.id));
         document.getElementById('badgesGrid').innerHTML = BADGES.map((b) => `
@@ -194,15 +232,15 @@
           const count = state.gameRoundCounts[g.id] ?? 0;
           const tier = tierForRounds(count);
           const certBtn = isCertificateEligible(count)
-            ? `<button data-cert-game="${g.id}" data-cert-title="${escapeHtml(g.title)}" style="padding:3px 8px;font-size:0.72rem;">🏅 Certificate</button>` : '';
+            ? `<button data-cert-game="${g.id}" data-cert-title="${escapeHtml(g.title)}" style="padding:3px 8px;font-size:0.72rem;">${s.certificateBtn}</button>` : '';
           return `<tr><td>${g.icon} ${g.title}</td><td>${count}</td><td>${tier.icon} ${tier.label}</td><td>${certBtn}</td></tr>`;
         }).join('');
 
         document.querySelectorAll('[data-cert-game]').forEach((btn) => {
           btn.addEventListener('click', () => {
             printCertificate({
-              studentName: ArcadeStore.getPlayerName() || 'Student',
-              achievement: `Gold-level practice in ${btn.dataset.certTitle}`,
+              studentName: ArcadeStore.getPlayerName() || s.defaultStudentName,
+              achievement: s.certificateAchievement(btn.dataset.certTitle),
             });
           });
         });
@@ -223,8 +261,8 @@
           if (!data.family_code) { section.hidden = true; return; }
           section.hidden = false;
           section.innerHTML = `
-            <h2>Family Code</h2>
-            <p class="sub">Share this code with a parent so they can see your progress:</p>
+            <h2>${t().familyCodeHeading}</h2>
+            <p class="sub">${t().familyCodeSub}</p>
             <p><span class="code-chip" style="font-family:'Courier New',monospace;font-weight:800;letter-spacing:0.1em;background:var(--bg-primary);border:1px dashed var(--border-color);border-radius:8px;padding:4px 10px;">${escapeHtml(data.family_code)}</span></p>`;
         } catch { section.hidden = true; }
       }
@@ -238,7 +276,7 @@
         section.innerHTML = `
           <div class="row" style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
             <p style="margin:0;font-size:0.92rem;">${orgIcon} ${escapeHtml(standing.welcome_message)}</p>
-            <button id="dismissWelcome" style="padding:4px 10px;font-size:0.75rem;flex-shrink:0;">Got it</button>
+            <button id="dismissWelcome" style="padding:4px 10px;font-size:0.75rem;flex-shrink:0;">${t().gotIt}</button>
           </div>`;
         document.getElementById('dismissWelcome').addEventListener('click', () => {
           localStorage.setItem(dismissKey, '1');
@@ -255,15 +293,15 @@
           const todayStr = new Date().toISOString().slice(0, 10);
           section.hidden = false;
           section.innerHTML = `
-            <h2>Assigned by Your Teacher</h2>
+            <h2>${t().assignedHeading}</h2>
             ${assignments.map((a) => {
               const g = GAME_CATALOG.find((x) => x.id === a.game_id);
               if (!g) return '';
               const overdue = a.due_date && a.due_date < todayStr;
-              const dueLabel = a.due_date ? `<span class="sub" style="color:${overdue ? '#e54040' : 'inherit'}">${overdue ? 'was due' : 'due'} ${a.due_date}</span>` : '';
+              const dueLabel = a.due_date ? `<span class="sub" style="color:${overdue ? '#e54040' : 'inherit'}">${overdue ? t().wasDueLabel(a.due_date) : t().dueLabel(a.due_date)}</span>` : '';
               return `<p><a href="__VITE_BASE_PATH__games/${g.id}/">${g.icon} ${escapeHtml(g.title)}</a> ${dueLabel}</p>`;
             }).join('')}
-            <p class="sub">Just a reminder — nothing is locked, play in any order.</p>`;
+            <p class="sub">${t().assignedNote}</p>`;
         } catch { section.hidden = true; }
       }
 
@@ -275,7 +313,7 @@
           if (!items.length) { section.hidden = true; return; }
           section.hidden = false;
           section.innerHTML = `
-            <h2>📣 From Your Teacher</h2>
+            <h2>${t().announcementsHeading}</h2>
             ${items.map((a) => `<p style="margin:0 0 8px"><strong>${new Date(a.created_at).toLocaleDateString()}:</strong> ${escapeHtml(a.message)}</p>`).join('')}`;
         } catch { section.hidden = true; }
       }
@@ -287,9 +325,9 @@
           if (standing.in_class) {
             section.hidden = false;
             section.innerHTML = `
-              <h2>My Class</h2>
+              <h2>${t().myClassHeading}</h2>
               <p><strong>${escapeHtml(standing.class_name)}</strong> · ${escapeHtml(standing.school_name)}</p>
-              <p>Rank <strong>#${standing.rank}</strong> of ${standing.class_size} · ${standing.my_xp} XP (class average ${standing.avg_xp} XP)</p>`;
+              <p>${t().rankOf(standing.rank, standing.class_size, standing.my_xp, standing.avg_xp)}</p>`;
             renderWelcomeSection(standing);
             return;
           }
@@ -297,16 +335,16 @@
 
         section.hidden = false;
         section.innerHTML = `
-          <h2>Join a Class</h2>
-          <p class="sub">Got a code from your teacher? Enter it here to join their class and appear on their roster.</p>
+          <h2>${t().joinClassHeading}</h2>
+          <p class="sub">${t().joinClassSub}</p>
           <form class="join-form" id="joinForm">
             <div class="join-form-row">
-              <input id="joinCode" type="text" maxlength="6" placeholder="Class code (e.g. AB12CD)" autocomplete="off" style="text-transform:uppercase" />
-              <input id="joinName" type="text" maxlength="24" placeholder="Your name" autocomplete="off" />
-              <button type="submit">Join</button>
+              <input id="joinCode" type="text" maxlength="6" placeholder="${t().classCodePlaceholder}" autocomplete="off" style="text-transform:uppercase" />
+              <input id="joinName" type="text" maxlength="24" placeholder="${t().yourNamePlaceholder}" autocomplete="off" />
+              <button type="submit">${t().joinBtn}</button>
             </div>
             <p class="form-msg" id="joinMsg"></p>
-            <p class="join-note">Joining signs you in as a student on this device — if someone else is already signed in here, joining will switch to the new student profile.</p>
+            <p class="join-note">${t().joinNote}</p>
           </form>`;
 
         document.getElementById('joinForm').addEventListener('submit', async (e) => {
@@ -314,27 +352,27 @@
           const code = document.getElementById('joinCode').value.trim();
           const name = document.getElementById('joinName').value.trim();
           const msg = document.getElementById('joinMsg');
-          if (!code || !name) { msg.className = 'form-msg form-msg--error'; msg.textContent = 'Enter both a class code and your name.'; return; }
-          msg.className = 'form-msg'; msg.textContent = 'Joining…';
+          if (!code || !name) { msg.className = 'form-msg form-msg--error'; msg.textContent = t().joinErrorBoth; return; }
+          msg.className = 'form-msg'; msg.textContent = t().joining;
           try {
             const result = await SchoolApi.joinClass(code, name);
             msg.className = 'form-msg form-msg--ok';
-            msg.textContent = `Joined ${result.class_name}! Reloading…`;
+            msg.textContent = t().joinedReloading(result.class_name);
             setTimeout(() => window.location.reload(), 900);
           } catch {
             msg.className = 'form-msg form-msg--error';
-            msg.textContent = 'Could not join — check the code and try again.';
+            msg.textContent = t().joinError;
           }
         });
       }
 
+      renderLangPicker();
+      applyStaticI18n();
+      void detectDefaultLang().then(() => { renderLangPicker(); renderAll(); });
+
       (async () => {
         try { await sync.init(); } catch { /* guest is fine here */ }
-        renderProgress();
-        await renderClassSection();
-        await renderFamilyCodeCard();
-        await renderAssignedSection();
-        await renderAnnouncementsSection();
+        await renderAll();
       })();
     </script>
   </body>

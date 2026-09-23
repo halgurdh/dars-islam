@@ -95,8 +95,8 @@
       .badge-icon { font-size: 20px; }
       .badge-name { font-size: 9px; font-weight: 700; color: var(--text-primary); }
 
-      -checklist { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 6px; margin-top: 10px; max-height: 260px; overflow-y: auto; }
-      -checklist label { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--text-secondary); }
+      .games-checklist { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 6px; margin-top: 10px; max-height: 260px; overflow-y: auto; }
+      .games-checklist label { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--text-secondary); }
 
       .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
       @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
@@ -114,13 +114,14 @@
   <body>
     <header class="site-header">
       <a href="__VITE_BASE_PATH__" class="site-header__brand">dars-islam</a>
-      <a href="__VITE_BASE_PATH__" class="site-header__back">← Back to games</a>
+      <div id="langPicker" style="margin:0 8px"></div>
+      <a href="__VITE_BASE_PATH__" class="site-header__back" id="backLink">← Back to games</a>
     </header>
 
     <main class="content">
       <header>
-        <h1>👪 Parent Dashboard</h1>
-        <p>Link your child's account to see their progress and set limits.</p>
+        <h1 id="pageTitle">👪 Parent Dashboard</h1>
+        <p id="pageSub">Link your child's account to see their progress and set limits.</p>
       </header>
 
       <div id="app"></div>
@@ -136,6 +137,27 @@
       import { renderReportCard } from '@shared/report-card';
       import { printCertificate } from '@shared/certificates';
       import { isCertificateEligible } from '@shared/player-progress';
+      import { renderLanguagePickerDom } from '@shared/language-picker-dom';
+      import { t } from '../parent-i18n';
+      import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
+
+      function applyStaticI18n() {
+        const s = t();
+        document.getElementById('backLink').textContent = s.backToGames;
+        document.getElementById('pageTitle').textContent = s.title;
+        document.getElementById('pageSub').textContent = s.subtitle;
+      }
+
+      function renderLangPicker() {
+        const container = document.getElementById('langPicker');
+        if (!container) return;
+        renderLanguagePickerDom(container, getLang(), (lang) => {
+          setLang(lang);
+          renderLangPicker();
+          applyStaticI18n();
+          render();
+        });
+      }
 
       function daysSince(dateStr) {
         if (!dateStr) return Infinity;
@@ -151,23 +173,25 @@
       }
 
       function renderSignedOut() {
+        const s = t();
         app.innerHTML = `
           <div class="card">
-            <h2>Sign In Required</h2>
-            <p class="sub">Sign in with the same email you'll use for dars-islam to link your child's account.</p>
+            <h2>${s.signInRequiredHeading}</h2>
+            <p class="sub">${s.signInRequiredBody}</p>
             <button id="parentSignIn" style="margin-top:10px">☁ Sign in</button>
           </div>`;
         document.getElementById('parentSignIn').addEventListener('click', () => progressBar.openSignIn());
       }
 
       function linkForm() {
+        const s = t();
         return `
           <div class="card">
-            <h2>Link a Child</h2>
-            <p class="sub">Ask your child to open "My Dashboard" and share their Family Code.</p>
+            <h2>${s.linkChildHeading}</h2>
+            <p class="sub">${s.linkChildSub}</p>
             <form id="linkForm" class="row" style="margin-top:10px">
-              <input id="familyCode" type="text" maxlength="6" placeholder="Family code (e.g. AB12CD)" style="text-transform:uppercase" />
-              <button type="submit">Link</button>
+              <input id="familyCode" type="text" maxlength="6" placeholder="${s.familyCodePlaceholder}" style="text-transform:uppercase" />
+              <button type="submit">${s.linkBtn}</button>
             </form>
             <p class="form-msg" id="linkMsg"></p>
           </div>`;
@@ -179,20 +203,21 @@
           const code = document.getElementById('familyCode').value.trim();
           const msg = document.getElementById('linkMsg');
           if (!code) return;
-          msg.className = 'form-msg'; msg.textContent = 'Linking…';
+          msg.className = 'form-msg'; msg.textContent = t().linking;
           try {
             await ParentApi.linkChild(code);
             msg.className = 'form-msg form-msg--ok';
-            msg.textContent = 'Linked! Loading…';
+            msg.textContent = t().linked;
             setTimeout(render, 600);
           } catch {
             msg.className = 'form-msg form-msg--error';
-            msg.textContent = 'Could not link — check the code and try again.';
+            msg.textContent = t().couldNotLink;
           }
         });
       }
 
       async function renderControlsForm(child) {
+        const s = t();
         const controls = await ParentApi.getControls(child.student_id).catch(() => ({ daily_time_limit_minutes: null, blocked_game_ids: [] }));
         const blocked = new Set(controls.blocked_game_ids ?? []);
 
@@ -204,15 +229,15 @@
 
         return `
           <div class="card">
-            <h2>Screen Time &amp; Content Limits</h2>
+            <h2>${s.screenTimeHeading}</h2>
             <form id="controlsForm">
-              <label class="sub">Daily time limit (minutes, blank = no limit)</label>
+              <label class="sub">${s.dailyLimitLabel}</label>
               <div class="row" style="margin-top:6px">
-                <input id="timeLimit" type="number" min="1" placeholder="e.g. 60" value="${controls.daily_time_limit_minutes ?? ''}" style="max-width:140px" />
+                <input id="timeLimit" type="number" min="1" placeholder="${s.dailyLimitPlaceholder}" value="${controls.daily_time_limit_minutes ?? ''}" style="max-width:140px" />
               </div>
-              <p class="sub" style="margin-top:14px">Blocked games:</p>
+              <p class="sub" style="margin-top:14px">${s.blockedGamesLabel}</p>
               <div class="games-checklist" id="gamesChecklist">${gamesHtml}</div>
-              <button type="submit" style="margin-top:12px">Save Controls</button>
+              <button type="submit" style="margin-top:12px">${s.saveControlsBtn}</button>
               <p class="form-msg" id="controlsMsg"></p>
             </form>
           </div>`;
@@ -225,45 +250,47 @@
           const raw = document.getElementById('timeLimit').value.trim();
           const limit = raw ? Math.max(1, parseInt(raw, 10)) : null;
           const blocked = [...document.querySelectorAll('#gamesChecklist input:checked')].map((el) => el.value);
-          msg.className = 'form-msg'; msg.textContent = 'Saving…';
+          msg.className = 'form-msg'; msg.textContent = t().saving;
           try {
             await ParentApi.setControls(studentId, { daily_time_limit_minutes: limit, blocked_game_ids: blocked });
             msg.className = 'form-msg form-msg--ok';
-            msg.textContent = 'Saved!';
+            msg.textContent = t().saved;
           } catch {
             msg.className = 'form-msg form-msg--error';
-            msg.textContent = 'Could not save — try again.';
+            msg.textContent = t().couldNotSave;
           }
         });
       }
 
       function reportCard(child) {
+        const s = t();
         const owned = new Set(child.badges ?? []);
         const badgesHtml = BADGES.filter((b) => owned.has(b.id)).map((b) => `
           <div class="badge" title="${escapeHtml(b.description)}">
             <span class="badge-icon">${b.icon}</span>
             <span class="badge-name">${escapeHtml(b.name)}</span>
-          </div>`).join('') || '<p class="sub">No badges yet.</p>';
+          </div>`).join('') || `<p class="sub">${s.noBadgesYet}</p>`;
 
         const inactive = daysSince(child.last_played_date) >= 3;
         const attendance = child.attendance_pct === null || child.attendance_pct === undefined ? null : child.attendance_pct;
 
         const eligibleGames = GAME_CATALOG.filter((g) => isCertificateEligible(child.game_round_counts?.[g.id] ?? 0));
+        const displayName = child.display_name || s.yourChildLabel;
 
         return `
           <div class="card">
-            <h2>${escapeHtml(child.display_name || 'Your child')}'s Progress</h2>
+            <h2>${s.progressSuffix(escapeHtml(displayName))}</h2>
             <p class="sub">${escapeHtml(child.class_name)} · ${escapeHtml(child.school_name)}</p>
-            <p>⭐ Level ${child.level} · 🔥 ${child.daily_streak}-day streak (best ${child.best_daily_streak}) · ${child.xp} XP</p>
-            ${attendance !== null ? `<p class="sub">🗓️ Attendance: ${attendance}%</p>` : ''}
-            ${inactive ? `<p class="sub">👋 Hasn't played in a few days — might enjoy a nudge to jump back in.</p>` : ''}
+            <p>${s.levelStreakXp(child.level, child.daily_streak, child.best_daily_streak, child.xp)}</p>
+            ${attendance !== null ? `<p class="sub">${s.attendanceLabel(attendance)}</p>` : ''}
+            ${inactive ? `<p class="sub">${s.inactiveNote}</p>` : ''}
             <div class="badges-grid" style="margin-top:10px">${badgesHtml}</div>
-            <h2 style="margin-top:16px">Report Card</h2>
-            <p class="sub" style="margin-top:0">A lenient, per-game read on practice — there's no failing grade.</p>
+            <h2 style="margin-top:16px">${s.reportCardHeading}</h2>
+            <p class="sub" style="margin-top:0">${s.reportCardSub}</p>
             ${renderReportCard(child.game_round_counts ?? {})}
             ${eligibleGames.length ? `
               <div class="row" style="margin-top:12px">
-                ${eligibleGames.map((g) => `<button class="ghost" data-cert-game="${g.id}" data-cert-title="${escapeHtml(g.title)}" data-cert-name="${escapeHtml(child.display_name || 'Student')}">🏅 ${escapeHtml(g.title)} certificate</button>`).join('')}
+                ${eligibleGames.map((g) => `<button class="ghost" data-cert-game="${g.id}" data-cert-title="${escapeHtml(g.title)}" data-cert-name="${escapeHtml(child.display_name || s.defaultStudentName)}">${s.certificateBtn(escapeHtml(g.title))}</button>`).join('')}
               </div>` : ''}
           </div>
           <div class="card" id="announcementsCard" hidden></div>`;
@@ -277,7 +304,7 @@
           if (!items.length) { card.hidden = true; return; }
           card.hidden = false;
           card.innerHTML = `
-            <h2>📣 From ${escapeHtml(child.class_name)}'s Teacher</h2>
+            <h2>${t().announcementsHeading(escapeHtml(child.class_name))}</h2>
             ${items.map((a) => `<p style="margin:0 0 8px"><strong>${new Date(a.created_at).toLocaleDateString()}:</strong> ${escapeHtml(a.message)}</p>`).join('')}`;
         } catch { card.hidden = true; }
       }
@@ -293,7 +320,7 @@
 
         document.querySelectorAll('[data-cert-game]').forEach((btn) => {
           btn.addEventListener('click', () => {
-            printCertificate({ studentName: btn.dataset.certName, achievement: `Gold-level practice in ${btn.dataset.certTitle}` });
+            printCertificate({ studentName: btn.dataset.certName, achievement: t().certificateAchievement(btn.dataset.certTitle) });
           });
         });
 
@@ -307,7 +334,7 @@
         try {
           children = await ParentApi.myChildren();
         } catch {
-          app.innerHTML = '<div class="card"><p class="form-msg form-msg--error">Could not load your linked children.</p></div>';
+          app.innerHTML = `<div class="card"><p class="form-msg form-msg--error">${t().couldNotLoadChildren}</p></div>`;
           return;
         }
 
@@ -316,15 +343,16 @@
 
         if (children.length === 0) return;
 
+        const s = t();
         const tilesHtml = children.map((c) => `
           <div class="child-tile ${c.student_id === selectedChildId ? 'active' : ''}" data-id="${c.student_id}">
-            <strong>${escapeHtml(c.display_name || 'Student')}</strong>
-            <span>${escapeHtml(c.class_name)} · Level ${c.level}</span>
+            <strong>${escapeHtml(c.display_name || s.defaultStudentName)}</strong>
+            <span>${escapeHtml(c.class_name)} · ${s.levelWord} ${c.level}</span>
           </div>`).join('');
 
         app.innerHTML += `
           <div class="card">
-            <h2>Your Children</h2>
+            <h2>${s.yourChildrenHeading}</h2>
             <div class="child-grid" id="childGrid">${tilesHtml}</div>
           </div>
           <div id="childDetail"></div>`;
@@ -336,6 +364,10 @@
 
         await renderChildDetail(children);
       }
+
+      renderLangPicker();
+      applyStaticI18n();
+      void detectDefaultLang().then(() => { renderLangPicker(); applyStaticI18n(); render(); });
 
       (async () => {
         try { await sync.init(); } catch { /* not signed in — render() handles that state */ }

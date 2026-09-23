@@ -115,121 +115,52 @@
   <body>
     <header class="site-header">
       <a href="__VITE_BASE_PATH__" class="site-header__brand">dars-islam</a>
-      <a href="__VITE_BASE_PATH__" class="site-header__back">← Back to games</a>
+      <div id="langPicker" style="margin:0 8px"></div>
+      <a href="__VITE_BASE_PATH__" class="site-header__back" id="backLink">← Back to games</a>
     </header>
 
     <main class="content">
       <header>
-        <h1>Terms of Service</h1>
+        <h1 id="pageTitle">Terms of Service</h1>
       </header>
 
-      <section>
-        <h2>Who We Are</h2>
-        <p>
-          dars-islam is a free platform of educational browser games. By accessing or using
-          our website and games, you agree to these Terms of Service. If you do not agree,
-          please do not use our services.
-        </p>
-      </section>
-
-      <section>
-        <h2>Permitted Use</h2>
-        <p>Our website and games are provided for personal, non-commercial entertainment. You may:</p>
-        <ul>
-          <li>Play our games and explore the site freely</li>
-          <li>Install our games as Progressive Web Apps on your device</li>
-          <li>Contact us with legitimate business or support inquiries</li>
-        </ul>
-      </section>
-
-      <section>
-        <h2>Prohibited Activities</h2>
-        <p>You may not:</p>
-        <ul>
-          <li>Attempt to gain unauthorized access to our systems or other users' accounts</li>
-          <li>Use automated tools to scrape, copy, or harvest content without written permission</li>
-          <li>Disrupt or interfere with the normal operation of our website or games</li>
-          <li>Impersonate dars-islam or its team members</li>
-          <li>Use our platform for any unlawful purpose</li>
-        </ul>
-      </section>
-
-      <section>
-        <h2>Intellectual Property</h2>
-        <p>
-          All content on this website and in our games — including text, graphics, logos, game
-          assets, and code — is the property of dars-islam. Reproduction or redistribution
-          of any content without prior written consent is prohibited.
-        </p>
-      </section>
-
-      <section>
-        <h2>User Accounts</h2>
-        <p>
-          Some features (such as cross-device progress sync) require you to create an account.
-          You are responsible for keeping your credentials secure and for any activity that occurs
-          under your account. We reserve the right to suspend or terminate accounts that violate
-          these terms.
-        </p>
-      </section>
-
-      <section>
-        <h2>Classroom Accounts (Teachers &amp; Students)</h2>
-        <p>
-          Our Teacher Dashboard lets a teacher create a school and classes, and share a class
-          code that lets students join without an email address. By creating a school or class,
-          you confirm that you are a teacher or otherwise authorized by your school to do so,
-          and that you have whatever consent your school or local law requires (for example
-          under the AVG/GDPR) before enrolling students.
-        </p>
-        <p>
-          A student account created via a class code is managed under the teacher's and
-          school's supervision, not the student's own agreement to these Terms. We process
-          the name and progress data tied to that account only to support the class it belongs
-          to, on the school's instructions — see our
-          <a href="__VITE_BASE_PATH__privacy">Privacy Policy</a> for details.
-        </p>
-      </section>
-
-      <section>
-        <h2>Third-Party Links</h2>
-        <p>
-          Our website may contain links to third-party sites. We are not responsible for the
-          content, privacy practices, or reliability of any external website.
-        </p>
-      </section>
-
-      <section>
-        <h2>Disclaimer of Warranties</h2>
-        <p>
-          Our games and website are provided "as is" without warranties of any kind, express or
-          implied. We do not guarantee uninterrupted availability or error-free operation.
-        </p>
-      </section>
-
-      <section>
-        <h2>Limitation of Liability</h2>
-        <p>
-          To the fullest extent permitted by law, dars-islam shall not be liable for any
-          indirect, incidental, special, or consequential damages arising from your use of —
-          or inability to use — our services.
-        </p>
-      </section>
-
-      <section>
-        <h2>Changes to These Terms</h2>
-        <p>
-          We may update these Terms at any time. Continued use of our website or games after
-          changes are posted constitutes your acceptance of the revised Terms.
-        </p>
-      </section>
-
-      <section>
-        <h2>Contact</h2>
-        <p>
-          Questions? Reach us at <a href="mailto:halgurdh@gmail.com">halgurdh@gmail.com</a>.
-        </p>
-      </section>
+      <div id="sections"></div>
     </main>
+
+    <script type="module">
+      import { renderLanguagePickerDom } from '@shared/language-picker-dom';
+      import { t } from '../legal-i18n';
+      import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
+
+      const MAILTO = '<a href="mailto:halgurdh@gmail.com">halgurdh@gmail.com</a>';
+      const siteRoot = typeof __SITE_BASE_PATH__ !== 'undefined' ? __SITE_BASE_PATH__ : '/';
+
+      function render() {
+        const s = t();
+        document.getElementById('backLink').textContent = s.backToGames;
+        document.getElementById('pageTitle').textContent = s.termsTitle;
+        const privacyLink = `<a href="${siteRoot}privacy">${s.privacyTitle}</a>`;
+        const sections = [...s.termsSections, { heading: s.contactHeading, bodyHtml: `<p>${s.termsContactBody.replace('{{MAILTO}}', MAILTO)}</p>` }];
+        document.getElementById('sections').innerHTML = sections.map((sec) => `
+          <section>
+            <h2>${sec.heading}</h2>
+            ${sec.bodyHtml.replace('{{PRIVACY_LINK}}', privacyLink).replace('{{MAILTO}}', MAILTO)}
+          </section>`).join('');
+      }
+
+      function renderLangPicker() {
+        const container = document.getElementById('langPicker');
+        if (!container) return;
+        renderLanguagePickerDom(container, getLang(), (lang) => {
+          setLang(lang);
+          renderLangPicker();
+          render();
+        });
+      }
+
+      renderLangPicker();
+      render();
+      void detectDefaultLang().then(() => { renderLangPicker(); render(); });
+    </script>
   </body>
 </html>
