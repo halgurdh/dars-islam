@@ -2,10 +2,12 @@ import { COLORS, FONT } from '../theme';
 import { DIFFICULTIES, TERMS, termFor, meaningFor, type TechTerm } from '../questions';
 import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { t } from '../i18n';
-import { createModeMenuScene, matchMode, quizMode, sequenceMode } from '@shared/mode-menu-kit';
+import { createModeMenuScene, matchMode, quizMode, sequenceMode, flashcardMode } from '@shared/mode-menu-kit';
 import type { MatchItem } from '@shared/match-kit';
 import type { QuizQuestion } from '@shared/quiz-kit';
 import type { SequenceItem } from '@shared/sequence-kit';
+import type { FlashcardItem } from '@shared/flashcard-kit';
+import { fillBlankWordQuestion, trueFalseStatement, toTrueFalseQuestion } from '@shared/quiz-variants';
 
 const GAME_ID = 'digital-literacy';
 
@@ -44,6 +46,19 @@ function generateSequenceRound(count: number): () => SequenceItem[] {
     const sorted = [...pool].sort((a, b) => a.layer - b.layer);
     return sorted.map((t2) => ({ id: t2.id, label: termFor(t2) }));
   };
+}
+
+function generateTrueFalseQuestion(): QuizQuestion {
+  const tf = trueFalseStatement(TERMS, termFor, meaningFor, (term, meaning) => t().trueFalseStatement(term, meaning));
+  return toTrueFalseQuestion(tf, t().trueLabel, t().falseLabel);
+}
+
+function generateFillBlankQuestion(): QuizQuestion {
+  return fillBlankWordQuestion(TERMS, meaningFor, termFor);
+}
+
+function generateFlashcardDeck(): FlashcardItem[] {
+  return TERMS.map((t2) => ({ id: t2.id, primary: termFor(t2), meaning: meaningFor(t2) }));
 }
 
 export const MenuScene = createModeMenuScene({
@@ -112,6 +127,71 @@ export const MenuScene = createModeMenuScene({
         { label: () => t().easy, totalRounds: 4, generateRound: generateSequenceRound(5) },
         { label: () => t().medium, totalRounds: 4, generateRound: generateSequenceRound(7) },
         { label: () => t().hard, totalRounds: 4, generateRound: generateSequenceRound(9) },
+      ],
+    }),
+    quizMode({
+      id: 'truefalse',
+      label: () => t().modeTrueFalse,
+      icon: '✓✗',
+      gameId: GAME_ID,
+      theme: COLORS,
+      fontFamily: FONT,
+      strings: () => ({
+        round: t().round,
+        score: t().score,
+        menu: t().menu,
+        wellDone: t().wellDone,
+        roundSummary: t().quizRoundSummary,
+        playAgain: t().playAgain,
+        backToMenu: t().menu,
+      }),
+      difficulties: [
+        { label: () => t().easy, totalQuestions: 6, generateQuestion: generateTrueFalseQuestion },
+        { label: () => t().medium, totalQuestions: 8, generateQuestion: generateTrueFalseQuestion },
+        { label: () => t().hard, totalQuestions: 10, generateQuestion: generateTrueFalseQuestion },
+      ],
+    }),
+    quizMode({
+      id: 'fillblank',
+      label: () => t().modeFillBlank,
+      icon: '✏️',
+      gameId: GAME_ID,
+      theme: COLORS,
+      fontFamily: FONT,
+      strings: () => ({
+        round: t().round,
+        score: t().score,
+        menu: t().menu,
+        wellDone: t().wellDone,
+        roundSummary: t().quizRoundSummary,
+        playAgain: t().playAgain,
+        backToMenu: t().menu,
+      }),
+      difficulties: [
+        { label: () => t().easy, totalQuestions: 6, generateQuestion: generateFillBlankQuestion },
+        { label: () => t().medium, totalQuestions: 8, generateQuestion: generateFillBlankQuestion },
+        { label: () => t().hard, totalQuestions: 10, generateQuestion: generateFillBlankQuestion },
+      ],
+    }),
+    flashcardMode({
+      label: () => t().modeFlashcard,
+      icon: '🗂️',
+      gameId: GAME_ID,
+      theme: COLORS,
+      fontFamily: FONT,
+      strings: () => ({
+        menu: t().menu,
+        progress: t().flashcardProgress,
+        hear: t().hear,
+        knowIt: t().flashcardKnowIt,
+        stillLearning: t().flashcardStillLearning,
+        wellDone: t().wellDone,
+        roundSummary: t().flashcardRoundSummary,
+        playAgain: t().playAgain,
+        backToMenu: t().menu,
+      }),
+      difficulties: [
+        { label: () => t().hard, cards: generateFlashcardDeck },
       ],
     }),
   ],

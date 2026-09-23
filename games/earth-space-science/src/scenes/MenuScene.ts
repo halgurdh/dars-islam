@@ -2,9 +2,11 @@ import { COLORS, FONT } from '../theme';
 import { DIFFICULTIES, PLANETS, generateRound, nameFor, factFor } from '../questions';
 import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { t } from '../i18n';
-import { createModeMenuScene, matchMode, quizMode, sequenceMode } from '@shared/mode-menu-kit';
+import { createModeMenuScene, matchMode, quizMode, sequenceMode, flashcardMode } from '@shared/mode-menu-kit';
 import type { MatchItem } from '@shared/match-kit';
 import type { QuizQuestion } from '@shared/quiz-kit';
+import type { FlashcardItem } from '@shared/flashcard-kit';
+import { fillBlankWordQuestion, trueFalseStatement, toTrueFalseQuestion } from '@shared/quiz-variants';
 
 const GAME_ID = 'earth-space-science';
 
@@ -35,6 +37,19 @@ function generateQuizQuestion(): QuizQuestion {
     choices,
     correctIndex: choices.indexOf(factFor(correct)),
   };
+}
+
+function generateTrueFalseQuestion(): QuizQuestion {
+  const tf = trueFalseStatement(PLANETS, nameFor, factFor, (planet, fact) => t().trueFalseStatement(planet, fact));
+  return toTrueFalseQuestion(tf, t().trueLabel, t().falseLabel);
+}
+
+function generateFillBlankQuestion(): QuizQuestion {
+  return fillBlankWordQuestion(PLANETS, factFor, nameFor);
+}
+
+function generateFlashcardDeck(): FlashcardItem[] {
+  return PLANETS.map((p) => ({ id: p.id, primary: nameFor(p), meaning: factFor(p) }));
 }
 
 export const MenuScene = createModeMenuScene({
@@ -107,6 +122,71 @@ export const MenuScene = createModeMenuScene({
         { label: () => t().easy, totalQuestions: 4, generateQuestion: generateQuizQuestion },
         { label: () => t().medium, totalQuestions: 6, generateQuestion: generateQuizQuestion },
         { label: () => t().hard, totalQuestions: 8, generateQuestion: generateQuizQuestion },
+      ],
+    }),
+    quizMode({
+      id: 'truefalse',
+      label: () => t().modeTrueFalse,
+      icon: '✓✗',
+      gameId: GAME_ID,
+      theme: COLORS,
+      fontFamily: FONT,
+      strings: () => ({
+        round: t().round,
+        score: t().score,
+        menu: t().menu,
+        wellDone: t().wellDone,
+        roundSummary: t().quizRoundSummary,
+        playAgain: t().playAgain,
+        backToMenu: t().backToMenu,
+      }),
+      difficulties: [
+        { label: () => t().easy, totalQuestions: 6, generateQuestion: generateTrueFalseQuestion },
+        { label: () => t().medium, totalQuestions: 8, generateQuestion: generateTrueFalseQuestion },
+        { label: () => t().hard, totalQuestions: 10, generateQuestion: generateTrueFalseQuestion },
+      ],
+    }),
+    quizMode({
+      id: 'fillblank',
+      label: () => t().modeFillBlank,
+      icon: '✏️',
+      gameId: GAME_ID,
+      theme: COLORS,
+      fontFamily: FONT,
+      strings: () => ({
+        round: t().round,
+        score: t().score,
+        menu: t().menu,
+        wellDone: t().wellDone,
+        roundSummary: t().quizRoundSummary,
+        playAgain: t().playAgain,
+        backToMenu: t().backToMenu,
+      }),
+      difficulties: [
+        { label: () => t().easy, totalQuestions: 6, generateQuestion: generateFillBlankQuestion },
+        { label: () => t().medium, totalQuestions: 8, generateQuestion: generateFillBlankQuestion },
+        { label: () => t().hard, totalQuestions: 10, generateQuestion: generateFillBlankQuestion },
+      ],
+    }),
+    flashcardMode({
+      label: () => t().modeFlashcard,
+      icon: '🗂️',
+      gameId: GAME_ID,
+      theme: COLORS,
+      fontFamily: FONT,
+      strings: () => ({
+        menu: t().menu,
+        progress: t().flashcardProgress,
+        hear: t().hear,
+        knowIt: t().flashcardKnowIt,
+        stillLearning: t().flashcardStillLearning,
+        wellDone: t().wellDone,
+        roundSummary: t().flashcardRoundSummary,
+        playAgain: t().playAgain,
+        backToMenu: t().backToMenu,
+      }),
+      difficulties: [
+        { label: () => t().hard, cards: generateFlashcardDeck },
       ],
     }),
   ],
