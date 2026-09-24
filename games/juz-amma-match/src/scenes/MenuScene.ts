@@ -3,11 +3,11 @@ import { JUZ_AMMA_SURAHS, meaningFor, type SurahEntry } from '../data/names';
 import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { sfx } from '../systems/Sfx';
 import { t } from '../i18n';
-import { createModeMenuScene, quizMode, sequenceMode, listenMode, flashcardMode, type GameMode } from '@shared/mode-menu-kit';
+import { createModeMenuScene, quizMode, sequenceMode, trueFalseMode, fillBlankMode, listenIdentifyMode, reviewMode, type GameMode, type VariantBase } from '@shared/mode-menu-kit';
 import type { QuizQuestion } from '@shared/quiz-kit';
 import type { SequenceItem } from '@shared/sequence-kit';
 import type { FlashcardItem } from '@shared/flashcard-kit';
-import { fillBlankWordQuestion, trueFalseStatement, toTrueFalseQuestion } from '@shared/quiz-variants';
+import { fillBlankWordQuestion, trueFalseStatement, toTrueFalseQuestion, listenQuestion } from '@shared/quiz-variants';
 import { SPEECH_LANG } from '@shared/tts';
 
 function shuffle<T>(arr: T[]): T[] {
@@ -49,14 +49,7 @@ function generateQuizQuestion(): QuizQuestion {
 // name as text — the player has to recognize it by ear, picking its meaning
 // from four written choices.
 function generateListenQuestion(): QuizQuestion {
-  const [correct, ...distractors] = shuffle(JUZ_AMMA_SURAHS).slice(0, 4);
-  const choices = shuffle([correct, ...distractors].map((n) => meaningFor(n)));
-  return {
-    prompt: '',
-    choices,
-    correctIndex: choices.indexOf(meaningFor(correct)),
-    speak: { text: correct.arabic, lang: SPEECH_LANG.arabic },
-  };
+  return listenQuestion(JUZ_AMMA_SURAHS, (n) => ({ text: n.arabic, lang: SPEECH_LANG.arabic }), (n) => meaningFor(n));
 }
 
 function generateFlashcardDeck(): FlashcardItem[] {
@@ -76,7 +69,7 @@ function generateTrueFalseQuestion(): QuizQuestion {
     (n) => meaningFor(n),
     (name, meaning) => t().trueFalseStatement(name, meaning)
   );
-  return toTrueFalseQuestion(tf, t().trueLabel, t().falseLabel);
+  return toTrueFalseQuestion(tf);
 }
 
 function generateFillBlankQuestion(): QuizQuestion {
@@ -93,6 +86,29 @@ function generateSequenceRound(count: number): () => SequenceItem[] {
     return slice.map((n) => ({ id: n.id, label: `${n.arabic}  ·  ${n.transliteration}` }));
   };
 }
+
+// One description of this game shared by every variant mode below —
+// each mode then only supplies its own content generator.
+const variants: VariantBase = {
+  gameId: 'juz-amma-match',
+  theme: COLORS,
+  fontFamily: ARABIC_FONT,
+  getLang,
+  strings: () => ({
+    round: t().quizRound,
+    score: t().quizScore,
+    menu: t().menu,
+    wellDone: t().wellDone,
+    roundSummary: t().quizRoundSummary,
+    playAgain: t().playAgain,
+    backToMenu: t().menu,
+  }),
+  tiers: [
+    { label: () => t().easy, totalQuestions: 6 },
+    { label: () => t().medium, totalQuestions: 8 },
+    { label: () => t().hard, totalQuestions: 10 },
+  ],
+};
 
 export const MenuScene = createModeMenuScene({
   theme: COLORS,
@@ -146,92 +162,9 @@ export const MenuScene = createModeMenuScene({
         { label: () => t().hard, totalRounds: 4, generateRound: generateSequenceRound(8) },
       ],
     }),
-    listenMode({
-      label: () => t().modeListen,
-      icon: '🔊',
-      gameId: 'juz-amma-match',
-      theme: COLORS,
-      fontFamily: ARABIC_FONT,
-      strings: () => ({
-        round: t().quizRound,
-        score: t().quizScore,
-        menu: t().menu,
-        wellDone: t().wellDone,
-        roundSummary: t().quizRoundSummary,
-        playAgain: t().playAgain,
-        backToMenu: t().menu,
-      }),
-      replayLabel: () => t().listenReplay,
-      difficulties: [
-        { label: () => t().easy, totalQuestions: 6, generateQuestion: generateListenQuestion },
-        { label: () => t().medium, totalQuestions: 8, generateQuestion: generateListenQuestion },
-        { label: () => t().hard, totalQuestions: 10, generateQuestion: generateListenQuestion },
-      ],
-    }),
-    flashcardMode({
-      label: () => t().modeFlashcard,
-      icon: '🗂️',
-      gameId: 'juz-amma-match',
-      theme: COLORS,
-      fontFamily: ARABIC_FONT,
-      strings: () => ({
-        menu: t().menu,
-        progress: t().flashcardProgress,
-        hear: t().hear,
-        knowIt: t().flashcardKnowIt,
-        stillLearning: t().flashcardStillLearning,
-        wellDone: t().wellDone,
-        roundSummary: t().flashcardRoundSummary,
-        playAgain: t().playAgain,
-        backToMenu: t().menu,
-      }),
-      difficulties: [
-        { label: () => t().hard, cards: generateFlashcardDeck },
-      ],
-    }),
-    quizMode({
-      id: 'truefalse',
-      label: () => t().modeTrueFalse,
-      icon: '✓✗',
-      gameId: 'juz-amma-match',
-      theme: COLORS,
-      fontFamily: ARABIC_FONT,
-      strings: () => ({
-        round: t().quizRound,
-        score: t().quizScore,
-        menu: t().menu,
-        wellDone: t().wellDone,
-        roundSummary: t().quizRoundSummary,
-        playAgain: t().playAgain,
-        backToMenu: t().menu,
-      }),
-      difficulties: [
-        { label: () => t().easy, totalQuestions: 6, generateQuestion: generateTrueFalseQuestion },
-        { label: () => t().medium, totalQuestions: 8, generateQuestion: generateTrueFalseQuestion },
-        { label: () => t().hard, totalQuestions: 10, generateQuestion: generateTrueFalseQuestion },
-      ],
-    }),
-    quizMode({
-      id: 'fillblank',
-      label: () => t().modeFillBlank,
-      icon: '✏️',
-      gameId: 'juz-amma-match',
-      theme: COLORS,
-      fontFamily: LATIN_FONT,
-      strings: () => ({
-        round: t().quizRound,
-        score: t().quizScore,
-        menu: t().menu,
-        wellDone: t().wellDone,
-        roundSummary: t().quizRoundSummary,
-        playAgain: t().playAgain,
-        backToMenu: t().menu,
-      }),
-      difficulties: [
-        { label: () => t().easy, totalQuestions: 6, generateQuestion: generateFillBlankQuestion },
-        { label: () => t().medium, totalQuestions: 8, generateQuestion: generateFillBlankQuestion },
-        { label: () => t().hard, totalQuestions: 10, generateQuestion: generateFillBlankQuestion },
-      ],
-    }),
+    listenIdentifyMode(variants, generateListenQuestion),
+    reviewMode(variants, generateFlashcardDeck),
+    trueFalseMode(variants, generateTrueFalseQuestion),
+    fillBlankMode(variants, generateFillBlankQuestion, { fontFamily: LATIN_FONT }),
   ],
 });

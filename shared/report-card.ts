@@ -5,10 +5,7 @@
 // played (see tierForRounds in player-progress.ts) — no failing state.
 import { GAME_CATALOG } from './game-catalog';
 import { tierForRounds } from './player-progress';
-
-function escapeHtml(s: string): string {
-  return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
-}
+import { escapeHtml } from './escape-html';
 
 let stylesInjected = false;
 function injectReportCardStyles(): void {

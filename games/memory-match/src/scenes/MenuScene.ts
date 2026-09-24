@@ -2,7 +2,10 @@ import { COLORS, LATIN_FONT } from '../theme';
 import { MATCH_ITEMS, nameFor, type NamedItem } from '../data/names';
 import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { t } from '../i18n';
-import { createModeMenuScene, matchMode, quizMode, sequenceMode } from '@shared/mode-menu-kit';
+import { createModeMenuScene, matchMode, quizMode, sequenceMode, trueFalseQuizMode, timedQuizMode, reviewMode, listenIdentifyMode, type QuizModeOptions, type VariantBase } from '@shared/mode-menu-kit';
+import type { FlashcardItem } from '@shared/flashcard-kit';
+import { listenQuestion } from '@shared/quiz-variants';
+import { SPEECH_LANG } from '@shared/tts';
 import type { MatchItem } from '@shared/match-kit';
 import type { QuizQuestion } from '@shared/quiz-kit';
 import type { SequenceItem } from '@shared/sequence-kit';
@@ -43,6 +46,49 @@ function generateSequenceRound(count: number): () => SequenceItem[] {
   };
 }
 
+const quiz: QuizModeOptions = {
+  label: () => t().modeQuiz,
+  icon: '❓',
+  gameId: GAME_ID,
+  theme: COLORS,
+  fontFamily: LATIN_FONT,
+  strings: () => ({
+    round: t().quizRound,
+    score: t().quizScore,
+    menu: t().menu,
+    wellDone: t().wellDone,
+    roundSummary: t().quizRoundSummary,
+    playAgain: t().playAgain,
+    backToMenu: t().menu,
+  }),
+  difficulties: [
+    { label: () => t().easy, totalQuestions: 6, generateQuestion: generateQuizQuestion },
+    { label: () => t().medium, totalQuestions: 8, generateQuestion: generateQuizQuestion },
+    { label: () => t().hard, totalQuestions: 10, generateQuestion: generateQuizQuestion },
+  ],
+};
+
+// Review + Listen reuse the quiz's own chrome strings and tiers.
+const variants: VariantBase = {
+  gameId: GAME_ID,
+  theme: COLORS,
+  fontFamily: LATIN_FONT,
+  getLang,
+  strings: quiz.strings,
+  tiers: quiz.difficulties.map(({ label, totalQuestions }) => ({ label, totalQuestions })),
+};
+
+const speakName = (n: NamedItem) => ({ text: nameFor(n), lang: SPEECH_LANG[getLang()] });
+
+function generateFlashcardDeck(): FlashcardItem[] {
+  return MATCH_ITEMS.map((n) => ({ id: n.id, primary: n.icon, meaning: nameFor(n), speak: speakName(n) }));
+}
+
+// Listen: hear a name, pick its picture — works for kids who can't read yet.
+function generateListenQuestion(): QuizQuestion {
+  return listenQuestion(MATCH_ITEMS, speakName, (n) => n.icon);
+}
+
 export const MenuScene = createModeMenuScene({
   theme: COLORS,
   fontFamily: LATIN_FONT,
@@ -71,27 +117,7 @@ export const MenuScene = createModeMenuScene({
         { label: () => t().hard, pairs: 10 },
       ],
     }),
-    quizMode({
-      label: () => t().modeQuiz,
-      icon: '❓',
-      gameId: GAME_ID,
-      theme: COLORS,
-      fontFamily: LATIN_FONT,
-      strings: () => ({
-        round: t().quizRound,
-        score: t().quizScore,
-        menu: t().menu,
-        wellDone: t().wellDone,
-        roundSummary: t().quizRoundSummary,
-        playAgain: t().playAgain,
-        backToMenu: t().menu,
-      }),
-      difficulties: [
-        { label: () => t().easy, totalQuestions: 6, generateQuestion: generateQuizQuestion },
-        { label: () => t().medium, totalQuestions: 8, generateQuestion: generateQuizQuestion },
-        { label: () => t().hard, totalQuestions: 10, generateQuestion: generateQuizQuestion },
-      ],
-    }),
+    quizMode(quiz),
     sequenceMode({
       label: () => t().modeSequence,
       icon: '📏',
@@ -114,5 +140,9 @@ export const MenuScene = createModeMenuScene({
         { label: () => t().hard, totalRounds: 4, generateRound: generateSequenceRound(9) },
       ],
     }),
+    trueFalseQuizMode(quiz, getLang),
+    timedQuizMode(quiz, getLang),
+    reviewMode(variants, generateFlashcardDeck),
+    listenIdentifyMode(variants, generateListenQuestion),
   ],
 });

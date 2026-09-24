@@ -2,11 +2,11 @@ import { COLORS, FONT } from '../theme';
 import { DIFFICULTIES, STEPS, generateRound, labelFor } from '../questions';
 import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { t } from '../i18n';
-import { createModeMenuScene, matchMode, quizMode, sequenceMode, listenMode, flashcardMode } from '@shared/mode-menu-kit';
+import { createModeMenuScene, matchMode, quizMode, sequenceMode, trueFalseMode, fillBlankMode, listenIdentifyMode, reviewMode, type VariantBase } from '@shared/mode-menu-kit';
 import type { MatchItem } from '@shared/match-kit';
 import type { QuizQuestion } from '@shared/quiz-kit';
 import type { FlashcardItem } from '@shared/flashcard-kit';
-import { fillBlankWordQuestion, trueFalseStatement, toTrueFalseQuestion } from '@shared/quiz-variants';
+import { fillBlankWordQuestion, trueFalseStatement, toTrueFalseQuestion, listenQuestion } from '@shared/quiz-variants';
 import { SPEECH_LANG } from '@shared/tts';
 
 const GAME_ID = 'fiqh-essentials';
@@ -46,14 +46,7 @@ function generateQuizQuestion(): QuizQuestion {
 // non-English text with the English voice — so this plays the fixed English
 // instruction and has the player identify which Arabic term it refers to.
 function generateListenQuestion(): QuizQuestion {
-  const [correct, ...distractors] = shuffle(STEPS).slice(0, 4);
-  const choices = shuffle([correct, ...distractors].map((s) => s.term));
-  return {
-    prompt: '',
-    choices,
-    correctIndex: choices.indexOf(correct.term),
-    speak: { text: correct.labelEn, lang: SPEECH_LANG.en },
-  };
+  return listenQuestion(STEPS, (s) => ({ text: s.labelEn, lang: SPEECH_LANG.en }), (s) => s.term);
 }
 
 // No Arabic-script audio is available for these terms (see above), so cards
@@ -74,12 +67,35 @@ function generateTrueFalseQuestion(): QuizQuestion {
     (s) => labelFor(s),
     (term, label) => t().trueFalseStatement(term, label)
   );
-  return toTrueFalseQuestion(tf, t().trueLabel, t().falseLabel);
+  return toTrueFalseQuestion(tf);
 }
 
 function generateFillBlankQuestion(): QuizQuestion {
   return fillBlankWordQuestion(STEPS, (s) => labelFor(s), (s) => s.term);
 }
+
+// One description of this game shared by every variant mode below —
+// each mode then only supplies its own content generator.
+const variants: VariantBase = {
+  gameId: GAME_ID,
+  theme: COLORS,
+  fontFamily: FONT,
+  getLang,
+  strings: () => ({
+    round: t().round,
+    score: t().score,
+    menu: t().menu,
+    wellDone: t().wellDone,
+    roundSummary: t().quizRoundSummary,
+    playAgain: t().playAgain,
+    backToMenu: t().backToMenu,
+  }),
+  tiers: [
+    { label: () => t().easy, totalQuestions: 4 },
+    { label: () => t().medium, totalQuestions: 6 },
+    { label: () => t().hard, totalQuestions: 8 },
+  ],
+};
 
 export const MenuScene = createModeMenuScene({
   theme: COLORS,
@@ -153,92 +169,9 @@ export const MenuScene = createModeMenuScene({
         { label: () => t().hard, totalQuestions: 8, generateQuestion: generateQuizQuestion },
       ],
     }),
-    listenMode({
-      label: () => t().modeListen,
-      icon: '🔊',
-      gameId: GAME_ID,
-      theme: COLORS,
-      fontFamily: FONT,
-      strings: () => ({
-        round: t().round,
-        score: t().score,
-        menu: t().menu,
-        wellDone: t().wellDone,
-        roundSummary: t().quizRoundSummary,
-        playAgain: t().playAgain,
-        backToMenu: t().backToMenu,
-      }),
-      replayLabel: () => t().listenReplay,
-      difficulties: [
-        { label: () => t().easy, totalQuestions: 4, generateQuestion: generateListenQuestion },
-        { label: () => t().medium, totalQuestions: 6, generateQuestion: generateListenQuestion },
-        { label: () => t().hard, totalQuestions: 8, generateQuestion: generateListenQuestion },
-      ],
-    }),
-    flashcardMode({
-      label: () => t().modeFlashcard,
-      icon: '🗂️',
-      gameId: GAME_ID,
-      theme: COLORS,
-      fontFamily: FONT,
-      strings: () => ({
-        menu: t().menu,
-        progress: t().flashcardProgress,
-        hear: t().hear,
-        knowIt: t().flashcardKnowIt,
-        stillLearning: t().flashcardStillLearning,
-        wellDone: t().wellDone,
-        roundSummary: t().flashcardRoundSummary,
-        playAgain: t().playAgain,
-        backToMenu: t().backToMenu,
-      }),
-      difficulties: [
-        { label: () => t().hard, cards: generateFlashcardDeck },
-      ],
-    }),
-    quizMode({
-      id: 'truefalse',
-      label: () => t().modeTrueFalse,
-      icon: '✓✗',
-      gameId: GAME_ID,
-      theme: COLORS,
-      fontFamily: FONT,
-      strings: () => ({
-        round: t().round,
-        score: t().score,
-        menu: t().menu,
-        wellDone: t().wellDone,
-        roundSummary: t().quizRoundSummary,
-        playAgain: t().playAgain,
-        backToMenu: t().backToMenu,
-      }),
-      difficulties: [
-        { label: () => t().easy, totalQuestions: 4, generateQuestion: generateTrueFalseQuestion },
-        { label: () => t().medium, totalQuestions: 6, generateQuestion: generateTrueFalseQuestion },
-        { label: () => t().hard, totalQuestions: 8, generateQuestion: generateTrueFalseQuestion },
-      ],
-    }),
-    quizMode({
-      id: 'fillblank',
-      label: () => t().modeFillBlank,
-      icon: '✏️',
-      gameId: GAME_ID,
-      theme: COLORS,
-      fontFamily: FONT,
-      strings: () => ({
-        round: t().round,
-        score: t().score,
-        menu: t().menu,
-        wellDone: t().wellDone,
-        roundSummary: t().quizRoundSummary,
-        playAgain: t().playAgain,
-        backToMenu: t().backToMenu,
-      }),
-      difficulties: [
-        { label: () => t().easy, totalQuestions: 4, generateQuestion: generateFillBlankQuestion },
-        { label: () => t().medium, totalQuestions: 6, generateQuestion: generateFillBlankQuestion },
-        { label: () => t().hard, totalQuestions: 8, generateQuestion: generateFillBlankQuestion },
-      ],
-    }),
+    listenIdentifyMode(variants, generateListenQuestion),
+    reviewMode(variants, generateFlashcardDeck),
+    trueFalseMode(variants, generateTrueFalseQuestion),
+    fillBlankMode(variants, generateFillBlankQuestion, { label: () => t().modeFillBlank }),
   ],
 });

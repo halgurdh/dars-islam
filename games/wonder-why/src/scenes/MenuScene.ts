@@ -10,7 +10,7 @@ import {
 } from '../questions';
 import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { t } from '../i18n';
-import { createModeMenuScene, quizMode, sequenceMode, flashcardMode, type GameMode } from '@shared/mode-menu-kit';
+import { createModeMenuScene, quizMode, sequenceMode, trueFalseMode, fillBlankMode, reviewMode, type GameMode, type VariantBase } from '@shared/mode-menu-kit';
 import { getMatchSfx } from '@shared/match-kit';
 
 const GAME_ID = 'wonder-why';
@@ -44,6 +44,27 @@ const matchMode: GameMode = {
         });
       },
     },
+  ],
+};
+
+// One description of this game shared by every variant mode below —
+// each mode then only supplies its own content generator.
+const variants: VariantBase = {
+  gameId: GAME_ID,
+  theme: COLORS,
+  fontFamily: FONT,
+  getLang,
+  strings: () => ({
+    round: t().round,
+    score: t().score,
+    menu: t().menu,
+    wellDone: t().wellDone,
+    roundSummary: t().roundSummary,
+    playAgain: t().playAgain,
+    backToMenu: t().backToMenu,
+  }),
+  tiers: [
+    { label: () => t().start, totalQuestions: TOTAL_QUESTIONS },
   ],
 };
 
@@ -96,66 +117,8 @@ export const MenuScene = createModeMenuScene({
         { label: () => t().start, totalRounds: 4, generateRound: () => generateSequenceRound(SEQUENCE_COUNT) },
       ],
     }),
-    quizMode({
-      id: 'truefalse',
-      label: () => t().modeTrueFalse,
-      icon: '✓✗',
-      gameId: GAME_ID,
-      theme: COLORS,
-      fontFamily: FONT,
-      strings: () => ({
-        round: t().round,
-        score: t().score,
-        menu: t().menu,
-        wellDone: t().wellDone,
-        roundSummary: t().roundSummary,
-        playAgain: t().playAgain,
-        backToMenu: t().backToMenu,
-      }),
-      difficulties: [
-        { label: () => t().start, totalQuestions: TOTAL_QUESTIONS, generateQuestion: generateTrueFalseQuestion },
-      ],
-    }),
-    quizMode({
-      id: 'fillblank',
-      label: () => t().modeFillBlank,
-      icon: '✏️',
-      gameId: GAME_ID,
-      theme: COLORS,
-      fontFamily: FONT,
-      strings: () => ({
-        round: t().round,
-        score: t().score,
-        menu: t().menu,
-        wellDone: t().wellDone,
-        roundSummary: t().roundSummary,
-        playAgain: t().playAgain,
-        backToMenu: t().backToMenu,
-      }),
-      difficulties: [
-        { label: () => t().start, totalQuestions: TOTAL_QUESTIONS, generateQuestion: generateFillBlankQuestion },
-      ],
-    }),
-    flashcardMode({
-      label: () => t().modeFlashcard,
-      icon: '🗂️',
-      gameId: GAME_ID,
-      theme: COLORS,
-      fontFamily: FONT,
-      strings: () => ({
-        menu: t().menu,
-        progress: t().flashcardProgress,
-        hear: t().hear,
-        knowIt: t().flashcardKnowIt,
-        stillLearning: t().flashcardStillLearning,
-        wellDone: t().wellDone,
-        roundSummary: t().flashcardRoundSummary,
-        playAgain: t().playAgain,
-        backToMenu: t().backToMenu,
-      }),
-      difficulties: [
-        { label: () => t().start, cards: generateFlashcardDeck },
-      ],
-    }),
+    trueFalseMode(variants, generateTrueFalseQuestion),
+    fillBlankMode(variants, generateFillBlankQuestion),
+    reviewMode(variants, generateFlashcardDeck),
   ],
 });

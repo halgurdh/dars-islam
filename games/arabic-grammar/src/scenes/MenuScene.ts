@@ -2,11 +2,12 @@ import { COLORS, ARABIC_FONT } from '../theme';
 import { DIFFICULTIES, ITEMS } from '../questions';
 import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { t } from '../i18n';
-import { createModeMenuScene, matchMode, quizMode, sequenceMode, flashcardMode } from '@shared/mode-menu-kit';
+import { createModeMenuScene, matchMode, quizMode, sequenceMode, trueFalseMode, reviewMode, listenIdentifyMode, type VariantBase } from '@shared/mode-menu-kit';
 import type { QuizQuestion } from '@shared/quiz-kit';
 import type { SequenceItem } from '@shared/sequence-kit';
 import type { FlashcardItem } from '@shared/flashcard-kit';
-import { trueFalseStatement, toTrueFalseQuestion } from '@shared/quiz-variants';
+import { trueFalseStatement, toTrueFalseQuestion, listenQuestion } from '@shared/quiz-variants';
+import { SPEECH_LANG } from '@shared/tts';
 
 const GAME_ID = 'arabic-grammar';
 
@@ -48,12 +49,41 @@ function generateSequenceRound(count: number): () => SequenceItem[] {
 
 function generateTrueFalseQuestion(): QuizQuestion {
   const tf = trueFalseStatement(ITEMS, (it) => it.sideA, (it) => it.sideB, (singular, plural) => t().trueFalseStatement(singular, plural));
-  return toTrueFalseQuestion(tf, t().trueLabel, t().falseLabel);
+  return toTrueFalseQuestion(tf);
 }
 
 function generateFlashcardDeck(): FlashcardItem[] {
-  return ITEMS.map((it) => ({ id: it.id, primary: it.sideA, meaning: it.sideB }));
+  return ITEMS.map((it) => ({ id: it.id, primary: it.sideA, meaning: it.sideB, speak: { text: it.sideA, lang: SPEECH_LANG.arabic } }));
 }
+
+// Listen: hear the singular spoken, pick its sound plural.
+function generateListenQuestion(): QuizQuestion {
+  return listenQuestion(ITEMS, (it) => ({ text: it.sideA, lang: SPEECH_LANG.arabic }), (it) => it.sideB);
+}
+
+
+// One description of this game shared by every variant mode below —
+// each mode then only supplies its own content generator.
+const variants: VariantBase = {
+  gameId: GAME_ID,
+  theme: COLORS,
+  fontFamily: ARABIC_FONT,
+  getLang,
+  strings: () => ({
+    round: t().round,
+    score: t().score,
+    menu: t().menu,
+    wellDone: t().wellDone,
+    roundSummary: t().quizRoundSummary,
+    playAgain: t().playAgain,
+    backToMenu: t().menu,
+  }),
+  tiers: [
+    { label: () => t().easy, totalQuestions: 4 },
+    { label: () => t().medium, totalQuestions: 6 },
+    { label: () => t().hard, totalQuestions: 8 },
+  ],
+};
 
 export const MenuScene = createModeMenuScene({
   theme: COLORS,
@@ -123,48 +153,8 @@ export const MenuScene = createModeMenuScene({
         { label: () => t().hard, totalRounds: 3, generateRound: generateSequenceRound(5) },
       ],
     }),
-    quizMode({
-      id: 'truefalse',
-      label: () => t().modeTrueFalse,
-      icon: '✓✗',
-      gameId: GAME_ID,
-      theme: COLORS,
-      fontFamily: ARABIC_FONT,
-      strings: () => ({
-        round: t().round,
-        score: t().score,
-        menu: t().menu,
-        wellDone: t().wellDone,
-        roundSummary: t().quizRoundSummary,
-        playAgain: t().playAgain,
-        backToMenu: t().menu,
-      }),
-      difficulties: [
-        { label: () => t().easy, totalQuestions: 4, generateQuestion: generateTrueFalseQuestion },
-        { label: () => t().medium, totalQuestions: 6, generateQuestion: generateTrueFalseQuestion },
-        { label: () => t().hard, totalQuestions: 8, generateQuestion: generateTrueFalseQuestion },
-      ],
-    }),
-    flashcardMode({
-      label: () => t().modeFlashcard,
-      icon: '🗂️',
-      gameId: GAME_ID,
-      theme: COLORS,
-      fontFamily: ARABIC_FONT,
-      strings: () => ({
-        menu: t().menu,
-        progress: t().flashcardProgress,
-        hear: t().hear,
-        knowIt: t().flashcardKnowIt,
-        stillLearning: t().flashcardStillLearning,
-        wellDone: t().wellDone,
-        roundSummary: t().flashcardRoundSummary,
-        playAgain: t().playAgain,
-        backToMenu: t().menu,
-      }),
-      difficulties: [
-        { label: () => t().hard, cards: generateFlashcardDeck },
-      ],
-    }),
+    trueFalseMode(variants, generateTrueFalseQuestion),
+    reviewMode(variants, generateFlashcardDeck),
+    listenIdentifyMode(variants, generateListenQuestion),
   ],
 });

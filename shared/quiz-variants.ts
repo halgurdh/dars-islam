@@ -148,12 +148,60 @@ export function trueFalseStatement<T extends { id: number }>(
   return { statement: template(nameOf(item), meaningOf(wrongItem)), isTrue: false };
 }
 
+/** Builds a "Listen & Identify" question: one random item is spoken (no
+ *  written prompt) and the player picks its answer among 4 — the item's own
+ *  plus 3 other items' answers. Feed it to mode-menu-kit's
+ *  listenIdentifyMode. */
+export function listenQuestion<T>(
+  items: T[],
+  spokenOf: (item: T) => { text: string; lang: string },
+  answerOf: (item: T) => string
+): QuizQuestion {
+  const [correct, ...distractors] = shuffle(items).slice(0, 4);
+  const choices = shuffle([correct, ...distractors].map(answerOf));
+  return {
+    prompt: '',
+    choices,
+    correctIndex: choices.indexOf(answerOf(correct)),
+    speak: spokenOf(correct),
+  };
+}
+
+/** Wraps any multiple-choice question generator into a True/False one: the
+ *  original prompt stays, and one candidate answer — the correct choice
+ *  (50%) or a random wrong one — is shown underneath for the player to judge.
+ *  Content-agnostic, so generated-content games (math etc.) get a True/False
+ *  mode without a separate statement bank. `labels` is a function so the
+ *  text follows a mid-game language switch. */
+export function asTrueFalseGenerator(
+  generate: (index: number) => QuizQuestion,
+  labels: () => { claim: (answer: string) => string; trueLabel: string; falseLabel: string }
+): (index: number) => QuizQuestion {
+  return (index) => {
+    const q = generate(index);
+    const { claim, trueLabel, falseLabel } = labels();
+    const wrong = q.choices.filter((c, i) => i !== q.correctIndex && c !== q.choices[q.correctIndex]);
+    const isTrue = wrong.length === 0 || Math.random() < 0.5;
+    const shown = isTrue ? q.choices[q.correctIndex] : wrong[randInt(0, wrong.length - 1)];
+    const line = claim(shown);
+    return {
+      prompt: q.prompt,
+      sub: q.sub ? `${q.sub}\n${line}` : line,
+      choices: [trueLabel, falseLabel],
+      correctIndex: isTrue ? 0 : 1,
+      speak: q.speak,
+    };
+  };
+}
+
 /** Converts a {statement, isTrue} pair into a QuizQuestion with fixed
- *  True/False choices. */
+ *  True/False choices (index 0 = true). Inside mode-menu-kit's
+ *  trueFalseMode the labels can be omitted — that mode replaces them with
+ *  the shared, localized True/False labels. */
 export function toTrueFalseQuestion(
   tf: { statement: string; isTrue: boolean },
-  trueLabel: string,
-  falseLabel: string
+  trueLabel = 'True',
+  falseLabel = 'False'
 ): QuizQuestion {
   return {
     prompt: tf.statement,

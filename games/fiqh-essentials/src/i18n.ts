@@ -13,20 +13,7 @@ interface Strings {
   playAgain: string;
   backToMenu: string;
   footer: string;
-  hear: string;
 
-  modeListen: string;
-  listenReplay: string;
-
-  modeFlashcard: string;
-  flashcardProgress: (i: number, total: number) => string;
-  flashcardKnowIt: string;
-  flashcardStillLearning: string;
-  flashcardRoundSummary: (known: number, total: number) => string;
-
-  modeTrueFalse: string;
-  trueLabel: string;
-  falseLabel: string;
   trueFalseStatement: (term: string, label: string) => string;
 
   modeFillBlank: string;
@@ -59,23 +46,10 @@ const STRINGS: Record<LangMode, Strings> = {
     playAgain: '↻ Play Again',
     backToMenu: '☰ Back to Menu',
     footer: 'Practicing wudu step by step helps these answers stick.',
-    hear: '🔊 Hear it',
 
-    modeListen: '🔊 Listen',
-    listenReplay: '🔊 Tap to hear again',
-
-    modeFlashcard: '🗂️ Review',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    flashcardKnowIt: '✓ I know it',
-    flashcardStillLearning: '↻ Still learning',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marked as known`,
-
-    modeTrueFalse: '✓✗ True/False',
-    trueLabel: 'True',
-    falseLabel: 'False',
     trueFalseStatement: (term, label) => `${term} means "${label}"`,
 
-    modeFillBlank: '✏️ Fill in the Blank',
+    modeFillBlank: 'Fill in the Blank',
 
     modeSequence: 'Order',
     mistakes: (n) => `Mistakes: ${n}`,
@@ -104,23 +78,10 @@ const STRINGS: Record<LangMode, Strings> = {
     playAgain: '↻ Opnieuw spelen',
     backToMenu: '☰ Terug naar menu',
     footer: 'Stap voor stap wudu oefenen helpt om dit te onthouden.',
-    hear: '🔊 Uitspraak',
 
-    modeListen: '🔊 Luisteren',
-    listenReplay: '🔊 Tik om opnieuw te horen',
-
-    modeFlashcard: '🗂️ Herhalen',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    flashcardKnowIt: '✓ Ik ken dit',
-    flashcardStillLearning: '↻ Nog aan het leren',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} als gekend gemarkeerd`,
-
-    modeTrueFalse: '✓✗ Waar/Niet waar',
-    trueLabel: 'Waar',
-    falseLabel: 'Niet waar',
     trueFalseStatement: (term, label) => `${term} betekent "${label}"`,
 
-    modeFillBlank: '✏️ Vul de Letter In',
+    modeFillBlank: 'Vul de Letter In',
 
     modeSequence: 'Volgorde',
     mistakes: (n) => `Fouten: ${n}`,
@@ -149,23 +110,10 @@ const STRINGS: Record<LangMode, Strings> = {
     playAgain: '↻ Nochmal spielen',
     backToMenu: '☰ Zurück zum Menü',
     footer: 'Die Wudu Schritt für Schritt zu üben hilft, sich das zu merken.',
-    hear: '🔊 Anhören',
 
-    modeListen: '🔊 Hören',
-    listenReplay: '🔊 Tippen zum erneuten Hören',
-
-    modeFlashcard: '🗂️ Wiederholen',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    flashcardKnowIt: '✓ Ich kenne es',
-    flashcardStillLearning: '↻ Noch am Lernen',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} als bekannt markiert`,
-
-    modeTrueFalse: '✓✗ Wahr/Falsch',
-    trueLabel: 'Wahr',
-    falseLabel: 'Falsch',
     trueFalseStatement: (term, label) => `${term} bedeutet „${label}“`,
 
-    modeFillBlank: '✏️ Buchstabe Einsetzen',
+    modeFillBlank: 'Buchstabe Einsetzen',
 
     modeSequence: 'Reihenfolge',
     mistakes: (n) => `Fehler: ${n}`,
@@ -194,23 +142,10 @@ const STRINGS: Record<LangMode, Strings> = {
     playAgain: '↻ Jugar de nuevo',
     backToMenu: '☰ Volver al menú',
     footer: 'Practicar el wudu paso a paso ayuda a recordar estas respuestas.',
-    hear: '🔊 Escuchar',
 
-    modeListen: '🔊 Escuchar',
-    listenReplay: '🔊 Toca para escuchar de nuevo',
-
-    modeFlashcard: '🗂️ Repasar',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    flashcardKnowIt: '✓ Lo sé',
-    flashcardStillLearning: '↻ Aún aprendiendo',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marcados como conocidos`,
-
-    modeTrueFalse: '✓✗ Verdadero/Falso',
-    trueLabel: 'Verdadero',
-    falseLabel: 'Falso',
     trueFalseStatement: (term, label) => `${term} significa "${label}"`,
 
-    modeFillBlank: '✏️ Completa la Letra',
+    modeFillBlank: 'Completa la Letra',
 
     modeSequence: 'Orden',
     mistakes: (n) => `Errores: ${n}`,
@@ -239,23 +174,10 @@ const STRINGS: Record<LangMode, Strings> = {
     playAgain: '↻ Rejouer',
     backToMenu: '☰ Retour au menu',
     footer: 'Pratiquer le wudu étape par étape aide à retenir ces réponses.',
-    hear: '🔊 Écouter',
 
-    modeListen: '🔊 Écouter',
-    listenReplay: '🔊 Touche pour réécouter',
-
-    modeFlashcard: '🗂️ Réviser',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    flashcardKnowIt: '✓ Je le sais',
-    flashcardStillLearning: '↻ Encore en apprentissage',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marqués comme connus`,
-
-    modeTrueFalse: '✓✗ Vrai/Faux',
-    trueLabel: 'Vrai',
-    falseLabel: 'Faux',
     trueFalseStatement: (term, label) => `${term} signifie « ${label} »`,
 
-    modeFillBlank: '✏️ Complète la Lettre',
+    modeFillBlank: 'Complète la Lettre',
 
     modeSequence: 'Ordre',
     mistakes: (n) => `Erreurs : ${n}`,
@@ -284,23 +206,10 @@ const STRINGS: Record<LangMode, Strings> = {
     playAgain: '↻ العب مرة أخرى',
     backToMenu: '☰ العودة إلى القائمة',
     footer: 'التدرب على خطوات الوضوء واحدة تلو الأخرى يساعد على تثبيت هذه الإجابات.',
-    hear: '🔊 استمع',
 
-    modeListen: '🔊 استماع',
-    listenReplay: '🔊 اضغط للاستماع مرة أخرى',
-
-    modeFlashcard: '🗂️ مراجعة',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    flashcardKnowIt: '✓ أعرف هذا',
-    flashcardStillLearning: '↻ ما زلت أتعلم',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} مُعلَّمة كمعروفة`,
-
-    modeTrueFalse: '✓✗ صح/خطأ',
-    trueLabel: 'صح',
-    falseLabel: 'خطأ',
     trueFalseStatement: (term, label) => `${term} تعني "${label}"`,
 
-    modeFillBlank: '✏️ أكمل الحرف',
+    modeFillBlank: 'أكمل الحرف',
 
     modeSequence: 'الترتيب',
     mistakes: (n) => `الأخطاء: ${n}`,

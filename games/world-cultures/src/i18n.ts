@@ -27,19 +27,7 @@ interface Strings {
   instruction: string;
   sequenceRoundSummary: (perfect: number, total: number) => string;
 
-  modeTrueFalse: string;
-  trueLabel: string;
-  falseLabel: string;
   trueFalseStatement: (greeting: string, language: string) => string;
-
-  modeFillBlank: string;
-
-  modeFlashcard: string;
-  flashcardProgress: (i: number, total: number) => string;
-  hear: string;
-  flashcardKnowIt: string;
-  flashcardStillLearning: string;
-  flashcardRoundSummary: (known: number, total: number) => string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
@@ -70,19 +58,7 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Tap the languages fewest to most speakers',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rounds perfect`,
 
-    modeTrueFalse: '✓✗ True/False',
-    trueLabel: 'True',
-    falseLabel: 'False',
     trueFalseStatement: (greeting, language) => `"${greeting}" is a greeting in ${language}`,
-
-    modeFillBlank: '✏️ Fill in the Blank',
-
-    modeFlashcard: '🗂️ Review',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Hear it',
-    flashcardKnowIt: '✓ I know it',
-    flashcardStillLearning: '↻ Still learning',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marked as known`,
   },
   nl: {
     title: 'World Cultures',
@@ -111,19 +87,7 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Tik de talen van minste naar meeste sprekers aan',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondes perfect`,
 
-    modeTrueFalse: '✓✗ Waar/Niet waar',
-    trueLabel: 'Waar',
-    falseLabel: 'Niet waar',
     trueFalseStatement: (greeting, language) => `"${greeting}" is een begroeting in het ${language}`,
-
-    modeFillBlank: '✏️ Vul het Woord In',
-
-    modeFlashcard: '🗂️ Herhalen',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Uitspraak',
-    flashcardKnowIt: '✓ Ik ken dit',
-    flashcardStillLearning: '↻ Nog aan het leren',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} als gekend gemarkeerd`,
   },
   de: {
     title: 'World Cultures',
@@ -152,19 +116,7 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Tippe die Sprachen von wenigsten zu meisten Sprechern an',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} Runden perfekt`,
 
-    modeTrueFalse: '✓✗ Wahr/Falsch',
-    trueLabel: 'Wahr',
-    falseLabel: 'Falsch',
     trueFalseStatement: (greeting, language) => `„${greeting}" ist ein Gruß auf ${language}`,
-
-    modeFillBlank: '✏️ Lücke Füllen',
-
-    modeFlashcard: '🗂️ Wiederholen',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Anhören',
-    flashcardKnowIt: '✓ Ich kenne es',
-    flashcardStillLearning: '↻ Noch am Lernen',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} als bekannt markiert`,
   },
   es: {
     title: 'World Cultures',
@@ -193,19 +145,7 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Toca los idiomas de menos a más hablantes',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondas perfectas`,
 
-    modeTrueFalse: '✓✗ Verdadero/Falso',
-    trueLabel: 'Verdadero',
-    falseLabel: 'Falso',
     trueFalseStatement: (greeting, language) => `"${greeting}" es un saludo en ${language}`,
-
-    modeFillBlank: '✏️ Completa el Espacio',
-
-    modeFlashcard: '🗂️ Repasar',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Escuchar',
-    flashcardKnowIt: '✓ Lo sé',
-    flashcardStillLearning: '↻ Aún aprendiendo',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marcadas como conocidas`,
   },
   fr: {
     title: 'World Cultures',
@@ -234,19 +174,7 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Touche les langues du moins au plus parlées',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
 
-    modeTrueFalse: '✓✗ Vrai/Faux',
-    trueLabel: 'Vrai',
-    falseLabel: 'Faux',
     trueFalseStatement: (greeting, language) => `« ${greeting} » est une salutation en ${language}`,
-
-    modeFillBlank: '✏️ Complète le Mot',
-
-    modeFlashcard: '🗂️ Réviser',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Écouter',
-    flashcardKnowIt: '✓ Je le sais',
-    flashcardStillLearning: '↻ En apprentissage',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marquées comme connues`,
   },
   ar: {
     title: 'World Cultures',
@@ -275,19 +203,7 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'اضغط على اللغات من الأقل إلى الأكثر عدد متحدثين',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولات مثالية`,
 
-    modeTrueFalse: '✓✗ صح/خطأ',
-    trueLabel: 'صح',
-    falseLabel: 'خطأ',
     trueFalseStatement: (greeting, language) => `"${greeting}" هي تحية باللغة ${language}`,
-
-    modeFillBlank: '✏️ أكمل الفراغ',
-
-    modeFlashcard: '🗂️ مراجعة',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 استمع',
-    flashcardKnowIt: '✓ أعرف هذا',
-    flashcardStillLearning: '↻ ما زلت أتعلم',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} تم وضع علامة معروف عليها`,
   },
 };
 

@@ -27,19 +27,7 @@ interface Strings {
   instruction: string;
   sequenceRoundSummary: (perfect: number, total: number) => string;
 
-  modeTrueFalse: string;
-  trueLabel: string;
-  falseLabel: string;
   trueFalseStatement: (part: string, fn: string) => string;
-
-  modeFillBlank: string;
-
-  modeFlashcard: string;
-  flashcardProgress: (i: number, total: number) => string;
-  hear: string;
-  flashcardKnowIt: string;
-  flashcardStillLearning: string;
-  flashcardRoundSummary: (known: number, total: number) => string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
@@ -70,19 +58,7 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Tap the body parts lightest to heaviest',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rounds perfect`,
 
-    modeTrueFalse: '✓✗ True/False',
-    trueLabel: 'True',
-    falseLabel: 'False',
     trueFalseStatement: (part, fn) => `The ${part}: ${fn}`,
-
-    modeFillBlank: '✏️ Fill in the Blank',
-
-    modeFlashcard: '🗂️ Review',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Hear it',
-    flashcardKnowIt: '✓ I know it',
-    flashcardStillLearning: '↻ Still learning',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marked as known`,
   },
   nl: {
     title: 'Health & The Body',
@@ -111,19 +87,7 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Tik de lichaamsdelen van licht naar zwaar aan',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondes perfect`,
 
-    modeTrueFalse: '✓✗ Waar/Niet waar',
-    trueLabel: 'Waar',
-    falseLabel: 'Niet waar',
     trueFalseStatement: (part, fn) => `${part}: ${fn}`,
-
-    modeFillBlank: '✏️ Vul het Woord In',
-
-    modeFlashcard: '🗂️ Herhalen',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Uitspraak',
-    flashcardKnowIt: '✓ Ik ken dit',
-    flashcardStillLearning: '↻ Nog aan het leren',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} als gekend gemarkeerd`,
   },
   de: {
     title: 'Health & The Body',
@@ -152,19 +116,7 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Tippe die Körperteile von leicht nach schwer an',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} Runden perfekt`,
 
-    modeTrueFalse: '✓✗ Wahr/Falsch',
-    trueLabel: 'Wahr',
-    falseLabel: 'Falsch',
     trueFalseStatement: (part, fn) => `${part}: ${fn}`,
-
-    modeFillBlank: '✏️ Lücke Füllen',
-
-    modeFlashcard: '🗂️ Wiederholen',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Anhören',
-    flashcardKnowIt: '✓ Ich kenne es',
-    flashcardStillLearning: '↻ Noch am Lernen',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} als bekannt markiert`,
   },
   es: {
     title: 'Health & The Body',
@@ -193,19 +145,7 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Toca las partes del cuerpo de más ligera a más pesada',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondas perfectas`,
 
-    modeTrueFalse: '✓✗ Verdadero/Falso',
-    trueLabel: 'Verdadero',
-    falseLabel: 'Falso',
     trueFalseStatement: (part, fn) => `${part}: ${fn}`,
-
-    modeFillBlank: '✏️ Completa el Espacio',
-
-    modeFlashcard: '🗂️ Repasar',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Escuchar',
-    flashcardKnowIt: '✓ Lo sé',
-    flashcardStillLearning: '↻ Aún aprendiendo',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marcadas como conocidas`,
   },
   fr: {
     title: 'Health & The Body',
@@ -234,19 +174,7 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Touche les parties du corps de la plus légère à la plus lourde',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
 
-    modeTrueFalse: '✓✗ Vrai/Faux',
-    trueLabel: 'Vrai',
-    falseLabel: 'Faux',
     trueFalseStatement: (part, fn) => `${part} : ${fn}`,
-
-    modeFillBlank: '✏️ Complète le Mot',
-
-    modeFlashcard: '🗂️ Réviser',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Écouter',
-    flashcardKnowIt: '✓ Je le sais',
-    flashcardStillLearning: '↻ En apprentissage',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marquées comme connues`,
   },
   ar: {
     title: 'Health & The Body',
@@ -275,19 +203,7 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'اضغط على أجزاء الجسم من الأخف إلى الأثقل',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولة مثالية`,
 
-    modeTrueFalse: '✓✗ صح/خطأ',
-    trueLabel: 'صح',
-    falseLabel: 'خطأ',
     trueFalseStatement: (part, fn) => `${part}: ${fn}`,
-
-    modeFillBlank: '✏️ أكمل الفراغ',
-
-    modeFlashcard: '🗂️ مراجعة',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 استمع',
-    flashcardKnowIt: '✓ أعرف هذا',
-    flashcardStillLearning: '↻ ما زلت أتعلم',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} تم وضع علامة معروف عليها`,
   },
 };
 

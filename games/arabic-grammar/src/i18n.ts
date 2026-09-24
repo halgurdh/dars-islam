@@ -27,17 +27,7 @@ interface Strings {
   instruction: string;
   sequenceRoundSummary: (perfect: number, total: number) => string;
 
-  modeTrueFalse: string;
-  trueLabel: string;
-  falseLabel: string;
   trueFalseStatement: (singular: string, plural: string) => string;
-
-  modeFlashcard: string;
-  flashcardProgress: (i: number, total: number) => string;
-  hear: string;
-  flashcardKnowIt: string;
-  flashcardStillLearning: string;
-  flashcardRoundSummary: (known: number, total: number) => string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
@@ -68,17 +58,7 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Tap the words in Arabic alphabetical order (ا→ي)',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rounds perfect`,
 
-    modeTrueFalse: '✓✗ True/False',
-    trueLabel: 'True',
-    falseLabel: 'False',
     trueFalseStatement: (singular, plural) => `"${plural}" is the plural of "${singular}"`,
-
-    modeFlashcard: '🗂️ Review',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Hear it',
-    flashcardKnowIt: '✓ I know it',
-    flashcardStillLearning: '↻ Still learning',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marked as known`,
   },
   nl: {
     title: 'Arabic Grammar Basics',
@@ -107,17 +87,7 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Tik de woorden aan in Arabische alfabetische volgorde (ا→ي)',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondes perfect`,
 
-    modeTrueFalse: '✓✗ Waar/Niet waar',
-    trueLabel: 'Waar',
-    falseLabel: 'Niet waar',
     trueFalseStatement: (singular, plural) => `"${plural}" is het meervoud van "${singular}"`,
-
-    modeFlashcard: '🗂️ Herhalen',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Uitspraak',
-    flashcardKnowIt: '✓ Ik ken dit',
-    flashcardStillLearning: '↻ Nog aan het leren',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} als gekend gemarkeerd`,
   },
   de: {
     title: 'Arabic Grammar Basics',
@@ -146,17 +116,7 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Tippe die Wörter in arabischer alphabetischer Reihenfolge an (ا→ي)',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} Runden perfekt`,
 
-    modeTrueFalse: '✓✗ Wahr/Falsch',
-    trueLabel: 'Wahr',
-    falseLabel: 'Falsch',
     trueFalseStatement: (singular, plural) => `„${plural}" ist der Plural von „${singular}"`,
-
-    modeFlashcard: '🗂️ Wiederholen',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Anhören',
-    flashcardKnowIt: '✓ Ich kenne es',
-    flashcardStillLearning: '↻ Noch am Lernen',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} als bekannt markiert`,
   },
   es: {
     title: 'Arabic Grammar Basics',
@@ -185,17 +145,7 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Toca las palabras en orden alfabético árabe (ا→ي)',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondas perfectas`,
 
-    modeTrueFalse: '✓✗ Verdadero/Falso',
-    trueLabel: 'Verdadero',
-    falseLabel: 'Falso',
     trueFalseStatement: (singular, plural) => `"${plural}" es el plural de "${singular}"`,
-
-    modeFlashcard: '🗂️ Repasar',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Escuchar',
-    flashcardKnowIt: '✓ Lo sé',
-    flashcardStillLearning: '↻ Aún aprendiendo',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marcadas como conocidas`,
   },
   fr: {
     title: 'Arabic Grammar Basics',
@@ -224,17 +174,7 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Touche les mots dans l’ordre alphabétique arabe (ا→ي)',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
 
-    modeTrueFalse: '✓✗ Vrai/Faux',
-    trueLabel: 'Vrai',
-    falseLabel: 'Faux',
     trueFalseStatement: (singular, plural) => `« ${plural} » est le pluriel de « ${singular} »`,
-
-    modeFlashcard: '🗂️ Réviser',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Écouter',
-    flashcardKnowIt: '✓ Je le sais',
-    flashcardStillLearning: '↻ En apprentissage',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marquées comme connues`,
   },
   ar: {
     title: 'Arabic Grammar Basics',
@@ -263,17 +203,7 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'اضغط على الكلمات حسب الترتيب الأبجدي العربي (ا→ي)',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولات مثالية`,
 
-    modeTrueFalse: '✓✗ صح/خطأ',
-    trueLabel: 'صح',
-    falseLabel: 'خطأ',
     trueFalseStatement: (singular, plural) => `"${plural}" هي جمع "${singular}"`,
-
-    modeFlashcard: '🗂️ مراجعة',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 استمع',
-    flashcardKnowIt: '✓ أعرف هذا',
-    flashcardStillLearning: '↻ ما زلت أتعلم',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} تم وضع علامة معروف عليها`,
   },
 };
 

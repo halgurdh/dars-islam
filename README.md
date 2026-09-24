@@ -17,7 +17,7 @@
 - **Math** — Number Basics, Algebra, Geometry, Trigonometry, Pre-Calculus, Statistics & Probability, Times Table Dojo, Mental Math Sprint, Pattern Play
 - **General & Science** — Geography, World History, Civics & Community, Earth & Space Science, Health & the Body, Digital Literacy, World Cultures, Language Arts
 
-Every game supports multiple modes where applicable (Match, Quiz, Sequence, True/False, Fill-in-the-Blank, Listen & Identify, Flashcard Review), so the same content can be practiced several ways — useful for Islamic education specifically, where recall (memorizing duas, the 99 names, Quran order) matters as much as comprehension.
+Every game supports multiple modes where applicable (Match, Quiz, Sequence, True/False, Fill-in-the-Blank, Listen & Identify, Flashcard Review, Beat the Clock), so the same content can be practiced several ways — useful for Islamic education specifically, where recall (memorizing duas, the 99 names, Quran order) matters as much as comprehension.
 
 Everything today runs entirely on free tiers, but if this grows, the likely costs would be:
 - **Supabase** — the free tier covers a small/medium userbase; a lot of classes signing up at once could need the Pro plan (~$25/month) for more database storage, auth users, and bandwidth.

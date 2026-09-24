@@ -2,7 +2,7 @@ import { COLORS, FONT } from '../theme';
 import { DIFFICULTIES, generateQuestion, generateMatchItems, generateSequenceRound } from '../questions';
 import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { t } from '../i18n';
-import { createModeMenuScene, quizMode, sequenceMode, type GameMode } from '@shared/mode-menu-kit';
+import { createModeMenuScene, quizMode, sequenceMode, trueFalseQuizMode, timedQuizMode, type QuizModeOptions, type GameMode } from '@shared/mode-menu-kit';
 import { getMatchSfx } from '@shared/match-kit';
 
 const GAME_ID = 'shapes-colors';
@@ -43,6 +43,28 @@ const matchMode: GameMode = {
   })),
 };
 
+const quiz: QuizModeOptions = {
+  label: () => t().modeQuiz,
+  icon: '❓',
+  gameId: GAME_ID,
+  theme: COLORS,
+  fontFamily: FONT,
+  strings: () => ({
+    round: t().round,
+    score: t().score,
+    menu: t().menu,
+    wellDone: t().wellDone,
+    roundSummary: t().roundSummary,
+    playAgain: t().playAgain,
+    backToMenu: t().backToMenu,
+  }),
+  difficulties: DIFFICULTIES.map((d) => ({
+    label: QUIZ_LABELS[d.id],
+    totalQuestions: d.totalQuestions,
+    generateQuestion: (index: number) => generateQuestion(d, index),
+  })),
+};
+
 export const MenuScene = createModeMenuScene({
   theme: COLORS,
   fontFamily: FONT,
@@ -52,27 +74,7 @@ export const MenuScene = createModeMenuScene({
   footer: () => t().footer,
   locale: { getLang, setLang, detectDefaultLang },
   modes: [
-    quizMode({
-      label: () => t().modeQuiz,
-      icon: '❓',
-      gameId: GAME_ID,
-      theme: COLORS,
-      fontFamily: FONT,
-      strings: () => ({
-        round: t().round,
-        score: t().score,
-        menu: t().menu,
-        wellDone: t().wellDone,
-        roundSummary: t().roundSummary,
-        playAgain: t().playAgain,
-        backToMenu: t().backToMenu,
-      }),
-      difficulties: DIFFICULTIES.map((d) => ({
-        label: QUIZ_LABELS[d.id],
-        totalQuestions: d.totalQuestions,
-        generateQuestion: (index: number) => generateQuestion(d, index),
-      })),
-    }),
+    quizMode(quiz),
     matchMode,
     sequenceMode({
       label: () => t().modeSequence,
@@ -96,5 +98,7 @@ export const MenuScene = createModeMenuScene({
         generateRound: () => generateSequenceRound([3, 4, 5][i] ?? 3),
       })),
     }),
+    trueFalseQuizMode(quiz, getLang),
+    timedQuizMode(quiz, getLang),
   ],
 });

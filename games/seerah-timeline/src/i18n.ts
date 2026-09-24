@@ -28,20 +28,7 @@ interface Strings {
   score: (n: number) => string;
   quizRoundSummary: (score: number, total: number) => string;
 
-  hear: string;
-
-  modeFlashcard: string;
-  flashcardProgress: (i: number, total: number) => string;
-  flashcardKnowIt: string;
-  flashcardStillLearning: string;
-  flashcardRoundSummary: (known: number, total: number) => string;
-
-  modeTrueFalse: string;
-  trueLabel: string;
-  falseLabel: string;
   trueFalseStatement: (label: string, era: string) => string;
-
-  modeFillBlank: string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
@@ -73,20 +60,7 @@ const STRINGS: Record<LangMode, Strings> = {
     score: (n) => `Score: ${n}`,
     quizRoundSummary: (score, total) => `${score} / ${total} correct`,
 
-    hear: '🔊 Hear it',
-
-    modeFlashcard: '🗂️ Review',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    flashcardKnowIt: '✓ I know it',
-    flashcardStillLearning: '↻ Still learning',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marked as known`,
-
-    modeTrueFalse: '✓✗ True/False',
-    trueLabel: 'True',
-    falseLabel: 'False',
     trueFalseStatement: (label, era) => `"${label}" happened in ${era}`,
-
-    modeFillBlank: '✏️ Fill in the Blank',
   },
   nl: {
     title: 'Seerah Timeline',
@@ -116,20 +90,7 @@ const STRINGS: Record<LangMode, Strings> = {
     score: (n) => `Score: ${n}`,
     quizRoundSummary: (score, total) => `${score} / ${total} goed`,
 
-    hear: '🔊 Uitspraak',
-
-    modeFlashcard: '🗂️ Herhalen',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    flashcardKnowIt: '✓ Ik ken dit',
-    flashcardStillLearning: '↻ Nog aan het leren',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} als gekend gemarkeerd`,
-
-    modeTrueFalse: '✓✗ Waar/Niet waar',
-    trueLabel: 'Waar',
-    falseLabel: 'Niet waar',
     trueFalseStatement: (label, era) => `"${label}" gebeurde in ${era}`,
-
-    modeFillBlank: '✏️ Vul de Letter In',
   },
   de: {
     title: 'Seerah Timeline',
@@ -159,20 +120,7 @@ const STRINGS: Record<LangMode, Strings> = {
     score: (n) => `Punkte: ${n}`,
     quizRoundSummary: (score, total) => `${score} / ${total} richtig`,
 
-    hear: '🔊 Anhören',
-
-    modeFlashcard: '🗂️ Wiederholen',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    flashcardKnowIt: '✓ Ich kenne es',
-    flashcardStillLearning: '↻ Noch am Lernen',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} als bekannt markiert`,
-
-    modeTrueFalse: '✓✗ Wahr/Falsch',
-    trueLabel: 'Wahr',
-    falseLabel: 'Falsch',
     trueFalseStatement: (label, era) => `„${label}“ geschah im Jahr ${era}`,
-
-    modeFillBlank: '✏️ Buchstabe Einsetzen',
   },
   es: {
     title: 'Seerah Timeline',
@@ -202,20 +150,7 @@ const STRINGS: Record<LangMode, Strings> = {
     score: (n) => `Puntuación: ${n}`,
     quizRoundSummary: (score, total) => `${score} / ${total} correctas`,
 
-    hear: '🔊 Escuchar',
-
-    modeFlashcard: '🗂️ Repasar',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    flashcardKnowIt: '✓ Lo sé',
-    flashcardStillLearning: '↻ Aún aprendiendo',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marcados como conocidos`,
-
-    modeTrueFalse: '✓✗ Verdadero/Falso',
-    trueLabel: 'Verdadero',
-    falseLabel: 'Falso',
     trueFalseStatement: (label, era) => `"${label}" ocurrió en ${era}`,
-
-    modeFillBlank: '✏️ Completa la Letra',
   },
   fr: {
     title: 'Seerah Timeline',
@@ -245,20 +180,7 @@ const STRINGS: Record<LangMode, Strings> = {
     score: (n) => `Score : ${n}`,
     quizRoundSummary: (score, total) => `${score} / ${total} correctes`,
 
-    hear: '🔊 Écouter',
-
-    modeFlashcard: '🗂️ Réviser',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    flashcardKnowIt: '✓ Je le sais',
-    flashcardStillLearning: '↻ Encore en apprentissage',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marqués comme connus`,
-
-    modeTrueFalse: '✓✗ Vrai/Faux',
-    trueLabel: 'Vrai',
-    falseLabel: 'Faux',
     trueFalseStatement: (label, era) => `« ${label} » a eu lieu en ${era}`,
-
-    modeFillBlank: '✏️ Complète la Lettre',
   },
   ar: {
     title: 'Seerah Timeline',
@@ -288,20 +210,7 @@ const STRINGS: Record<LangMode, Strings> = {
     score: (n) => `النتيجة: ${n}`,
     quizRoundSummary: (score, total) => `${score} / ${total} إجابات صحيحة`,
 
-    hear: '🔊 استمع',
-
-    modeFlashcard: '🗂️ مراجعة',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    flashcardKnowIt: '✓ أعرف هذا',
-    flashcardStillLearning: '↻ ما زلت أتعلم',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} مُعلَّمة كمعروفة`,
-
-    modeTrueFalse: '✓✗ صح/خطأ',
-    trueLabel: 'صح',
-    falseLabel: 'خطأ',
     trueFalseStatement: (label, era) => `"${label}" حدث في ${era}`,
-
-    modeFillBlank: '✏️ أكمل الحرف',
   },
 };
 

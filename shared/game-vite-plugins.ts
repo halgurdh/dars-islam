@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // Vite plugin factories shared by every game's vite.config.ts. Each game
 // calls these with its own __dirname — kept here (not copy-pasted per game)
 // because serveOnnxWasm in particular encodes a hard-won fix (see its own

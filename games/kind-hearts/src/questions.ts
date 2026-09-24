@@ -207,10 +207,7 @@ export function generateTrueFalseQuestion(): QuizQuestion {
   const isTrue = Math.random() < 0.5;
   const shown = isTrue ? answerFor(item) : wrongFor(item)[Math.floor(Math.random() * 3)];
   return toTrueFalseQuestion(
-    { statement: t().trueFalseStatement(promptFor(item).replace(/\n/g, ' '), shown), isTrue },
-    t().trueLabel,
-    t().falseLabel
-  );
+    { statement: t().trueFalseStatement(promptFor(item).replace(/\n/g, ' '), shown), isTrue });
 }
 
 export function generateFillBlankQuestion(): QuizQuestion {

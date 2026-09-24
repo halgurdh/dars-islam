@@ -28,19 +28,7 @@ interface Strings {
   score: (n: number) => string;
   quizRoundSummary: (score: number, total: number) => string;
 
-  modeTrueFalse: string;
-  trueLabel: string;
-  falseLabel: string;
   trueFalseStatement: (event: string, era: string) => string;
-
-  modeFillBlank: string;
-
-  modeFlashcard: string;
-  flashcardProgress: (i: number, total: number) => string;
-  hear: string;
-  flashcardKnowIt: string;
-  flashcardStillLearning: string;
-  flashcardRoundSummary: (known: number, total: number) => string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
@@ -72,19 +60,7 @@ const STRINGS: Record<LangMode, Strings> = {
     score: (n) => `Score: ${n}`,
     quizRoundSummary: (score, total) => `${score} / ${total} correct`,
 
-    modeTrueFalse: '✓✗ True/False',
-    trueLabel: 'True',
-    falseLabel: 'False',
     trueFalseStatement: (event, era) => `"${event}" happened around ${era}`,
-
-    modeFillBlank: '✏️ Fill in the Blank',
-
-    modeFlashcard: '🗂️ Review',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Hear it',
-    flashcardKnowIt: '✓ I know it',
-    flashcardStillLearning: '↻ Still learning',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marked as known`,
   },
   nl: {
     title: 'World History',
@@ -114,19 +90,7 @@ const STRINGS: Record<LangMode, Strings> = {
     score: (n) => `Score: ${n}`,
     quizRoundSummary: (score, total) => `${score} / ${total} goed`,
 
-    modeTrueFalse: '✓✗ Waar/Niet waar',
-    trueLabel: 'Waar',
-    falseLabel: 'Niet waar',
     trueFalseStatement: (event, era) => `"${event}" gebeurde rond ${era}`,
-
-    modeFillBlank: '✏️ Vul het Woord In',
-
-    modeFlashcard: '🗂️ Herhalen',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Uitspraak',
-    flashcardKnowIt: '✓ Ik ken dit',
-    flashcardStillLearning: '↻ Nog aan het leren',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} als gekend gemarkeerd`,
   },
   de: {
     title: 'World History',
@@ -156,19 +120,7 @@ const STRINGS: Record<LangMode, Strings> = {
     score: (n) => `Punkte: ${n}`,
     quizRoundSummary: (score, total) => `${score} / ${total} richtig`,
 
-    modeTrueFalse: '✓✗ Wahr/Falsch',
-    trueLabel: 'Wahr',
-    falseLabel: 'Falsch',
     trueFalseStatement: (event, era) => `„${event}" geschah um ${era}`,
-
-    modeFillBlank: '✏️ Lücke Füllen',
-
-    modeFlashcard: '🗂️ Wiederholen',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Anhören',
-    flashcardKnowIt: '✓ Ich kenne es',
-    flashcardStillLearning: '↻ Noch am Lernen',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} als bekannt markiert`,
   },
   es: {
     title: 'World History',
@@ -198,19 +150,7 @@ const STRINGS: Record<LangMode, Strings> = {
     score: (n) => `Puntuación: ${n}`,
     quizRoundSummary: (score, total) => `${score} / ${total} correctas`,
 
-    modeTrueFalse: '✓✗ Verdadero/Falso',
-    trueLabel: 'Verdadero',
-    falseLabel: 'Falso',
     trueFalseStatement: (event, era) => `"${event}" ocurrió alrededor de ${era}`,
-
-    modeFillBlank: '✏️ Completa el Espacio',
-
-    modeFlashcard: '🗂️ Repasar',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Escuchar',
-    flashcardKnowIt: '✓ Lo sé',
-    flashcardStillLearning: '↻ Aún aprendiendo',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marcadas como conocidas`,
   },
   fr: {
     title: 'World History',
@@ -240,19 +180,7 @@ const STRINGS: Record<LangMode, Strings> = {
     score: (n) => `Score : ${n}`,
     quizRoundSummary: (score, total) => `${score} / ${total} correctes`,
 
-    modeTrueFalse: '✓✗ Vrai/Faux',
-    trueLabel: 'Vrai',
-    falseLabel: 'Faux',
     trueFalseStatement: (event, era) => `« ${event} » a eu lieu vers ${era}`,
-
-    modeFillBlank: '✏️ Complète le Mot',
-
-    modeFlashcard: '🗂️ Réviser',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Écouter',
-    flashcardKnowIt: '✓ Je le sais',
-    flashcardStillLearning: '↻ En apprentissage',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marquées comme connues`,
   },
   ar: {
     title: 'World History',
@@ -282,19 +210,7 @@ const STRINGS: Record<LangMode, Strings> = {
     score: (n) => `النقاط: ${n}`,
     quizRoundSummary: (score, total) => `${score} / ${total} إجابة صحيحة`,
 
-    modeTrueFalse: '✓✗ صح/خطأ',
-    trueLabel: 'صح',
-    falseLabel: 'خطأ',
     trueFalseStatement: (event, era) => `"${event}" حدث تقريبًا في ${era}`,
-
-    modeFillBlank: '✏️ أكمل الفراغ',
-
-    modeFlashcard: '🗂️ مراجعة',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 استمع',
-    flashcardKnowIt: '✓ أعرف هذا',
-    flashcardStillLearning: '↻ ما زلت أتعلم',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} تم وضع علامة معروف عليها`,
   },
 };
 

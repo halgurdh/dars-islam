@@ -2,7 +2,7 @@ import { COLORS, FONT } from '../theme';
 import { DIFFICULTIES, generateQuestion, generateMatchItems, generateSequenceRound, generateTrueFalseStatement, generateFillBlankQuestion, type Difficulty } from '../questions';
 import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { t } from '../i18n';
-import { createModeMenuScene, quizMode, sequenceMode, type GameMode } from '@shared/mode-menu-kit';
+import { createModeMenuScene, quizMode, sequenceMode, trueFalseMode, fillBlankMode, type GameMode, type VariantBase } from '@shared/mode-menu-kit';
 import { getMatchSfx } from '@shared/match-kit';
 import { toTrueFalseQuestion } from '@shared/quiz-variants';
 import type { QuizQuestion } from '@shared/quiz-kit';
@@ -16,10 +16,7 @@ import type { QuizQuestion } from '@shared/quiz-kit';
 function generateTrueFalseQuestion(difficulty: Difficulty): QuizQuestion {
   const tf = generateTrueFalseStatement(difficulty);
   return toTrueFalseQuestion(
-    { statement: t().trueFalseStatement(tf.equation), isTrue: tf.isTrue },
-    t().trueLabel,
-    t().falseLabel
-  );
+    { statement: t().trueFalseStatement(tf.equation), isTrue: tf.isTrue });
 }
 
 const GAME_ID = 'money-zakat';
@@ -61,6 +58,25 @@ const matchMode: GameMode = {
       });
     },
   })),
+};
+
+// One description of this game shared by every variant mode below —
+// each mode then only supplies its own content generator.
+const variants: VariantBase = {
+  gameId: GAME_ID,
+  theme: COLORS,
+  fontFamily: FONT,
+  getLang,
+  strings: () => ({
+    round: t().round,
+    score: t().score,
+    menu: t().menu,
+    wellDone: t().wellDone,
+    roundSummary: t().roundSummary,
+    playAgain: t().playAgain,
+    backToMenu: t().backToMenu,
+  }),
+  tiers: DIFFICULTIES.map((d) => ({ label: QUIZ_LABELS[d.id], totalQuestions: d.totalQuestions })),
 };
 
 export const MenuScene = createModeMenuScene({
@@ -116,49 +132,7 @@ export const MenuScene = createModeMenuScene({
         generateRound: () => generateSequenceRound(d, [4, 5, 6][i] ?? 4),
       })),
     }),
-    quizMode({
-      id: 'truefalse',
-      label: () => t().modeTrueFalse,
-      icon: '✓✗',
-      gameId: GAME_ID,
-      theme: COLORS,
-      fontFamily: FONT,
-      strings: () => ({
-        round: t().round,
-        score: t().score,
-        menu: t().menu,
-        wellDone: t().wellDone,
-        roundSummary: t().roundSummary,
-        playAgain: t().playAgain,
-        backToMenu: t().backToMenu,
-      }),
-      difficulties: DIFFICULTIES.map((d) => ({
-        label: QUIZ_LABELS[d.id],
-        totalQuestions: d.totalQuestions,
-        generateQuestion: () => generateTrueFalseQuestion(d),
-      })),
-    }),
-    quizMode({
-      id: 'fillblank',
-      label: () => t().modeFillBlank,
-      icon: '✏️',
-      gameId: GAME_ID,
-      theme: COLORS,
-      fontFamily: FONT,
-      strings: () => ({
-        round: t().round,
-        score: t().score,
-        menu: t().menu,
-        wellDone: t().wellDone,
-        roundSummary: t().roundSummary,
-        playAgain: t().playAgain,
-        backToMenu: t().backToMenu,
-      }),
-      difficulties: DIFFICULTIES.map((d) => ({
-        label: QUIZ_LABELS[d.id],
-        totalQuestions: d.totalQuestions,
-        generateQuestion: () => generateFillBlankQuestion(d),
-      })),
-    }),
+    trueFalseMode(variants, (_, tier) => generateTrueFalseQuestion(DIFFICULTIES[tier])),
+    fillBlankMode(variants, (_, tier) => generateFillBlankQuestion(DIFFICULTIES[tier]), { label: () => t().modeFillBlank }),
   ],
 });

@@ -19,6 +19,9 @@ import { getMatchSfx } from './match-kit';
 import type { SequenceTheme, SequenceStrings, SequenceItem } from './sequence-kit';
 import type { FlashcardTheme, FlashcardItem, FlashcardStrings } from './flashcard-kit';
 import { speak } from './tts';
+import { asTrueFalseGenerator } from './quiz-variants';
+import { modeVariantStrings } from './mode-variant-i18n';
+import type { LangMode } from './locale';
 
 /** Combined theme shape so one game can define a single theme object usable by every mode. */
 export type GameTheme = QuizTheme & Partial<MatchTheme> & Partial<SequenceTheme>;
@@ -148,7 +151,7 @@ export interface QuizModeDifficulty {
   timeLimitMs?: number;
 }
 
-export function quizMode(opts: {
+export interface QuizModeOptions {
   id?: string;
   label: () => string;
   icon?: string;
@@ -159,7 +162,9 @@ export function quizMode(opts: {
   difficulties: QuizModeDifficulty[];
   quizSceneKey?: string;
   homeSceneKey?: string;
-}): GameMode {
+}
+
+export function quizMode(opts: QuizModeOptions): GameMode {
   return {
     id: opts.id ?? 'quiz',
     label: opts.label,
@@ -181,6 +186,179 @@ export function quizMode(opts: {
       },
     })),
   };
+}
+
+// ── Shared variant modes ────────────────────────────────────────────────
+// The multi-mode set every subject/language game offers beyond its core
+// Quiz/Match/Sequence: True/False, Fill-in-the-Blank, Review (flashcards),
+// Listen & Identify, Beat the Clock and Practice. A game describes itself
+// ONCE as a VariantBase (ids, theme, font, chrome strings, difficulty
+// tiers) and then adds each mode with a single call supplying only its
+// content generator — labels/icons/flashcard chrome come from the shared
+// mode-variant-i18n, driven by the game's own getLang.
+
+export interface VariantTier {
+  label: () => string;
+  totalQuestions: number;
+}
+
+export interface VariantBase {
+  gameId: string;
+  theme: QuizTheme & Partial<FlashcardTheme>;
+  fontFamily: string;
+  getLang: () => LangMode;
+  /** The game's quiz chrome (round/score/menu/...). Review mode reuses its
+   *  menu/wellDone/playAgain/backToMenu. */
+  strings: () => QuizStrings;
+  tiers: VariantTier[];
+  homeSceneKey?: string;
+}
+
+/** A question generator; `tier` is the index of the picked difficulty, for
+ *  games whose content depends on it (most ignore it). */
+export type VariantGenerator = (index: number, tier: number) => QuizQuestion;
+
+export interface VariantOverrides {
+  /** Per-mode font (e.g. Arabic script for True/False, Latin for Fill-in). */
+  fontFamily?: string;
+  /** Replaces the shared label, for a game-specific wording. */
+  label?: () => string;
+}
+
+function variantQuiz(
+  base: VariantBase,
+  id: string,
+  icon: string,
+  label: () => string,
+  generate: VariantGenerator,
+  o: VariantOverrides = {}
+): QuizModeOptions {
+  return {
+    id,
+    label: o.label ?? label,
+    icon,
+    gameId: base.gameId,
+    theme: base.theme,
+    fontFamily: o.fontFamily ?? base.fontFamily,
+    strings: base.strings,
+    homeSceneKey: base.homeSceneKey,
+    difficulties: base.tiers.map((tier, i) => ({
+      label: tier.label,
+      totalQuestions: tier.totalQuestions,
+      generateQuestion: (index: number) => generate(index, i),
+    })),
+  };
+}
+
+/** True/False from a game's own statement generator — anything returning
+ *  toTrueFalseQuestion(...) (choice 0 = true). The choices are relabeled
+ *  here with the shared localized True/False labels. */
+export function trueFalseMode(base: VariantBase, generate: VariantGenerator, o?: VariantOverrides): GameMode {
+  const s = modeVariantStrings(base.getLang);
+  const relabeled: VariantGenerator = (index, tier) => ({
+    ...generate(index, tier),
+    choices: [s().trueLabel, s().falseLabel],
+  });
+  return quizMode(variantQuiz(base, 'truefalse', '✅', () => s().modeTrueFalse, relabeled, o));
+}
+
+export function fillBlankMode(base: VariantBase, generate: VariantGenerator, o?: VariantOverrides): GameMode {
+  const s = modeVariantStrings(base.getLang);
+  return quizMode(variantQuiz(base, 'fillblank', '✏️', () => s().modeFillBlank, generate, o));
+}
+
+/** Listen & Identify: each question's `speak` audio auto-plays instead of a
+ *  written prompt; the player picks the matching written choice. */
+export function listenIdentifyMode(base: VariantBase, generate: VariantGenerator, o?: VariantOverrides): GameMode {
+  const s = modeVariantStrings(base.getLang);
+  const q = variantQuiz(base, 'listen', '🔊', () => s().modeListen, generate, o);
+  return listenMode({ ...q, replayLabel: () => s().listenReplay });
+}
+
+/** Review: a flashcard deck of the game's items (single "Start" entry). */
+export function reviewMode(base: VariantBase, cards: () => FlashcardItem[], o?: VariantOverrides): GameMode {
+  const s = modeVariantStrings(base.getLang);
+  return flashcardMode({
+    label: o?.label ?? (() => s().modeReview),
+    icon: '🗂️',
+    gameId: base.gameId,
+    theme: { cardFront: base.theme.panel, ...base.theme },
+    fontFamily: o?.fontFamily ?? base.fontFamily,
+    homeSceneKey: base.homeSceneKey,
+    strings: () => {
+      const q = base.strings();
+      return {
+        menu: q.menu,
+        progress: s().reviewProgress,
+        hear: s().hear,
+        knowIt: s().knowIt,
+        stillLearning: s().stillLearning,
+        wellDone: q.wellDone,
+        roundSummary: s().reviewSummary,
+        playAgain: q.playAgain,
+        backToMenu: q.backToMenu,
+      };
+    },
+    difficulties: [{ label: () => s().reviewStart, cards }],
+  });
+}
+
+// ── Variants derived from a game's existing quiz ────────────────────────
+// For generated-content games (math etc.) that have no item bank to build
+// statements from: these take the SAME options object the game passes to
+// quizMode() and reshape its questions.
+
+/** True/False: each generated question shows the problem plus one candidate
+ *  answer (right or wrong), and the player judges it. */
+export function trueFalseQuizMode(base: QuizModeOptions, getLang: () => LangMode): GameMode {
+  const s = modeVariantStrings(getLang);
+  return quizMode({
+    ...base,
+    id: 'truefalse',
+    label: () => s().modeTrueFalse,
+    icon: '✅',
+    difficulties: base.difficulties.map((d) => ({
+      ...d,
+      generateQuestion: asTrueFalseGenerator(d.generateQuestion, () => ({
+        claim: s().answerIs,
+        trueLabel: s().trueLabel,
+        falseLabel: s().falseLabel,
+      })),
+    })),
+  });
+}
+
+/** Beat the Clock: the same quiz with a per-question countdown. `limitsMs`
+ *  is per difficulty tier (last entry reused if there are more tiers). */
+export function timedQuizMode(
+  base: QuizModeOptions,
+  getLang: () => LangMode,
+  limitsMs: number[] = [20_000, 15_000, 10_000]
+): GameMode {
+  const s = modeVariantStrings(getLang);
+  return quizMode({
+    ...base,
+    id: 'timed',
+    label: () => s().modeTimed,
+    icon: '⏱️',
+    difficulties: base.difficulties.map((d, i) => ({
+      ...d,
+      timeLimitMs: limitsMs[Math.min(i, limitsMs.length - 1)],
+    })),
+  });
+}
+
+/** Practice: the inverse of timedQuizMode — for a game whose main quiz is
+ *  already timed, the same questions with no countdown. */
+export function practiceQuizMode(base: QuizModeOptions, getLang: () => LangMode): GameMode {
+  const s = modeVariantStrings(getLang);
+  return quizMode({
+    ...base,
+    id: 'practice',
+    label: () => s().modePractice,
+    icon: '🎯',
+    difficulties: base.difficulties.map((d) => ({ ...d, timeLimitMs: undefined })),
+  });
 }
 
 export interface MatchModeDifficulty {

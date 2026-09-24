@@ -31,9 +31,6 @@ interface Strings {
   instruction: string;
   sequenceRoundSummary: (perfect: number, total: number) => string;
 
-  modeTrueFalse: string;
-  trueLabel: string;
-  falseLabel: string;
   trueFalseStatement: (equation: string) => string;
 
   modeFillBlank: string;
@@ -82,12 +79,9 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Tap the amounts from smallest to largest',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rounds perfect`,
 
-    modeTrueFalse: '✓✗ True/False',
-    trueLabel: 'True',
-    falseLabel: 'False',
     trueFalseStatement: (equation) => `${equation} — true or false?`,
 
-    modeFillBlank: '✏️ Fill in the Blank',
+    modeFillBlank: 'Fill in the Blank',
 
     needsWords: ['Food', 'Water', 'A place to live', 'Medicine'],
     wantsWords: ['A new toy', 'Candy', 'A video game', 'A second dessert'],
@@ -131,12 +125,9 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Tik de bedragen van klein naar groot aan',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondes perfect`,
 
-    modeTrueFalse: '✓✗ Waar/Niet waar',
-    trueLabel: 'Waar',
-    falseLabel: 'Niet waar',
     trueFalseStatement: (equation) => `${equation} — waar of niet waar?`,
 
-    modeFillBlank: '✏️ Vul het Cijfer In',
+    modeFillBlank: 'Vul het Cijfer In',
 
     needsWords: ['Eten', 'Water', 'Een plek om te wonen', 'Medicijnen'],
     wantsWords: ['Een nieuw speeltje', 'Snoep', 'Een videogame', 'Een tweede toetje'],
@@ -180,12 +171,9 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Tippe die Beträge vom kleinsten zum größten an',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} Runden perfekt`,
 
-    modeTrueFalse: '✓✗ Wahr/Falsch',
-    trueLabel: 'Wahr',
-    falseLabel: 'Falsch',
     trueFalseStatement: (equation) => `${equation} — wahr oder falsch?`,
 
-    modeFillBlank: '✏️ Ziffer Einsetzen',
+    modeFillBlank: 'Ziffer Einsetzen',
 
     needsWords: ['Essen', 'Wasser', 'Ein Zuhause', 'Medizin'],
     wantsWords: ['Ein neues Spielzeug', 'Süßigkeiten', 'Ein Videospiel', 'Ein zweites Dessert'],
@@ -229,12 +217,9 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Toca las cantidades de menor a mayor',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondas perfectas`,
 
-    modeTrueFalse: '✓✗ Verdadero/Falso',
-    trueLabel: 'Verdadero',
-    falseLabel: 'Falso',
     trueFalseStatement: (equation) => `${equation} — ¿verdadero o falso?`,
 
-    modeFillBlank: '✏️ Completa el Dígito',
+    modeFillBlank: 'Completa el Dígito',
 
     needsWords: ['Comida', 'Agua', 'Un lugar para vivir', 'Medicina'],
     wantsWords: ['Un juguete nuevo', 'Dulces', 'Un videojuego', 'Un segundo postre'],
@@ -278,12 +263,9 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Touche les montants du plus petit au plus grand',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
 
-    modeTrueFalse: '✓✗ Vrai/Faux',
-    trueLabel: 'Vrai',
-    falseLabel: 'Faux',
     trueFalseStatement: (equation) => `${equation} — vrai ou faux ?`,
 
-    modeFillBlank: '✏️ Complète le Chiffre',
+    modeFillBlank: 'Complète le Chiffre',
 
     needsWords: ['Nourriture', 'Eau', 'Un endroit pour vivre', 'Médicaments'],
     wantsWords: ['Un nouveau jouet', 'Des bonbons', 'Un jeu vidéo', 'Un deuxième dessert'],
@@ -327,12 +309,9 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'اضغط على المبالغ من الأصغر إلى الأكبر',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولات مثالية`,
 
-    modeTrueFalse: '✓✗ صح/خطأ',
-    trueLabel: 'صح',
-    falseLabel: 'خطأ',
     trueFalseStatement: (equation) => `${equation} — صح أم خطأ؟`,
 
-    modeFillBlank: '✏️ أكمل الرقم',
+    modeFillBlank: 'أكمل الرقم',
 
     needsWords: ['طعام', 'ماء', 'مكان للسكن', 'دواء'],
     wantsWords: ['لعبة جديدة', 'حلوى', 'لعبة فيديو', 'حلوى إضافية'],

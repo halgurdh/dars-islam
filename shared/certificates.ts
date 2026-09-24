@@ -1,10 +1,8 @@
+import { escapeHtml } from './escape-html';
 // Printable certificates — browser print dialog, no PDF library (matches
 // this project's "static site, no heavy deps" constraint). Used for both
 // automatic individual milestones (feature #5) and teacher-triggered,
 // class-wide term-completion certificates (feature #10).
-function escapeHtml(s: string): string {
-  return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
-}
 
 const CERT_STYLES = `
   * { box-sizing: border-box; }

@@ -28,19 +28,7 @@ interface Strings {
   score: (n: number) => string;
   quizRoundSummary: (score: number, total: number) => string;
 
-  modeTrueFalse: string;
-  trueLabel: string;
-  falseLabel: string;
   trueFalseStatement: (planet: string, fact: string) => string;
-
-  modeFillBlank: string;
-
-  modeFlashcard: string;
-  flashcardProgress: (i: number, total: number) => string;
-  hear: string;
-  flashcardKnowIt: string;
-  flashcardStillLearning: string;
-  flashcardRoundSummary: (known: number, total: number) => string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
@@ -72,19 +60,7 @@ const STRINGS: Record<LangMode, Strings> = {
     score: (n) => `Score: ${n}`,
     quizRoundSummary: (score, total) => `${score} / ${total} correct`,
 
-    modeTrueFalse: '✓✗ True/False',
-    trueLabel: 'True',
-    falseLabel: 'False',
     trueFalseStatement: (planet, fact) => `${planet} is known for: ${fact}`,
-
-    modeFillBlank: '✏️ Fill in the Blank',
-
-    modeFlashcard: '🗂️ Review',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Hear it',
-    flashcardKnowIt: '✓ I know it',
-    flashcardStillLearning: '↻ Still learning',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marked as known`,
   },
   nl: {
     title: 'Earth & Space Science',
@@ -114,19 +90,7 @@ const STRINGS: Record<LangMode, Strings> = {
     score: (n) => `Score: ${n}`,
     quizRoundSummary: (score, total) => `${score} / ${total} goed`,
 
-    modeTrueFalse: '✓✗ Waar/Niet waar',
-    trueLabel: 'Waar',
-    falseLabel: 'Niet waar',
     trueFalseStatement: (planet, fact) => `${planet} staat bekend om: ${fact}`,
-
-    modeFillBlank: '✏️ Vul het Woord In',
-
-    modeFlashcard: '🗂️ Herhalen',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Uitspraak',
-    flashcardKnowIt: '✓ Ik ken dit',
-    flashcardStillLearning: '↻ Nog aan het leren',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} als gekend gemarkeerd`,
   },
   de: {
     title: 'Earth & Space Science',
@@ -156,19 +120,7 @@ const STRINGS: Record<LangMode, Strings> = {
     score: (n) => `Punkte: ${n}`,
     quizRoundSummary: (score, total) => `${score} / ${total} richtig`,
 
-    modeTrueFalse: '✓✗ Wahr/Falsch',
-    trueLabel: 'Wahr',
-    falseLabel: 'Falsch',
     trueFalseStatement: (planet, fact) => `${planet} ist bekannt für: ${fact}`,
-
-    modeFillBlank: '✏️ Lücke Füllen',
-
-    modeFlashcard: '🗂️ Wiederholen',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Anhören',
-    flashcardKnowIt: '✓ Ich kenne es',
-    flashcardStillLearning: '↻ Noch am Lernen',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} als bekannt markiert`,
   },
   es: {
     title: 'Earth & Space Science',
@@ -198,19 +150,7 @@ const STRINGS: Record<LangMode, Strings> = {
     score: (n) => `Puntuación: ${n}`,
     quizRoundSummary: (score, total) => `${score} / ${total} correctas`,
 
-    modeTrueFalse: '✓✗ Verdadero/Falso',
-    trueLabel: 'Verdadero',
-    falseLabel: 'Falso',
     trueFalseStatement: (planet, fact) => `${planet} es conocido por: ${fact}`,
-
-    modeFillBlank: '✏️ Completa el Espacio',
-
-    modeFlashcard: '🗂️ Repasar',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Escuchar',
-    flashcardKnowIt: '✓ Lo sé',
-    flashcardStillLearning: '↻ Aún aprendiendo',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marcadas como conocidas`,
   },
   fr: {
     title: 'Earth & Space Science',
@@ -240,19 +180,7 @@ const STRINGS: Record<LangMode, Strings> = {
     score: (n) => `Score : ${n}`,
     quizRoundSummary: (score, total) => `${score} / ${total} correctes`,
 
-    modeTrueFalse: '✓✗ Vrai/Faux',
-    trueLabel: 'Vrai',
-    falseLabel: 'Faux',
     trueFalseStatement: (planet, fact) => `${planet} est connu pour : ${fact}`,
-
-    modeFillBlank: '✏️ Complète le Mot',
-
-    modeFlashcard: '🗂️ Réviser',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Écouter',
-    flashcardKnowIt: '✓ Je le sais',
-    flashcardStillLearning: '↻ En apprentissage',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marquées comme connues`,
   },
   ar: {
     title: 'Earth & Space Science',
@@ -282,19 +210,7 @@ const STRINGS: Record<LangMode, Strings> = {
     score: (n) => `النتيجة: ${n}`,
     quizRoundSummary: (score, total) => `${score} / ${total} إجابة صحيحة`,
 
-    modeTrueFalse: '✓✗ صح/خطأ',
-    trueLabel: 'صح',
-    falseLabel: 'خطأ',
     trueFalseStatement: (planet, fact) => `${planet} معروف بـ: ${fact}`,
-
-    modeFillBlank: '✏️ أكمل الفراغ',
-
-    modeFlashcard: '🗂️ مراجعة',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 استمع',
-    flashcardKnowIt: '✓ أعرف هذا',
-    flashcardStillLearning: '↻ ما زلت أتعلم',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} تم وضع علامة معروف عليها`,
   },
 };
 

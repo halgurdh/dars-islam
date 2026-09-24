@@ -27,19 +27,7 @@ interface Strings {
   instruction: string;
   sequenceRoundSummary: (perfect: number, total: number) => string;
 
-  modeTrueFalse: string;
-  trueLabel: string;
-  falseLabel: string;
   trueFalseStatement: (term: string, meaning: string) => string;
-
-  modeFillBlank: string;
-
-  modeFlashcard: string;
-  flashcardProgress: (i: number, total: number) => string;
-  hear: string;
-  flashcardKnowIt: string;
-  flashcardStillLearning: string;
-  flashcardRoundSummary: (known: number, total: number) => string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
@@ -70,19 +58,7 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Tap them from internet hardware to online behavior',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rounds perfect`,
 
-    modeTrueFalse: '✓✗ True/False',
-    trueLabel: 'True',
-    falseLabel: 'False',
     trueFalseStatement: (term, meaning) => `${term} means "${meaning}"`,
-
-    modeFillBlank: '✏️ Fill in the Blank',
-
-    modeFlashcard: '🗂️ Review',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Hear it',
-    flashcardKnowIt: '✓ I know it',
-    flashcardStillLearning: '↻ Still learning',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marked as known`,
   },
   nl: {
     title: 'Digital Literacy',
@@ -111,19 +87,7 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Tik ze aan van hardware naar online gedrag',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondes perfect`,
 
-    modeTrueFalse: '✓✗ Waar/Niet waar',
-    trueLabel: 'Waar',
-    falseLabel: 'Niet waar',
     trueFalseStatement: (term, meaning) => `${term} betekent "${meaning}"`,
-
-    modeFillBlank: '✏️ Vul het Woord In',
-
-    modeFlashcard: '🗂️ Herhalen',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Uitspraak',
-    flashcardKnowIt: '✓ Ik ken dit',
-    flashcardStillLearning: '↻ Nog aan het leren',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} als gekend gemarkeerd`,
   },
   de: {
     title: 'Digital Literacy',
@@ -152,19 +116,7 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Tippe sie von Hardware bis Online-Verhalten an',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} Runden perfekt`,
 
-    modeTrueFalse: '✓✗ Wahr/Falsch',
-    trueLabel: 'Wahr',
-    falseLabel: 'Falsch',
     trueFalseStatement: (term, meaning) => `${term} bedeutet „${meaning}"`,
-
-    modeFillBlank: '✏️ Lücke Füllen',
-
-    modeFlashcard: '🗂️ Wiederholen',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Anhören',
-    flashcardKnowIt: '✓ Ich kenne es',
-    flashcardStillLearning: '↻ Noch am Lernen',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} als bekannt markiert`,
   },
   es: {
     title: 'Digital Literacy',
@@ -193,19 +145,7 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Tócalos desde el hardware hasta el comportamiento en línea',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondas perfectas`,
 
-    modeTrueFalse: '✓✗ Verdadero/Falso',
-    trueLabel: 'Verdadero',
-    falseLabel: 'Falso',
     trueFalseStatement: (term, meaning) => `${term} significa "${meaning}"`,
-
-    modeFillBlank: '✏️ Completa el Espacio',
-
-    modeFlashcard: '🗂️ Repasar',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Escuchar',
-    flashcardKnowIt: '✓ Lo sé',
-    flashcardStillLearning: '↻ Aún aprendiendo',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marcadas como conocidas`,
   },
   fr: {
     title: 'Digital Literacy',
@@ -234,19 +174,7 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'Touche-les du matériel au comportement en ligne',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
 
-    modeTrueFalse: '✓✗ Vrai/Faux',
-    trueLabel: 'Vrai',
-    falseLabel: 'Faux',
     trueFalseStatement: (term, meaning) => `${term} signifie « ${meaning} »`,
-
-    modeFillBlank: '✏️ Complète le Mot',
-
-    modeFlashcard: '🗂️ Réviser',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 Écouter',
-    flashcardKnowIt: '✓ Je le sais',
-    flashcardStillLearning: '↻ En apprentissage',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marquées comme connues`,
   },
   ar: {
     title: 'Digital Literacy',
@@ -275,19 +203,7 @@ const STRINGS: Record<LangMode, Strings> = {
     instruction: 'اضغط عليها من أجهزة الإنترنت إلى السلوك على الإنترنت',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولة مثالية`,
 
-    modeTrueFalse: '✓✗ صح/خطأ',
-    trueLabel: 'صح',
-    falseLabel: 'خطأ',
     trueFalseStatement: (term, meaning) => `${term} يعني "${meaning}"`,
-
-    modeFillBlank: '✏️ أكمل الفراغ',
-
-    modeFlashcard: '🗂️ مراجعة',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    hear: '🔊 استمع',
-    flashcardKnowIt: '✓ أعرف هذا',
-    flashcardStillLearning: '↻ ما زلت أتعلم',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} تم وضع علامة معروف عليها`,
   },
 };
 

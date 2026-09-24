@@ -2,7 +2,7 @@ import { COLORS, FONT } from '../theme';
 import { DIFFICULTIES, GREETINGS, languageFor, type Greeting } from '../questions';
 import { getLang, setLang, detectDefaultLang } from '../systems/Locale';
 import { t } from '../i18n';
-import { createModeMenuScene, matchMode, quizMode, sequenceMode, flashcardMode } from '@shared/mode-menu-kit';
+import { createModeMenuScene, matchMode, quizMode, sequenceMode, trueFalseMode, fillBlankMode, reviewMode, type VariantBase } from '@shared/mode-menu-kit';
 import type { MatchItem } from '@shared/match-kit';
 import type { QuizQuestion } from '@shared/quiz-kit';
 import type { SequenceItem } from '@shared/sequence-kit';
@@ -50,7 +50,7 @@ function generateSequenceRound(count: number): () => SequenceItem[] {
 
 function generateTrueFalseQuestion(): QuizQuestion {
   const tf = trueFalseStatement(GREETINGS, (g) => g.greeting, languageFor, (greeting, lang) => t().trueFalseStatement(greeting, lang));
-  return toTrueFalseQuestion(tf, t().trueLabel, t().falseLabel);
+  return toTrueFalseQuestion(tf);
 }
 
 function generateFillBlankQuestion(): QuizQuestion {
@@ -60,6 +60,29 @@ function generateFillBlankQuestion(): QuizQuestion {
 function generateFlashcardDeck(): FlashcardItem[] {
   return GREETINGS.map((g) => ({ id: g.id, primary: g.greeting, meaning: languageFor(g) }));
 }
+
+// One description of this game shared by every variant mode below —
+// each mode then only supplies its own content generator.
+const variants: VariantBase = {
+  gameId: GAME_ID,
+  theme: COLORS,
+  fontFamily: FONT,
+  getLang,
+  strings: () => ({
+    round: t().round,
+    score: t().score,
+    menu: t().menu,
+    wellDone: t().wellDone,
+    roundSummary: t().quizRoundSummary,
+    playAgain: t().playAgain,
+    backToMenu: t().menu,
+  }),
+  tiers: [
+    { label: () => t().easy, totalQuestions: 6 },
+    { label: () => t().medium, totalQuestions: 8 },
+    { label: () => t().hard, totalQuestions: 10 },
+  ],
+};
 
 export const MenuScene = createModeMenuScene({
   theme: COLORS,
@@ -129,70 +152,8 @@ export const MenuScene = createModeMenuScene({
         { label: () => t().hard, totalRounds: 4, generateRound: generateSequenceRound(9) },
       ],
     }),
-    quizMode({
-      id: 'truefalse',
-      label: () => t().modeTrueFalse,
-      icon: '✓✗',
-      gameId: GAME_ID,
-      theme: COLORS,
-      fontFamily: FONT,
-      strings: () => ({
-        round: t().round,
-        score: t().score,
-        menu: t().menu,
-        wellDone: t().wellDone,
-        roundSummary: t().quizRoundSummary,
-        playAgain: t().playAgain,
-        backToMenu: t().menu,
-      }),
-      difficulties: [
-        { label: () => t().easy, totalQuestions: 6, generateQuestion: generateTrueFalseQuestion },
-        { label: () => t().medium, totalQuestions: 8, generateQuestion: generateTrueFalseQuestion },
-        { label: () => t().hard, totalQuestions: 10, generateQuestion: generateTrueFalseQuestion },
-      ],
-    }),
-    quizMode({
-      id: 'fillblank',
-      label: () => t().modeFillBlank,
-      icon: '✏️',
-      gameId: GAME_ID,
-      theme: COLORS,
-      fontFamily: FONT,
-      strings: () => ({
-        round: t().round,
-        score: t().score,
-        menu: t().menu,
-        wellDone: t().wellDone,
-        roundSummary: t().quizRoundSummary,
-        playAgain: t().playAgain,
-        backToMenu: t().menu,
-      }),
-      difficulties: [
-        { label: () => t().easy, totalQuestions: 6, generateQuestion: generateFillBlankQuestion },
-        { label: () => t().medium, totalQuestions: 8, generateQuestion: generateFillBlankQuestion },
-        { label: () => t().hard, totalQuestions: 10, generateQuestion: generateFillBlankQuestion },
-      ],
-    }),
-    flashcardMode({
-      label: () => t().modeFlashcard,
-      icon: '🗂️',
-      gameId: GAME_ID,
-      theme: COLORS,
-      fontFamily: FONT,
-      strings: () => ({
-        menu: t().menu,
-        progress: t().flashcardProgress,
-        hear: t().hear,
-        knowIt: t().flashcardKnowIt,
-        stillLearning: t().flashcardStillLearning,
-        wellDone: t().wellDone,
-        roundSummary: t().flashcardRoundSummary,
-        playAgain: t().playAgain,
-        backToMenu: t().menu,
-      }),
-      difficulties: [
-        { label: () => t().hard, cards: generateFlashcardDeck },
-      ],
-    }),
+    trueFalseMode(variants, generateTrueFalseQuestion),
+    fillBlankMode(variants, generateFillBlankQuestion),
+    reviewMode(variants, generateFlashcardDeck),
   ],
 });

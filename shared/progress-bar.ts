@@ -7,12 +7,9 @@ import { t, getLang, setLang, detectDefaultLang } from './progress-bar-i18n';
 import { renderLanguagePickerDom } from './language-picker-dom';
 import { reportContent, currentGameSlug } from './report-api';
 import { notifyActiveGameLanguageChange } from './active-game-locale';
+import { escapeHtml } from './escape-html';
 
 interface LeaderboardEntry { display_name: string; xp: number; level: number; }
-
-function escapeHtml(s: string): string {
-  return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
-}
 
 /**
  * Floating level/streak/badges widget + leaderboard, for any game or the

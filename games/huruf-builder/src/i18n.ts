@@ -42,21 +42,7 @@ interface Strings {
   quizScore: (n: number) => string;
   quizRoundSummary: (score: number, total: number) => string;
 
-  modeListen: string;
-  listenReplay: string;
-
-  modeFlashcard: string;
-  flashcardProgress: (i: number, total: number) => string;
-  flashcardKnowIt: string;
-  flashcardStillLearning: string;
-  flashcardRoundSummary: (known: number, total: number) => string;
-
-  modeTrueFalse: string;
-  trueLabel: string;
-  falseLabel: string;
   trueFalseStatement: (name: string, meaning: string) => string;
-
-  modeFillBlank: string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
@@ -102,21 +88,7 @@ const STRINGS: Record<LangMode, Strings> = {
     quizScore: (n) => `Score: ${n}`,
     quizRoundSummary: (score, total) => `${score} / ${total} correct`,
 
-    modeListen: '🔊 Listen',
-    listenReplay: '🔊 Tap to hear again',
-
-    modeFlashcard: '🗂️ Review',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    flashcardKnowIt: '✓ I know it',
-    flashcardStillLearning: '↻ Still learning',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marked as known`,
-
-    modeTrueFalse: '✓✗ True/False',
-    trueLabel: 'True',
-    falseLabel: 'False',
     trueFalseStatement: (name, meaning) => `${name} means "${meaning}"`,
-
-    modeFillBlank: '✏️ Fill in the Blank',
   },
   nl: {
     subtitle: 'Huruf Builder',
@@ -160,21 +132,7 @@ const STRINGS: Record<LangMode, Strings> = {
     quizScore: (n) => `Score: ${n}`,
     quizRoundSummary: (score, total) => `${score} / ${total} goed`,
 
-    modeListen: '🔊 Luisteren',
-    listenReplay: '🔊 Tik om opnieuw te horen',
-
-    modeFlashcard: '🗂️ Herhalen',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    flashcardKnowIt: '✓ Ik ken dit',
-    flashcardStillLearning: '↻ Nog aan het leren',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} als gekend gemarkeerd`,
-
-    modeTrueFalse: '✓✗ Waar/Niet waar',
-    trueLabel: 'Waar',
-    falseLabel: 'Niet waar',
     trueFalseStatement: (name, meaning) => `${name} betekent "${meaning}"`,
-
-    modeFillBlank: '✏️ Vul de Letter In',
   },
   de: {
     subtitle: 'Huruf Builder',
@@ -218,21 +176,7 @@ const STRINGS: Record<LangMode, Strings> = {
     quizScore: (n) => `Punkte: ${n}`,
     quizRoundSummary: (score, total) => `${score} / ${total} richtig`,
 
-    modeListen: '🔊 Hören',
-    listenReplay: '🔊 Tippen zum erneuten Hören',
-
-    modeFlashcard: '🗂️ Wiederholen',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    flashcardKnowIt: '✓ Ich kenne es',
-    flashcardStillLearning: '↻ Noch am Lernen',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} als bekannt markiert`,
-
-    modeTrueFalse: '✓✗ Wahr/Falsch',
-    trueLabel: 'Wahr',
-    falseLabel: 'Falsch',
     trueFalseStatement: (name, meaning) => `${name} bedeutet „${meaning}“`,
-
-    modeFillBlank: '✏️ Buchstabe Einsetzen',
   },
   es: {
     subtitle: 'Huruf Builder',
@@ -276,21 +220,7 @@ const STRINGS: Record<LangMode, Strings> = {
     quizScore: (n) => `Puntuación: ${n}`,
     quizRoundSummary: (score, total) => `${score} / ${total} correctas`,
 
-    modeListen: '🔊 Escuchar',
-    listenReplay: '🔊 Toca para escuchar de nuevo',
-
-    modeFlashcard: '🗂️ Repasar',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    flashcardKnowIt: '✓ Lo sé',
-    flashcardStillLearning: '↻ Aún aprendiendo',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marcados como conocidos`,
-
-    modeTrueFalse: '✓✗ Verdadero/Falso',
-    trueLabel: 'Verdadero',
-    falseLabel: 'Falso',
     trueFalseStatement: (name, meaning) => `${name} significa "${meaning}"`,
-
-    modeFillBlank: '✏️ Completa la Letra',
   },
   fr: {
     subtitle: 'Huruf Builder',
@@ -334,21 +264,7 @@ const STRINGS: Record<LangMode, Strings> = {
     quizScore: (n) => `Score : ${n}`,
     quizRoundSummary: (score, total) => `${score} / ${total} correctes`,
 
-    modeListen: '🔊 Écouter',
-    listenReplay: '🔊 Touche pour réécouter',
-
-    modeFlashcard: '🗂️ Réviser',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    flashcardKnowIt: '✓ Je le sais',
-    flashcardStillLearning: '↻ Encore en apprentissage',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marqués comme connus`,
-
-    modeTrueFalse: '✓✗ Vrai/Faux',
-    trueLabel: 'Vrai',
-    falseLabel: 'Faux',
     trueFalseStatement: (name, meaning) => `${name} signifie « ${meaning} »`,
-
-    modeFillBlank: '✏️ Complète la Lettre',
   },
   ar: {
     subtitle: 'Huruf Builder',
@@ -392,21 +308,7 @@ const STRINGS: Record<LangMode, Strings> = {
     quizScore: (n) => `النقاط: ${n}`,
     quizRoundSummary: (score, total) => `${score} / ${total} صحيحة`,
 
-    modeListen: '🔊 استماع',
-    listenReplay: '🔊 اضغط للاستماع مرة أخرى',
-
-    modeFlashcard: '🗂️ مراجعة',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    flashcardKnowIt: '✓ أعرف هذا',
-    flashcardStillLearning: '↻ ما زلت أتعلم',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} مُعلَّمة كمعروفة`,
-
-    modeTrueFalse: '✓✗ صح/خطأ',
-    trueLabel: 'صح',
-    falseLabel: 'خطأ',
     trueFalseStatement: (name, meaning) => `${name} تعني "${meaning}"`,
-
-    modeFillBlank: '✏️ أكمل الحرف',
   },
 };
 

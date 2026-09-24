@@ -16,14 +16,13 @@
     "deploy:sftp": "node scripts/deploy-sftp.mjs",
     "deploy": "node scripts/build.mjs && node scripts/deploy-sftp.mjs",
     "generate:game-icons": "node scripts/generate-game-icons.mjs",
-    "test": "tsx tests/logic.test.ts && tsx tests/integration.test.ts && tsx tests/karma.test.ts && tsx tests/rogue.test.ts && tsx tests/security.test.ts && tsx tests/player-progress.test.ts && tsx tests/builder-pieces.test.ts",
+    "test": "tsx tests/logic.test.ts && tsx tests/integration.test.ts && tsx tests/security.test.ts && tsx tests/player-progress.test.ts && tsx tests/builder-pieces.test.ts && tsx tests/mode-scenes.test.ts",
     "test:logic": "tsx tests/logic.test.ts",
     "test:integration": "tsx tests/integration.test.ts",
-    "test:karma": "tsx tests/karma.test.ts",
-    "test:rogue": "tsx tests/rogue.test.ts",
     "test:security": "tsx tests/security.test.ts",
     "test:player-progress": "tsx tests/player-progress.test.ts",
-    "test:builder-pieces": "tsx tests/builder-pieces.test.ts"
+    "test:builder-pieces": "tsx tests/builder-pieces.test.ts",
+    "test:mode-scenes": "tsx tests/mode-scenes.test.ts"
   },
   "workspaces": [
     "games/*"

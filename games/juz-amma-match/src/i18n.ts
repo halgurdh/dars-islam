@@ -28,21 +28,7 @@ interface Strings {
   sequenceInstruction: string;
   sequenceRoundSummary: (perfect: number, total: number) => string;
 
-  modeListen: string;
-  listenReplay: string;
-
-  modeFlashcard: string;
-  flashcardProgress: (i: number, total: number) => string;
-  flashcardKnowIt: string;
-  flashcardStillLearning: string;
-  flashcardRoundSummary: (known: number, total: number) => string;
-
-  modeTrueFalse: string;
-  trueLabel: string;
-  falseLabel: string;
   trueFalseStatement: (name: string, meaning: string) => string;
-
-  modeFillBlank: string;
 }
 
 const STRINGS: Record<LangMode, Strings> = {
@@ -74,21 +60,7 @@ const STRINGS: Record<LangMode, Strings> = {
     sequenceInstruction: 'Tap the surahs in the order you memorize them',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rounds perfect`,
 
-    modeListen: '🔊 Listen',
-    listenReplay: '🔊 Tap to hear again',
-
-    modeFlashcard: '🗂️ Review',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    flashcardKnowIt: '✓ I know it',
-    flashcardStillLearning: '↻ Still learning',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marked as known`,
-
-    modeTrueFalse: '✓✗ True/False',
-    trueLabel: 'True',
-    falseLabel: 'False',
     trueFalseStatement: (name, meaning) => `${name} means "${meaning}"`,
-
-    modeFillBlank: '✏️ Fill in the Blank',
   },
   nl: {
     subtitle: 'Quran Juz Amma Match',
@@ -118,21 +90,7 @@ const STRINGS: Record<LangMode, Strings> = {
     sequenceInstruction: 'Tik de surahs in de memorisatievolgorde aan',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondes perfect`,
 
-    modeListen: '🔊 Luisteren',
-    listenReplay: '🔊 Tik om opnieuw te horen',
-
-    modeFlashcard: '🗂️ Herhalen',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    flashcardKnowIt: '✓ Ik ken dit',
-    flashcardStillLearning: '↻ Nog aan het leren',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} als gekend gemarkeerd`,
-
-    modeTrueFalse: '✓✗ Waar/Niet waar',
-    trueLabel: 'Waar',
-    falseLabel: 'Niet waar',
     trueFalseStatement: (name, meaning) => `${name} betekent "${meaning}"`,
-
-    modeFillBlank: '✏️ Vul de Letter In',
   },
   de: {
     subtitle: 'Quran Juz Amma Match',
@@ -162,21 +120,7 @@ const STRINGS: Record<LangMode, Strings> = {
     sequenceInstruction: 'Tippe die Suren in der Merkreihenfolge an',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} Runden perfekt`,
 
-    modeListen: '🔊 Hören',
-    listenReplay: '🔊 Tippen zum erneuten Hören',
-
-    modeFlashcard: '🗂️ Wiederholen',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    flashcardKnowIt: '✓ Ich kenne es',
-    flashcardStillLearning: '↻ Noch am Lernen',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} als bekannt markiert`,
-
-    modeTrueFalse: '✓✗ Wahr/Falsch',
-    trueLabel: 'Wahr',
-    falseLabel: 'Falsch',
     trueFalseStatement: (name, meaning) => `${name} bedeutet „${meaning}“`,
-
-    modeFillBlank: '✏️ Buchstabe Einsetzen',
   },
   es: {
     subtitle: 'Quran Juz Amma Match',
@@ -206,21 +150,7 @@ const STRINGS: Record<LangMode, Strings> = {
     sequenceInstruction: 'Toca las suras en el orden de memorización',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} rondas perfectas`,
 
-    modeListen: '🔊 Escuchar',
-    listenReplay: '🔊 Toca para escuchar de nuevo',
-
-    modeFlashcard: '🗂️ Repasar',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    flashcardKnowIt: '✓ Lo sé',
-    flashcardStillLearning: '↻ Aún aprendiendo',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marcados como conocidos`,
-
-    modeTrueFalse: '✓✗ Verdadero/Falso',
-    trueLabel: 'Verdadero',
-    falseLabel: 'Falso',
     trueFalseStatement: (name, meaning) => `${name} significa "${meaning}"`,
-
-    modeFillBlank: '✏️ Completa la Letra',
   },
   fr: {
     subtitle: 'Quran Juz Amma Match',
@@ -250,21 +180,7 @@ const STRINGS: Record<LangMode, Strings> = {
     sequenceInstruction: 'Touche les sourates dans l’ordre de mémorisation',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} manches parfaites`,
 
-    modeListen: '🔊 Écouter',
-    listenReplay: '🔊 Touche pour réécouter',
-
-    modeFlashcard: '🗂️ Réviser',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    flashcardKnowIt: '✓ Je le sais',
-    flashcardStillLearning: '↻ Encore en apprentissage',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} marqués comme connus`,
-
-    modeTrueFalse: '✓✗ Vrai/Faux',
-    trueLabel: 'Vrai',
-    falseLabel: 'Faux',
     trueFalseStatement: (name, meaning) => `${name} signifie « ${meaning} »`,
-
-    modeFillBlank: '✏️ Complète la Lettre',
   },
   ar: {
     subtitle: 'Quran Juz Amma Match',
@@ -294,21 +210,7 @@ const STRINGS: Record<LangMode, Strings> = {
     sequenceInstruction: 'اضغط على السور بالترتيب الذي تحفظها به',
     sequenceRoundSummary: (perfect, total) => `${perfect} / ${total} جولة مثالية`,
 
-    modeListen: '🔊 استماع',
-    listenReplay: '🔊 اضغط للاستماع مرة أخرى',
-
-    modeFlashcard: '🗂️ مراجعة',
-    flashcardProgress: (i, total) => `${i} / ${total}`,
-    flashcardKnowIt: '✓ أعرف هذا',
-    flashcardStillLearning: '↻ ما زلت أتعلم',
-    flashcardRoundSummary: (known, total) => `${known} / ${total} مُعلَّمة كمعروفة`,
-
-    modeTrueFalse: '✓✗ صح/خطأ',
-    trueLabel: 'صح',
-    falseLabel: 'خطأ',
     trueFalseStatement: (name, meaning) => `${name} تعني "${meaning}"`,
-
-    modeFillBlank: '✏️ أكمل الحرف',
   },
 };
 
