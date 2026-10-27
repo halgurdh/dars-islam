@@ -8,7 +8,7 @@
 
 **dars-islam is a free, open-source Islamic education platform** — 40+ small educational browser games ([Phaser](https://phaser.io)/TypeScript, installable as [Progressive Web Apps](https://web.dev/progressive-web-apps/)) for kids learning **Islamic studies, Quran, Arabic alphabet, Islamic history, duas, and the 99 names of Allah**, alongside core school subjects — **math, geography, science, language arts, world history, and language learning (Dutch, German, Spanish, French, Arabic)**. Built for **Islamic education at home, in a madrasa, weekend Islamic school, or a general K-12 classroom**, with school-friendly accounts for students, teachers, and parents. Ad-free, no tracking, available in 6 UI languages: English, Dutch, German, Spanish, French, and Arabic.
 
-💛 **Support this project:** [paypal.me/halgurdh](https://paypal.me/halgurdh) — this is free and ad-free by choice; donations help keep it that way.
+💛 [**Support this project:**](https://paypal.me/halgurdh) — this is free and ad-free by choice; donations help keep it that way.
 
 ### 📚 Subjects & games
 
