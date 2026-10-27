@@ -1,8 +1,8 @@
 # dars-islam — Free Islamic Education Games for Kids
 
-💛 [**Support this project:**](https://paypal.me/halgurdh) — this is free and ad-free by choice; donations help keep it that way.
-
 🌐 **Read this in:** [English](README.md) · [Nederlands](README.nl.md) · [Deutsch](README.de.md) · [Español](README.es.md) · [Français](README.fr.md) · [العربية](README.ar.md)
+
+💛 [**Support this project:**](https://paypal.me/halgurdh) — this is free and ad-free by choice; donations help keep it that way.
 
 ### 🎮 [Play now → halgurdh.github.io/dars-islam](https://halgurdh.github.io/dars-islam/)
 
